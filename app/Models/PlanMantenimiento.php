@@ -1,0 +1,70 @@
+<?php
+
+namespace App\Models;
+
+use App\Enums\FrecuenciaAnual;
+use App\Enums\TipoMantenimiento;
+use App\Observers\PlanMantenimientoObserver;
+use Database\Factories\PlanMantenimientoFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+
+#[Fillable([
+    'equipo_id',
+    'anio',
+    'frecuencia_anual',
+    'tipo_mantenimiento',
+    'proveedor_id',
+    'responsable_interno_id',
+    'convenio_id',
+    'costo_anual_referencia',
+])]
+#[ObservedBy(PlanMantenimientoObserver::class)]
+class PlanMantenimiento extends Model implements AuditableContract
+{
+    /** @use HasFactory<PlanMantenimientoFactory> */
+    use Auditable, HasFactory, SoftDeletes;
+
+    protected $table = 'planes_mantenimiento';
+
+    protected function casts(): array
+    {
+        return [
+            'frecuencia_anual' => FrecuenciaAnual::class,
+            'tipo_mantenimiento' => TipoMantenimiento::class,
+            'costo_anual_referencia' => 'decimal:2',
+        ];
+    }
+
+    public function equipo(): BelongsTo
+    {
+        return $this->belongsTo(Equipo::class);
+    }
+
+    public function proveedor(): BelongsTo
+    {
+        return $this->belongsTo(Proveedor::class);
+    }
+
+    public function responsableInterno(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'responsable_interno_id');
+    }
+
+    public function convenio(): BelongsTo
+    {
+        return $this->belongsTo(Convenio::class);
+    }
+
+    public function ejecucionesMensuales(): HasMany
+    {
+        return $this->hasMany(EjecucionMensual::class);
+    }
+}
