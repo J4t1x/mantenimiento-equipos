@@ -72,7 +72,7 @@ class IndicadoresTest extends TestCase
     public function test_un_mes_reprogramado_cuenta_como_programado_pero_no_como_ejecutado(): void
     {
         $plan = $this->planTrimestral(Equipo::factory()->create(), [3]);
-        $plan->ejecucionesMensuales()->where('mes', 6)->first()->update(['estado' => EstadoEjecucion::Reprogramado]);
+        $plan->ejecucionesMensuales()->where('mes', 6)->first()->update(['estado' => EstadoEjecucion::Reprogramado, 'observaciones' => 'Repuesto sin stock']);
 
         $total = app(CalcularCumplimientoMpAction::class)->execute(self::ANIO)['total'];
 
@@ -132,7 +132,7 @@ class IndicadoresTest extends TestCase
 
         $detalle = app(ObtenerDetalleGastoAction::class)->execute(self::ANIO);
 
-        $this->assertSame(['programado' => 400_000.0, 'ejecutado' => 100_000.0, 'porcentaje' => 25.0], $detalle['mp']);
+        $this->assertSame(['programado' => 400_000.0, 'ejecutado' => 100_000.0, 'porcentaje' => 25.0, 'fuente' => 'planes'], $detalle['mp']);
         $this->assertSame(['programado' => null, 'ejecutado' => 30_000.0, 'porcentaje' => null], $detalle['mc']);
     }
 }

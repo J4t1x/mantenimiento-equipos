@@ -4,7 +4,7 @@ proyecto: Sistema de Bitácora de Mantenimiento de Equipos
 servicio: Servicio de Salud Aysén
 establecimiento_base: Hospital Regional Coyhaique
 perfil: estándar (expansión desde BRIEF §3, perfil lite)
-version: 1.0
+version: 1.1
 estado: borrador técnico — preparación de Etapa 2, no reemplaza la validación pendiente del BRIEF.md
 marco: v3.4
 autor: Javier Mansilla
@@ -42,7 +42,7 @@ No incluye el paso a producción (Sysadmin) ni integración real con SIGFE (ver 
 | MP | Mantenimiento Preventivo |
 | MC | Mantenimiento Correctivo |
 | EQC / EQR | Equipo Crítico / Equipo Relevante (niveles de criticidad) |
-| IM≥12 | Categoría de criticidad "Importancia mayor o igual a 12" (ver pregunta abierta 2 del BRIEF) |
+| IM≥12 | Categoría de criticidad de la planilla, probablemente el índice de Fennigkoh y Smith ≥ 12. Se conserva sin regla asociada (Módulo 15, decisión PA-2) |
 | SIGFE | Sistema de Información para la Gestión Financiera del Estado |
 | RF / RNF | Requisito Funcional / Requisito No Funcional |
 | HU | Historia de Usuario (BRIEF §3) |
@@ -54,8 +54,10 @@ Cristian Santander (validación), y el propio autor como base de la Etapa 2 (con
 
 ### 1.5 Referencias
 
-`BRIEF.md` v1.0 · `DESCRIPCION-SISTEMA.md` · `MODELO-DATOS.md` · `SAD.md` ·
-`PLANILLA MANTENIMIENTO EQUIPOS MÉDICOS 2026.xlsx` · TRA §5 del marco de ingeniería v3.4.
+`BRIEF.md` v1.1 · `DESCRIPCION-SISTEMA.md` · `MODELO-DATOS.md` · `SAD.md` ·
+`PLANILLA MANTENIMIENTO EQUIPOS MÉDICOS 2026.xlsx` · TRA §5 del marco de ingeniería v3.4 ·
+Resolución Exenta 1341/2017 del MINSAL, norma de MP de equipamiento médico crítico
+(`normativa/NORMA-MP-EQUIPAMIENTO-CRITICO.md`).
 
 ## §2 Descripción general
 
@@ -74,9 +76,8 @@ reportes · Gestión de usuarios y permisos.
 
 | Rol | Resumen de acceso |
 |---|---|
-| Encargado de Mantención | Acceso total: catálogos, catastro, planificación, reportes |
-| Responsable técnico de recinto | Catastro y plan de su recinto |
-| Técnico interno / Proveedor externo | Registro de ejecución en Bitácora (alcance de acceso de proveedores sujeto a pregunta abierta 7) |
+| Encargado de Mantención | Catálogos, catastro, planificación, bitácora, MC y reportes. Con recintos asignados, solo esos recintos (encargado de un establecimiento). Sin recinto asignado, todos (subdepartamento del SSA). Ver RF-63 |
+| Técnico interno | Registro de ejecución en Bitácora de sus equipos asignados. Los proveedores externos no tienen usuario propio: su ejecución la registra un usuario interno (PA-7, resuelta el 25-09-2026) |
 | Encargado de convenios | Convenios y Gasto |
 | Jefatura de servicio clínico | Lectura de Equipos y Dashboard de su servicio |
 
@@ -115,10 +116,10 @@ Agrupados por módulo, con prioridad (Alta/Media/Baja) según su cercanía al n�
 | RF-06 | El sistema debe permitir registrar un equipo con: recinto, servicio clínico, clase/subclase, nombre, marca, modelo, serie, n° de inventario, año de adquisición, vida útil, propiedad, estado, criticidad, garantía (sí/no + año), y si está bajo plan de MP. | Alta |
 | RF-07 | El n° de inventario debe ser único dentro de un mismo recinto. | Alta |
 | RF-08 | Los campos servicio clínico, recinto, nombre, n° de inventario y criticidad son obligatorios; el sistema no debe permitir guardar el registro sin ellos. | Alta |
-| RF-09 | El sistema debe calcular la vida útil residual (vida útil − (año actual − año de adquisición)) y mostrarla en la ficha, permitiendo valores negativos. *(Depende de PA-10: si el cálculo debe ser automático o editable manualmente.)* | Media |
+| RF-09 | El sistema debe calcular la vida útil residual (vida útil − (año actual − año de adquisición)) y mostrarla en la ficha, permitiendo valores negativos. *(PA-10 respondida el 25-09-2026: la vida útil se ingresa manualmente por equipo y el residual coincide con la fórmula de la planilla. Queda por confirmar que esa es la interpretación correcta; ver BRIEF RN-06.)* | Media |
 | RF-10 | El sistema debe permitir editar la ficha completa de un equipo existente, conservando historial de cambios de estado y criticidad. | Media |
 | RF-11 | El listado de equipos debe permitir filtrar por recinto, servicio clínico, criticidad y estado, y buscar por nombre o n° de inventario. | Alta |
-| RF-12 | El campo "Estado (Bueno/Regular/Malo)" debe admitir explícitamente un valor "Sin evaluar" para los equipos migrados sin dato (59 de 469 en la planilla actual). *(Depende de PA-11.)* | Media |
+| RF-12 | El campo "Estado (Bueno/Regular/Malo)" debe admitir explícitamente un valor "Sin evaluar" para los equipos migrados sin dato (59 de 469 en la planilla actual). *(PA-11 resuelta el 25-09-2026: se confirma "Sin evaluar".)* | Media |
 
 #### Módulo 3 — Planificación MP (deriva de HU-03)
 
@@ -136,13 +137,13 @@ Agrupados por módulo, con prioridad (Alta/Media/Baja) según su cercanía al n�
 | RF-17 | El sistema debe permitir marcar un mes con plan "Programado" como "Realizado" o "Reprogramado", registrando fecha real y observaciones. | Alta |
 | RF-18 | El sistema debe rechazar la transición a "Realizado" o "Reprogramado" si el mes no tiene una marca "Programado" previa (RN-02). | Alta |
 | RF-19 | El sistema debe mostrar la bitácora anual de un equipo como una grilla de 12 meses con los tres estados visualmente diferenciados. | Alta |
-| RF-20 | El sistema debe permitir a un técnico interno o proveedor externo registrar únicamente la ejecución de los equipos que tiene asignados. *(Depende de PA-7: acceso de proveedores externos.)* | Media |
+| RF-20 | El sistema debe permitir a un técnico interno o proveedor externo registrar únicamente la ejecución de los equipos que tiene asignados. *(PA-7 resuelta el 25-09-2026: siempre registra un usuario interno. RF-20 queda completa con el alcance del Técnico Interno.)* | Media |
 
 #### Módulo 5 — Indicadores (deriva de HU-05)
 
 | ID | Descripción | Prioridad |
 |---|---|---|
-| RF-21 | El sistema debe calcular el % de cumplimiento de MP como ejecutados/programados, para un período (mes o año) seleccionado (RN-03). | Alta |
+| RF-21 | El sistema debe calcular el % de cumplimiento de MP como ejecutados/programados, para un período (mes o año) seleccionado (RN-03). *(Selector del Escritorio completado el 30-09-2026, ver Módulo 17.)* | Alta |
 | RF-22 | El sistema debe desagregar el % de cumplimiento en cuatro cortes: total, EQC, EQR e IM≥12. | Alta |
 | RF-23 | El sistema debe mostrar el indicador en un panel (dashboard) accesible desde el módulo de Equipos y desde un panel general. | Media |
 
@@ -150,7 +151,7 @@ Agrupados por módulo, con prioridad (Alta/Media/Baja) según su cercanía al n�
 
 | ID | Descripción | Prioridad |
 |---|---|---|
-| RF-24 | El sistema debe permitir registrar un evento de mantenimiento correctivo asociado a un equipo: fecha, descripción de la falla, costo y tipo de gasto. *(Alcance exacto sujeto a PA-6.)* | Media |
+| RF-24 | El sistema debe permitir registrar un evento de mantenimiento correctivo asociado a un equipo: fecha, descripción de la falla, costo y tipo de gasto. *(PA-6 resuelta el 25-09-2026: lo registra el encargado de mantención de cada establecimiento; ver RF-63.)* | Media |
 | RF-25 | Cada evento correctivo registrado debe sumar automáticamente al gasto ejecutado de MC del período correspondiente (RN-04). | Media |
 | RF-26 | El sistema debe mostrar el historial completo de eventos correctivos de un equipo, ordenado cronológicamente. | Media |
 
@@ -307,6 +308,134 @@ por defecto: año en curso, todo el Servicio). (b) Quedan fuera el cuarto report
 (Pantalla 8, "Convenios y ejecución") y la exportación a PDF que RF-32 permite ("PDF o Excel"):
 ambos son contenido nuevo, no diseño, y requerirían su propia RF.
 
+#### Módulo 15 — Respuestas del requirente y norma MINSAL de equipamiento crítico (deriva de las respuestas a las preguntas abiertas del 25-09-2026 y de la Res. Ex. 1341/2017)
+
+Origen: respuestas de Edgon Mauricio Pérez a las PA 1–11 (ver BRIEF "Respuestas del requirente")
+y norma adjunta (`normativa/NORMA-MP-EQUIPAMIENTO-CRITICO.md`). Reglas de negocio: BRIEF RN-06 a
+RN-10.
+
+**Decisiones de cierre.** Ninguna pregunta abierta bloquea este módulo. Donde la respuesta del
+requirente quedó incompleta, se decidió a partir de la norma, de la planilla y del sistema
+actual. Las decisiones se informan a Cristian Santander para su confirmación, y cambiarlas no
+obliga a rehacer ningún RF:
+
+| PA | Decisión | Fundamento |
+|---|---|---|
+| 1 | Multi-establecimiento, con un recinto por establecimiento en el catálogo de Recintos, que ya es administrable (RF-01). No hace falta un listado oficial para construir: el Encargado de Mantención lo carga desde el panel. | Respuesta 1 |
+| 2 | Crítico y Relevante se asignan a mano según la norma. **IM≥12** y **No aplica** se conservan como valores válidos, sin regla asociada, y el corte IM≥12 de RF-22 se mantiene. | Norma §4. Ningún equipo de la planilla 2026 los usa. Quitarlos no aporta y restaría compatibilidad con la lista de validación de la planilla. |
+| 3 | Relación 1:N: **un servicio clínico por equipo**. Se mantiene el mapa del importador, que descarta "Equipos Médicos" y "Préstamo S.S.A" y toma el primer servicio restante. No se agrega un campo de ubicación hasta que se pida. | En 88 de 469 equipos hay dos valores. En ~45 el primero es "Equipos Médicos" (rótulo de bodega o sección, no un servicio clínico) y en otros aparecen "Bodega" o "Domicilio". Son ubicaciones, no un uso compartido. |
+| 8 | **Trimestral**: los reportes existentes (cumplimiento y gasto) filtrados por trimestre, sin formato adicional. **Fin de año**: los reportes del año completo más el informe de cumplimiento de críticos (RF-68). | Respuesta 8. La norma define el contenido mínimo del informe de cumplimiento (§8). No se informó otro formato. |
+| 10 | Sin cambios: la vida útil se ingresa por equipo y el residual se calcula (RF-09). | La planilla calcula el residual con una fórmula (`K − ($B$9 − J)`) que coincide con RF-09 en los 409 equipos con año de adquisición. |
+
+Orden de implementación sugerido, de base a resultado:
+
+| ID | Descripción | Prioridad |
+|---|---|---|
+| RF-63 | Cada usuario debe poder asociarse a uno o más recintos. Un usuario con recintos asignados (encargado de mantención de un establecimiento) solo ve y registra catastro, planes, bitácora, MC, indicadores, Escritorio y reportes de esos recintos. Un usuario sin recinto asignado (personal del subdepartamento del SSA) ve todos los recintos. El alcance se aplica en backend (consultas y Policies), no solo en la interfaz (RNF-04). *(PA-1 y PA-6.)* | Alta |
+| RF-64 | El importador de planilla debe aceptar el recinto destino como parámetro, en lugar de tenerlo fijo en "Hospital Regional Coyhaique", para cargar planillas de otros establecimientos con la misma estructura. Un n° de inventario repetido en otro recinto no es conflicto (RF-07). *(PA-1; se valida con la planilla del Hospital de Puerto Aysén cuando esté disponible.)* | Media |
+| RF-65 | El sistema debe rechazar una frecuencia anual menor que 2 en el plan de MP de un equipo crítico, con un mensaje que cite la norma. Se valida en el formulario y en el modelo (RNF-04). *(RN-08; compatible con los datos 2026, donde los 360 críticos tienen frecuencia 2.)* | Media |
+| RF-66 | Al marcar un mes como "Reprogramado", la causa (observaciones) debe ser obligatoria. El sistema debe alertar en el Escritorio sobre los equipos críticos con una MP reprogramada que no quedó "Realizada" dentro de los 30 días siguientes, indicando que corresponde retirarlos de uso. Es solo una alerta: el sistema no bloquea ni da de baja el equipo. *(RN-09.)* | Media |
+| RF-67 | Los indicadores de cumplimiento de MP (RF-21/RF-22) y la barra de filtros de Reportes (RF-62) deben aceptar como período, además de mes y año, **trimestre** (T1 a T4) y **semestre** (enero–junio, julio–diciembre). Los reportes de cumplimiento y gasto (RF-32/RF-33) respetan el período elegido. *(PA-8 y RN-10.)* | Alta |
+| RF-68 | El sistema debe generar el **informe de cumplimiento de equipos críticos** que exige la norma: por recinto y período (semestre o año), el indicador *N° de equipos críticos con MP ejecutada / N° de equipos críticos con MP programada × 100*, con el listado de las reprogramaciones del período y sus causas (RF-66). Se agrega como cuarta tarjeta de la página Reportes, con descarga a Excel. *(RN-10; depende de RF-66 y RF-67.)* | Alta |
+
+**Estado (28-09-2026)**: RF-63 a RF-68 implementados. El Módulo 15 queda completo.
+
+**Criterios de implementación de RF-66 y RF-67**:
+- RF-66: como la bitácora registra el mes y no el día programado, el plazo de 30 días se cuenta desde el último día del mes reprogramado (p. ej. junio vence el 30 de julio). La alerta cuenta equipos críticos activos y va en la tarjeta "Críticos a retirar de uso" del widget de alertas del catastro (Encargado de Mantención y Jefatura), que enlaza a la Bitácora filtrada. La Bitácora muestra además el plazo y la causa.
+- RF-68: el indicador cuenta equipos, no mantenciones, como pide la norma. Un equipo cuenta como "con MP ejecutada" solo si se realizaron todas sus MP programadas del período (criterio conservador; con frecuencia 2 y período semestral es idéntico a "al menos una"). Las reprogramaciones se toman de la nueva columna `causa_reprogramacion`, que conserva la causa aunque el mes se realice después; así el informe incluye también las reprogramaciones ya resueltas. El Excel tiene tres hojas: Resumen, Equipos críticos y Reprogramaciones.
+- RF-67: el período se elige en la barra de Reportes (año completo, semestres y trimestres) y aplica al indicador de cumplimiento y al detalle de gasto, a sus resúmenes, a los archivos (nombre y hoja) y a las Actions. En el detalle de gasto, el MP programado se prorratea por los meses del período, porque el costo del plan es anual. El catastro + plan sigue siendo anual. El Escritorio no suma un selector de período: sigue bloqueado por la incompatibilidad de Filament 5.7.8 + Livewire 4.4.3 (ver RF-21), y el gráfico mensual de cumplimiento ya muestra el detalle mes a mes.
+
+**Nota sobre alcance**: (a) RF-63 se implementó con un global scope
+(`App\Models\Scopes\AlcanceRecintoScope`) sobre Recinto, Equipo, Plan, Ejecución mensual y
+Mantenimiento correctivo, más `App\Support\AlcanceRecinto` en las consultas `DB::table()` de los
+indicadores y guardas de modelo al guardar. Los convenios no tienen recinto y siguen siendo
+globales, así que el gasto MP por convenio del Escritorio no se acota. Un usuario con recintos
+asignados no puede modificar el catálogo de Recintos. (b) El plazo de marzo para definir el plan anual y la validación del
+plan por la Dirección (norma §7.2–7.3) no se formalizan como RF por ahora. (c) El alcance de
+Jefatura por servicio clínico (nota del Módulo 11) sigue fuera: RF-63 acota por recinto, no por
+servicio.
+
+#### Módulo 16 — Cobertura completa de la Res. Ex. 1341/2017 (deriva de una revisión de la norma contra el sistema, 28-09-2026)
+
+Origen: se contrastó cada exigencia de la norma (`normativa/NORMA-MP-EQUIPAMIENTO-CRITICO.md`,
+§4 a §8) con el sistema después de cerrar el Módulo 15. Resultado: una regla implementada más
+estricta que la norma (RF-65), cuatro exigencias sin cobertura y dos cubiertas en parte. Reglas de
+negocio: BRIEF RN-08 (corregida), RN-11 y RN-12.
+
+| Exigencia (norma) | Estado al 28-09-2026 | RF |
+|---|---|---|
+| §7.4.i Al menos 2 MP al año, **o la periodicidad del fabricante en equipos nuevos en garantía** | RF-65 rechaza la frecuencia 1 en todo crítico, incluso en garantía (8 de los 360 críticos de la planilla 2026 están en garantía) | RF-69 |
+| §7.1 Profesional responsable de la MP designado formalmente en cada establecimiento | Recinto no tiene responsable. La planilla lo trae en la cabecera ("RESPONSABLE TÉCNICO") y el importador no lo lee | RF-70 |
+| §7.2 Programa anual que incluye como mínimo el catastro de equipos críticos vigente | No se detecta un crítico activo sin plan del año (hoy los 360 tienen plan) | RF-71 |
+| §7.2 y §7.3 Programa definido a más tardar en marzo, en carta Gantt conocida y validada por la Dirección | La carta Gantt existe (grilla de 12 meses), pero no se registra ni la definición ni la validación del programa, y no hay control de plazo | RF-72 |
+| §7.4.iii Si la MP reprogramada no se realiza, retiro de uso y del servicio clínico, con evidencia escrita | RF-66 alerta, pero no hay forma de registrar el retiro (fecha, motivo, documento) | RF-73 |
+| §7.4.ii Justificación de la MP no ejecutada en documento formal | La causa se registra como texto (RF-66), sin referencia al documento formal | RF-74 |
+| §4 Equipos críticos mínimos (6 tipos) | La criticidad se asigna a mano y nada verifica que esos 6 tipos queden como críticos | RF-75 |
+
+Quedan fuera del sistema, por ser procesos administrativos: la difusión del programa a los
+servicios clínicos (§7.5, cubierta en parte por el acceso de lectura de Jefatura), el envío del
+informe a la Unidad de Calidad y a la Dirección (§8) y la supervisión de la Unidad de Calidad (§
+"Supervisión"). Esta última puede usar el rol Jefatura, que ya tiene lectura de todo y acceso a
+Reportes.
+
+| ID | Descripción | Prioridad |
+|---|---|---|
+| RF-69 | **Corrige RF-65.** Un equipo crítico **en garantía vigente** (`en_garantia` = Sí y año de vencimiento de la garantía igual o posterior al año del plan, o sin año registrado) admite una frecuencia anual menor que 2, correspondiente a la periodicidad del fabricante o proveedor. Fuera de ese caso se mantiene el mínimo de 2. Se ajustan la regla del formulario, la guarda del modelo y el texto de ayuda. La hoja "Equipos críticos" del informe (RF-68) indica "Periodicidad de fabricante (garantía)" en esos equipos. *(§7.4.i; RN-08 corregida.)* | Alta |
+| RF-70 | Cada recinto debe registrar al **profesional responsable de la MP** designado por la Subdirección Administrativa: nombre, cargo, n° y fecha del documento de designación. Lo edita el personal del subdepartamento (RF-63). El importador lee el "RESPONSABLE TÉCNICO" de la cabecera de la planilla y lo carga si el recinto no lo tiene. El nombre aparece en la hoja "Resumen" del informe de críticos (RF-68). *(§7.1.)* | Media |
+| RF-71 | El sistema debe alertar en el Escritorio sobre los **equipos críticos activos sin plan de MP del año en curso**, con enlace al listado de Equipos filtrado ("Críticos sin plan {año}"). La hoja "Resumen" del informe de críticos suma ese conteo. *(§7.2: el programa considera como mínimo el catastro de críticos; RN-11.)* | Alta |
+| RF-72 | El sistema debe registrar, por recinto y año, la **definición y validación del programa anual de MP**: fecha de definición, fecha de validación por la Dirección, quién valida (nombre y cargo) y n° del documento. Desde el 1 de abril, el Escritorio alerta sobre los recintos sin programa del año definido y validado. La hoja "Resumen" del informe de críticos muestra ambas fechas. *(§7.2 plazo de marzo y §7.3.)* | Media |
+| RF-73 | El sistema debe permitir **registrar el retiro de uso** de un equipo desde su ficha: fecha, motivo y n° del documento de evidencia. El equipo queda inactivo y sale de la alerta "Críticos a retirar de uso" (RF-66). La ficha muestra el historial de retiros y permite registrar el reingreso (fecha y documento). *(§7.4.iii; RN-12.)* | Media |
+| RF-74 | Al reprogramar, el sistema debe permitir registrar el **n° o referencia del documento formal** de justificación (memo, oficio), además de la causa. La referencia se conserva como la causa (RF-68) y aparece en la hoja "Reprogramaciones". Se registra como referencia, no como archivo adjunto: guardar archivos requiere definir almacenamiento con el Sysadmin. *(§7.4.ii.)* | Baja |
+| RF-75 | Cada equipo debe poder clasificarse en uno de los **6 tipos de equipo crítico de la norma** (monitorización hemodinámica invasiva, monitor desfibrilador, ventilador mecánico, incubadora, máquina de diálisis, máquina de anestesia) o en "Otro". Un equipo de alguno de los 6 tipos solo admite criticidad Crítico. La hoja "Resumen" del informe de críticos muestra el conteo por tipo. *(§4.)* | Media |
+
+**Estado (01-10-2026)**: RF-69 a RF-75 implementados; el Módulo 16 queda completo. RF-72 y RF-75 se construyeron sin esperar la respuesta de Cristian al correo del 29-09-2026: RF-72 en versión genérica (quién valida y con qué documento son campos libres) y RF-75 con clasificación asistida, sin cambiar criticidades. RF-74 se implementó como referencia al documento; si se requiere adjuntar el archivo, se evalúa con el Sysadmin.
+
+**Hallazgo de RF-75 (planilla 2026, Hospital Regional Coyhaique)**: según el nombre, 122 equipos corresponden a tipos de la norma ya marcados Crítico: 61 ventiladores, 39 monitores desfibriladores, 15 incubadoras y 7 máquinas de anestesia. Pero **25 máquinas de diálisis** (24 "Monitor Diálisis" y 1 "Equipo Diálisis de peritoneo") están marcadas **Relevante**, aunque la norma las exige como críticas. El comando no las modifica; se informan al requirente para que decida. Además hay 322 equipos sin sugerencia por nombre, entre ellos 164 "monitor multiparámetros" que podrían ser de monitorización hemodinámica invasiva.
+
+**Criterios de implementación**:
+- RF-69: la decisión vive en `Equipo::admiteFrecuencia($frecuencia, $anio)` (criticidad o garantía vigente en el año del plan). La usan la guarda del plan, la guarda del equipo (que ahora también reacciona a cambios de garantía) y la regla de los formularios. El formulario de Equipo evalúa criticidad y garantía juntas, así que quitar la garantía a un crítico con plan vigente de frecuencia 1 también se rechaza. La hoja "Equipos críticos" del informe agrega "Frecuencia anual" y "Periodicidad".
+- RF-72: tabla `programas_anuales_mantenimiento` (única por recinto y año) y modelo `ProgramaAnualMantenimiento`, con `definidoEnPlazo()` (hasta el 31 de marzo) y `descripcion()`. Relation manager "Programa anual de MP" en la ficha del recinto. Desde abril, `CatastroAlertasWidget` suma la tarjeta "Programa {año} sin validar" (recintos activos sin programa validado, scope `Recinto::sinProgramaValidado()`), con enlace al filtro homónimo de Recintos. La hoja "Resumen" y la vista imprimible del informe de críticos muestran el estado del programa.
+- RF-75: enum `TipoEquipoCritico` (los 6 tipos más "No corresponde"; nulo = sin clasificar), columna `equipos.tipo_critico_norma`, guarda de modelo y regla de formulario "tipo de la norma ⇒ Crítico" (`TipoCriticoSinCriticidadException`), columna y filtro (incluye "Sin clasificar") en Equipos, y conteo por tipo en el informe de críticos. El comando `app:clasificar-tipos-criticos` sugiere el tipo por nombre; con `--aplicar` lo asigna solo a los equipos sin clasificar que ya son Crítico, y lista como inconsistencia a los que no lo son. La monitorización hemodinámica invasiva no se deduce del nombre.
+- RF-71: scope `Equipo::criticosSinPlan($anio)` (críticos activos sin plan del año, sin importar `bajo_plan_mp`, porque la norma exige incluir a todo crítico). Tarjeta "Críticos sin plan {año}" en `CatastroAlertasWidget`, con enlace al filtro homónimo de Equipos, y fila en la hoja "Resumen" del informe.
+- RF-73: tabla `retiros_uso` y modelo `RetiroUso` (acotado por recinto). Las acciones "Retirar de uso" y "Registrar reingreso" de la ficha del equipo (`ViewEquipo`, requieren permiso de edición) usan `RegistrarRetiroUsoAction`, que deja el equipo inactivo o activo en una transacción y no admite dos retiros abiertos. El historial se ve en el relation manager "Retiros de uso", de solo lectura. La hoja "Reprogramaciones" del informe muestra la fecha del retiro registrado desde el mes reprogramado.
+- RF-74: columna `documento_justificacion` en `ejecuciones_mensuales`, que se muestra en ambos formularios de la bitácora solo al reprogramar, es opcional y aparece en la hoja "Reprogramaciones".
+- RF-70: columnas `responsable_mp_*` en `recintos`, con una sección en el formulario y columnas en el listado. Como solo el personal sin recintos asignados edita recintos (RF-63), la designación la mantiene el subdepartamento. El importador asigna el responsable de la cabecera solo a los recintos que no tienen uno. La hoja "Resumen" del informe muestra el responsable del recinto filtrado o, sin filtro, el de cada recinto.
+
+**Nota sobre alcance**:
+- (a) RF-69 corrige un requisito ya implementado. Conviene hacerlo primero, porque hoy impide planificar un caso que la norma permite.
+- (b) RF-71 no necesita modelo nuevo: es una consulta sobre Equipo y Plan, igual que las alertas de RF-46.
+- (c) RF-75 requiere clasificar a mano los 469 equipos existentes, porque las clases de la planilla (Monitoreo, Apoyo Terapéutico, etc.) no corresponden a los 6 tipos. Se sugiere confirmar con el requirente antes de construirlo, igual que RF-72 (quién valida y con qué documento) y RF-74 (si basta la referencia o se exige el archivo).
+- (d) Hallazgo lateral: la cabecera de la planilla trae también "GASTO PROGRAMADO MP" (450.000.000) y "GASTO PROGRAMADO MC" (400.000.000). Ese monto de MC podría resolver el "programado MC" que hoy queda sin dato en el detalle de gasto (RF-33, PA-6). No es parte de la norma y queda anotado para otra RF.
+
+#### Módulo 17 — Cierre de RF-21, gasto programado e informe imprimible (a partir de la revisión de RF abiertos del 30-09-2026)
+
+Origen: con RF-72 y RF-75 a la espera del requirente, se tomaron el único RF que había quedado
+parcial desde el inicio (RF-21) y dos mejoras detectadas en la revisión de la norma y de la
+planilla.
+
+| ID | Descripción | Prioridad |
+|---|---|---|
+| RF-76 | El sistema debe registrar, por recinto y año, el **gasto programado anual de MP y de MC**. La carga de la planilla lo toma de su cabecera ("GASTO PROGRAMADO MP/MC" del "AÑO DE LEVANTAMIENTO") sin pisar lo ya registrado, y se puede editar desde la ficha del recinto. El detalle de gasto (RF-33) lo usa como programado, prorrateado por período (RF-67). MC deja de quedar sin programado. MP usa el presupuesto cuando existe y, si no, la suma de los costos de referencia de los planes. Con filtro por servicio clínico no se usa, porque el presupuesto es del establecimiento completo. | Media |
+| RF-77 | El informe de cumplimiento de equipos críticos (RF-68) debe tener una **versión imprimible**, lista para guardar como PDF desde el navegador, firmar y enviar a la Unidad de Calidad y a la Dirección (Res. Ex. 1341/2017 §8). Incluye encabezado institucional, datos del alcance y del responsable de MP, indicador con su fórmula, detalle por equipo, reprogramaciones con causa y documento, y espacios de firma (elaboró, Unidad de Calidad, Dirección). Se abre desde la tarjeta del informe en Reportes, con el alcance de la barra. | Media |
+
+**Estado (30-09-2026)**: RF-21 cerrado, RF-76 y RF-77 implementados.
+
+**Criterios de implementación**:
+- RF-21: se reemplazó el Dashboard nativo por `App\Filament\Pages\Escritorio`, con formulario propio de año y período, del mismo modo que Reportes (RF-62). Se verificó la causa del error 500 de `HasFiltersForm`: Filament pasa los filtros a cada widget como el array `pageFilters`, que termina como atributo del placeholder del widget (`trim(): array given`). Al agregar temporalmente una propiedad array `filters` a la página, el mismo error se reprodujo. El Escritorio entrega el período como dos valores escalares (`anio`, `periodo`) vía `getWidgetData()`, y `CumplimientoMpWidget` los recibe como propiedades `#[Reactive]`. El enum `Periodo` suma los 12 meses, porque RF-21 pide "mes o año", y ofrece las opciones agrupadas (año, semestres, trimestres, meses), también en Reportes.
+- RF-76: tabla `presupuestos_mantenimiento` (única por recinto y año) y modelo `PresupuestoMantenimiento`, acotado por recinto (RF-63) y auditable. Relation manager "Gasto programado anual" en la ficha del recinto. El importador registra los montos de la cabecera. La tarjeta de gasto de Reportes muestra el programado del período y la fila MC del Excel ya trae programado y %.
+- RF-77: la vista Blade `informes.informe-criticos` tiene estilos propios y autocontenidos, formato A4 y un botón "Imprimir o guardar como PDF" que se oculta al imprimir. Se sirve desde `ImprimirInformeCriticosController`, registrado como ruta autenticada del panel (`filament.admin.informe-criticos.imprimir`) y protegido con el permiso `view.reportes`. Usa los mismos datos que el Excel (`ObtenerInformeCriticosAction`, que ahora entrega también el texto del responsable de MP). Se optó por la vista imprimible en lugar de una librería de PDF para no agregar dependencias fuera del TRA §5 (decisión del usuario, 30-09-2026).
+
+#### Módulo 18 — Informe imprimible de cumplimiento y gasto (a partir de la revisión de RF abiertos del 01-10-2026)
+
+Origen: el requirente indicó que se piden informes trimestrales y, a fin de año, el informe
+completo (respuesta 8 del BRIEF). RF-32 contemplaba "PDF o Excel", pero solo existía el Excel.
+
+| ID | Descripción | Prioridad |
+|---|---|---|
+| RF-78 | El sistema debe ofrecer, desde la tarjeta del indicador de cumplimiento en Reportes y con el alcance y período de la barra, un **informe imprimible de cumplimiento y gasto** (para guardar como PDF desde el navegador). Debe incluir: el cumplimiento de MP en sus 4 cortes (RN-03), el resumen del indicador de equipos críticos de la norma (RF-68), el gasto MP y MC programado y ejecutado (RF-76) y espacios de firma. Sirve como informe trimestral o anual. | Media |
+
+**Estado (01-10-2026)**: implementado. `ImprimirInformeCumplimientoController` usa las mismas Actions que Reportes y la ruta autenticada del panel `filament.admin.informe-cumplimiento.imprimir`, con el permiso `view.reportes`. La vista `informes.informe-cumplimiento` comparte los estilos con el informe de críticos (partial `informes.partials.estilos`).
+
 ### 3.2 Requisitos no funcionales
 
 | ID | Categoría | Descripción |
@@ -331,7 +460,7 @@ duplican, para evitar que este documento y el BRIEF diverjan con el tiempo.
 
 | Interfaz | Naturaleza | Estado |
 |---|---|---|
-| SIGFE | Referencia manual del código de subasignación (campo de texto) | Confirmado como no-integración por ahora; integración real sujeta a PA-5 |
+| SIGFE | Referencia manual del código de subasignación (campo de texto) | Confirmado como no-integración (PA-5 resuelta el 25-09-2026: basta la referencia manual) |
 | Exportación a Excel/PDF | Generación de archivo, sin API externa | RF-31 a RF-33 |
 | Autenticación institucional (SSO/LDAP) | Posible integración futura | Sujeto a PA-12; por defecto se asume autenticación local Laravel (Fortify/Breeze) |
 
@@ -400,6 +529,10 @@ Stack TRA §5 sin excepciones (ver `BRIEF.md` §4 y `SAD.md` §8). Cualquier exc
 | — (formalizado en este SRS, 17-09-2026) | — | RF-47 a RF-56 (Consistencia funcional y productividad transversal) |
 | — (formalizado en este SRS, 22-09-2026) | — | RF-57 a RF-61 (Escritorio: jerarquía visual y gráficos) |
 | — (formalizado en este SRS, 23-09-2026) | — | RF-62 (Reportes: diseño y distribución) |
+| — (respuestas del requirente y Res. Ex. 1341/2017, 25-09-2026) | — | RF-63 a RF-68 |
+| — (revisión de cobertura de la Res. Ex. 1341/2017, 28-09-2026) | — | RF-69 a RF-75 |
+| — (cierre de RF-21 y mejoras, 30-09-2026) | — | RF-76 y RF-77 |
+| 5 — Indicadores y reportes (respuesta 8 del requirente, 01-10-2026) | HU-08 | RF-78 |
 
 Para la verificación esperada de cada requisito, ver `BRIEF.md` §6 "Trazabilidad mínima" (se
 mantiene vigente; este SRS no la reemplaza, solo aporta el detalle de RF que la sustentan).
@@ -407,5 +540,8 @@ mantiene vigente; este SRS no la reemplaza, solo aporta el detalle de RF que la 
 ## §6 Preguntas abiertas relacionadas
 
 Este SRS hereda las 12 preguntas abiertas del `BRIEF.md`. Las que condicionan directamente algún
-requisito quedan marcadas en línea (PA-N). No se resuelven aquí — se resuelven con el requirente,
+requisito quedan marcadas en línea (PA-N). Estado al 25-09-2026: ver BRIEF "Respuestas del
+requirente". Las PA 4, 5, 6, 7, 9 y 11 están resueltas. Las PA 1, 2, 3, 8 y 10 quedaron cerradas
+con las decisiones del Módulo 15, a la espera de la confirmación de Cristian. La PA 12 sigue
+abierta; mientras tanto se usa autenticación local. No se resuelven aquí — se resuelven con el requirente,
 vía Cristian, según lo acordado en el correo del 19-08-2026.

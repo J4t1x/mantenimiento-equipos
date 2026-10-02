@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Escritorio;
 use App\Filament\Widgets\AlertasConveniosWidget;
 use App\Filament\Widgets\CatastroAlertasWidget;
 use App\Filament\Widgets\ConveniosEncargadoWidget;
@@ -12,6 +13,8 @@ use App\Filament\Widgets\DistribucionCatastroWidget;
 use App\Filament\Widgets\GastoMensualWidget;
 use App\Filament\Widgets\IndicadoresGeneralesWidget;
 use App\Filament\Widgets\MisPlanesDelMesWidget;
+use App\Http\Controllers\ImprimirInformeCriticosController;
+use App\Http\Controllers\ImprimirInformeCumplimientoController;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
@@ -19,7 +22,6 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -29,6 +31,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -67,8 +70,16 @@ class AdminPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
-                Dashboard::class,
+                Escritorio::class,
             ])
+            // RF-77: informe de críticos imprimible, con la autenticación y el middleware del panel.
+            ->authenticatedRoutes(function (): void {
+                Route::get('/reportes/informe-criticos/imprimir', ImprimirInformeCriticosController::class)
+                    ->name('informe-criticos.imprimir');
+                // RF-78: informe trimestral / anual de cumplimiento y gasto, imprimible.
+                Route::get('/reportes/informe-cumplimiento/imprimir', ImprimirInformeCumplimientoController::class)
+                    ->name('informe-cumplimiento.imprimir');
+            })
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 IndicadoresGeneralesWidget::class,

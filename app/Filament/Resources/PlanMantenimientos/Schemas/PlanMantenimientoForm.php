@@ -4,6 +4,8 @@ namespace App\Filament\Resources\PlanMantenimientos\Schemas;
 
 use App\Enums\FrecuenciaAnual;
 use App\Enums\TipoMantenimiento;
+use App\Models\Equipo;
+use App\Rules\FrecuenciaMinimaSegunCriticidad;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
@@ -47,7 +49,14 @@ class PlanMantenimientoForm
                         Select::make('frecuencia_anual')
                             ->label('Frecuencia anual')
                             ->options(FrecuenciaAnual::class)
-                            ->required(),
+                            ->required()
+                            ->helperText('Los equipos críticos requieren al menos 2 mantenciones al año, salvo con garantía vigente, en que se puede usar la periodicidad del fabricante (Res. Ex. 1341/2017).')
+                            ->rules([
+                                fn ($get): FrecuenciaMinimaSegunCriticidad => new FrecuenciaMinimaSegunCriticidad(
+                                    Equipo::query()->find($get('equipo_id')),
+                                    filled($get('anio')) ? (int) $get('anio') : null,
+                                ),
+                            ]),
                     ]),
 
                 Section::make('Ejecución y costo')

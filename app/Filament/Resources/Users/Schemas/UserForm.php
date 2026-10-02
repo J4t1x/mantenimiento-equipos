@@ -35,6 +35,14 @@ class UserForm
                     ->searchable()
                     ->preload()
                     ->label('Roles'),
+                // RF-63 (Módulo 15): sin recintos, el usuario ve todos (subdepartamento del SSA).
+                Select::make('recintos')
+                    ->relationship('recintos', 'nombre')
+                    ->multiple()
+                    ->searchable()
+                    ->preload()
+                    ->label('Recintos')
+                    ->helperText('Deja vacío para el personal del subdepartamento, que ve todos los recintos. Con recintos asignados, el usuario solo ve y registra datos de esos recintos.'),
                 Toggle::make('activo')
                     ->label('Activo')
                     ->default(true)

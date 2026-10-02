@@ -10,6 +10,7 @@ use App\Enums\TipoMantenimiento;
 use App\Models\ClaseEquipo;
 use App\Models\Equipo;
 use App\Models\PlanMantenimiento;
+use App\Models\PresupuestoMantenimiento;
 use App\Models\Proveedor;
 use App\Models\Recinto;
 use App\Models\ServicioClinico;
@@ -29,8 +30,14 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  * PLANIFICACIÓN MP", fila 15 = encabezados, 469 filas con datos desde la fila 16).
  *
  * Decisiones de la carga:
- * - Recinto: uno solo, "Hospital Regional Coyhaique" (resuelve la pregunta abierta 1 del BRIEF
- *   *solo para este recinto*, no para el resto del Servicio de Salud Aysén).
+ * - Recinto: el de la columna RECINTO de la planilla ("Hospital Regional Coyhaique" si viene
+ *   vacía). RF-64: `--recinto="Hospital de Puerto Aysén"` fuerza un recinto destino para todas las
+ *   filas, para cargar la planilla de otro establecimiento con la misma estructura. La protección
+ *   contra cargas duplicadas es por recinto: tener cargado Coyhaique no impide cargar otro.
+ * - Responsable de MP (RF-70): el "RESPONSABLE TÉCNICO" de la cabecera se asigna a los recintos
+ *   importados que no tienen uno.
+ * - Gasto programado (RF-76): "GASTO PROGRAMADO MP/MC" de la cabecera se registra para el "AÑO DE
+ *   LEVANTAMIENTO" en los recintos importados que no lo tienen.
  * - Servicio clínico: normalizado vía `resources/data/mapa_servicios_clinicos_coyhaique.php` (117
  *   variantes de texto libre → 55 canónicas). Pregunta abierta 3 del BRIEF sigue sin resolver
  *   formalmente — este mapeo es una simplificación práctica, no la validación oficial.
@@ -48,8 +55,8 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  *   ocurrido) interfieran. También evita 469+ entradas de auditoría falsas por un import, no una
  *   edición real de usuario.
  */
-#[Signature('app:importar-catastro-coyhaique {archivo? : Ruta al .xlsx (por defecto, la planilla del repo)} {--force : No pedir confirmación si ya hay equipos cargados}')]
-#[Description('Carga el catastro y plan de MP real del Hospital Regional Coyhaique desde la planilla Excel vigente.')]
+#[Signature('app:importar-catastro-coyhaique {archivo? : Ruta al .xlsx (por defecto, la planilla del repo)} {--recinto= : Recinto destino de todas las filas (por defecto, la columna RECINTO de la planilla)} {--force : Importar aunque el recinto destino ya tenga equipos cargados}')]
+#[Description('Carga el catastro y plan de MP de un establecimiento desde la planilla Excel (por defecto, la del Hospital Regional Coyhaique).')]
 class ImportarCatastroCoyhaique extends Command
 {
     private const HOJA = 'CATASTRO Y PLANIFICACIÓN MP';
@@ -57,6 +64,8 @@ class ImportarCatastroCoyhaique extends Command
     private const FILA_ENCABEZADOS = 15;
 
     private const PRIMERA_FILA_DATOS = 16;
+
+    private const RECINTO_POR_DEFECTO = 'Hospital Regional Coyhaique';
 
     /** Columnas 1-indexadas de la hoja, según la fila de encabezados. */
     private const COL = [
@@ -144,12 +153,6 @@ class ImportarCatastroCoyhaique extends Command
             return self::FAILURE;
         }
 
-        if (Equipo::query()->count() > 0 && ! $this->option('force')) {
-            $this->error('Ya hay equipos cargados. Vuelve a correr con --force si de verdad quieres importar de nuevo (puede duplicar registros).');
-
-            return self::FAILURE;
-        }
-
         /** @var array<string, string> $mapaServicios */
         $mapaServicios = require resource_path('data/mapa_servicios_clinicos_coyhaique.php');
 
@@ -158,6 +161,19 @@ class ImportarCatastroCoyhaique extends Command
 
         if ($hoja === null) {
             $this->error('No se encontró la hoja "'.self::HOJA.'".');
+
+            return self::FAILURE;
+        }
+
+        $recintosDestino = $this->recintosDestino($hoja);
+
+        $recintosConEquipos = Recinto::query()
+            ->whereIn('nombre', $recintosDestino)
+            ->whereHas('equipos')
+            ->pluck('nombre');
+
+        if ($recintosConEquipos->isNotEmpty() && ! $this->option('force')) {
+            $this->error('Ya hay equipos cargados en: '.$recintosConEquipos->implode(', ').'. Vuelve a correr con --force si de verdad quieres importar de nuevo (puede duplicar registros).');
 
             return self::FAILURE;
         }
@@ -186,8 +202,19 @@ class ImportarCatastroCoyhaique extends Command
             });
         });
 
+        $responsable = $this->asignarResponsableTecnico($hoja, $recintosDestino);
+        $presupuesto = $this->registrarGastoProgramado($hoja, $recintosDestino);
+
         $this->newLine();
         $this->info("Filas importadas: {$filasImportadas}");
+
+        if ($responsable !== null) {
+            $this->info("Responsable de MP (cabecera de la planilla): {$responsable}");
+        }
+
+        if ($presupuesto !== null) {
+            $this->info("Gasto programado {$presupuesto['anio']} (cabecera de la planilla): MP \${$presupuesto['mp']} · MC \${$presupuesto['mc']}");
+        }
         $this->info('Recintos: '.Recinto::count().' · Servicios clínicos: '.ServicioClinico::count().' · Clases/subclases: '.ClaseEquipo::count().' · Proveedores: '.Proveedor::count());
         $this->info("Equipos: {$filasImportadas} · Planes de mantenimiento: {$this->planesCreados} · Ejecuciones mensuales: {$this->ejecucionesCreadas}");
 
@@ -317,9 +344,115 @@ class ImportarCatastroCoyhaique extends Command
 
     private function recinto(string $nombre): Recinto
     {
-        $nombre = trim($nombre) !== '' ? trim($nombre) : 'Hospital Regional Coyhaique';
+        return Recinto::query()->firstOrCreate(['nombre' => $this->nombreRecinto($nombre)]);
+    }
 
-        return Recinto::query()->firstOrCreate(['nombre' => $nombre]);
+    /**
+     * RF-64: `--recinto` reemplaza la columna RECINTO en todas las filas.
+     */
+    private function nombreRecinto(string $nombreEnPlanilla): string
+    {
+        $destino = trim((string) $this->option('recinto'));
+
+        if ($destino !== '') {
+            return $destino;
+        }
+
+        return trim($nombreEnPlanilla) !== '' ? trim($nombreEnPlanilla) : self::RECINTO_POR_DEFECTO;
+    }
+
+    /**
+     * RF-70 (Res. Ex. 1341/2017 §7.1): la cabecera de la planilla trae "RESPONSABLE TÉCNICO" en la
+     * columna A y el nombre en la B, sobre la fila de encabezados. Se asigna como responsable de MP
+     * de los recintos importados que todavía no tienen uno, sin pisar una designación ya registrada.
+     *
+     * @param  array<int, string>  $nombresRecinto
+     */
+    private function asignarResponsableTecnico(Worksheet $hoja, array $nombresRecinto): ?string
+    {
+        $nombre = trim((string) $this->valorDeCabecera($hoja, 'RESPONSABLE'));
+
+        if ($nombre === '') {
+            return null;
+        }
+
+        Recinto::query()
+            ->whereIn('nombre', $nombresRecinto)
+            ->whereNull('responsable_mp_nombre')
+            ->update(['responsable_mp_nombre' => $nombre]);
+
+        return $nombre;
+    }
+
+    /**
+     * Valor de la columna B de la fila de cabecera cuya etiqueta (columna A) empieza con el texto
+     * dado, sobre la fila de encabezados.
+     */
+    private function valorDeCabecera(Worksheet $hoja, string $etiqueta): mixed
+    {
+        for ($fila = 1; $fila < self::FILA_ENCABEZADOS; $fila++) {
+            if (str_starts_with(mb_strtoupper(trim((string) $hoja->getCell("A{$fila}")->getValue())), $etiqueta)) {
+                return $hoja->getCell("B{$fila}")->getCalculatedValue();
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * RF-76: la cabecera trae "GASTO PROGRAMADO MP", "GASTO PROGRAMADO MC" y el "AÑO DE
+     * LEVANTAMIENTO". Se registran como gasto programado del año para los recintos importados que
+     * todavía no tienen uno, sin pisar lo ya registrado.
+     *
+     * @param  array<int, string>  $nombresRecinto
+     * @return array{anio: int, mp: float|null, mc: float|null}|null
+     */
+    private function registrarGastoProgramado(Worksheet $hoja, array $nombresRecinto): ?array
+    {
+        $mp = $this->valorDeCabecera($hoja, 'GASTO PROGRAMADO MP');
+        $mc = $this->valorDeCabecera($hoja, 'GASTO PROGRAMADO MC');
+
+        if (! is_numeric($mp) && ! is_numeric($mc)) {
+            return null;
+        }
+
+        $anio = $this->valorDeCabecera($hoja, 'AÑO DE LEVANTAMIENTO');
+        $presupuesto = [
+            'anio' => is_numeric($anio) ? (int) $anio : now()->year,
+            'mp' => is_numeric($mp) ? (float) $mp : null,
+            'mc' => is_numeric($mc) ? (float) $mc : null,
+        ];
+
+        Recinto::query()->whereIn('nombre', $nombresRecinto)->each(function (Recinto $recinto) use ($presupuesto): void {
+            PresupuestoMantenimiento::query()->firstOrCreate(
+                ['recinto_id' => $recinto->id, 'anio' => $presupuesto['anio']],
+                ['gasto_programado_mp' => $presupuesto['mp'], 'gasto_programado_mc' => $presupuesto['mc']],
+            );
+        });
+
+        return $presupuesto;
+    }
+
+    /**
+     * Nombres de recinto a los que irían las filas con datos, para la protección contra cargas
+     * duplicadas antes de importar.
+     *
+     * @return array<int, string>
+     */
+    private function recintosDestino(Worksheet $hoja): array
+    {
+        $nombres = [];
+        $ultimaFila = $hoja->getHighestDataRow();
+
+        for ($fila = self::PRIMERA_FILA_DATOS; $fila <= $ultimaFila; $fila++) {
+            $nombreEquipo = $this->valor($hoja, 'nombre', $fila);
+
+            if ($nombreEquipo !== null && trim((string) $nombreEquipo) !== '') {
+                $nombres[$this->nombreRecinto((string) $this->valor($hoja, 'recinto', $fila))] = true;
+            }
+        }
+
+        return array_keys($nombres);
     }
 
     private function servicioClinico(string $raw, array $mapa): ServicioClinico

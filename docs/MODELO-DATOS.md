@@ -133,6 +133,11 @@ erDiagram
 encabezado dice "Servicio de Salud Aysén" — se modela como catálogo desde el inicio para no
 bloquear la respuesta a la pregunta abierta 1 (alcance de recintos).
 
+**Responsable de MP (RF-70, agregado 2026-09-28)**: `responsable_mp_nombre` varchar(150),
+`responsable_mp_cargo` varchar(150), `responsable_mp_documento` varchar(100) y
+`responsable_mp_fecha_designacion` date, todos nulos. Registran al profesional designado por la
+Subdirección Administrativa (Res. Ex. 1341/2017 §7.1).
+
 ### 3.2 `servicios_clinicos`
 
 | Campo | Tipo | Nulo | Notas |
@@ -233,7 +238,9 @@ estado `programado` según `frecuencia_anual` (RN-01).
 | mes | tinyint | No | 1–12 |
 | estado | enum | No | `sin_programar` · `programado` · `realizado` · `reprogramado` |
 | fecha_real | date | Sí | Solo si `estado` es `realizado` o `reprogramado` |
-| observaciones | text | Sí | |
+| observaciones | text | Sí | Obligatoria al pasar a `reprogramado`: es la causa (RF-66) |
+| documento_justificacion | varchar(100) | Sí | N° o referencia del documento formal que justifica la reprogramación (RF-74, agregado 2026-09-29) |
+| causa_reprogramacion | text | Sí | Copia de `observaciones` al reprogramar; se conserva aunque el mes pase después a `realizado` (RF-68, agregado 2026-09-28) |
 | created_at / updated_at | timestamp | — | |
 
 **Índices**: único compuesto `(plan_mantenimiento_id, mes)`.
@@ -303,6 +310,73 @@ calza con el generador de Shield, que arma un permiso por acción y por **recurs
 `accion.recurso` con separador `.` (p. ej. `create.convenio`) como la aproximación más cercana sin
 escribir un generador de permisos a medida, que es justamente lo que esta decisión buscaba evitar.
 El mapeo de permisos por rol está en `database/seeders/RolesAndPermissionsSeeder.php`.
+
+### 3.16 `programas_anuales_mantenimiento` (RF-72, implementado 2026-10-01)
+
+| Columna | Tipo | Nulo | Notas |
+|---|---|---|---|
+| id | bigint PK | No | |
+| recinto_id | bigint FK → recintos.id | No | `cascadeOnDelete` |
+| anio | smallint | No | |
+| fecha_definicion | date | No | La norma exige definirlo a más tardar en marzo (§7.2) |
+| fecha_validacion | date | Sí | Validación por la Dirección (§7.3); nula = sin validar |
+| validado_por_nombre / validado_por_cargo | varchar(150) | Sí | |
+| documento_validacion | varchar(100) | Sí | |
+| observaciones | text | Sí | |
+| created_at / updated_at | timestamp | — | |
+
+**Índices**: único `(recinto_id, anio)`.
+
+**`equipos.tipo_critico_norma`** (RF-75, agregado 2026-10-01): varchar(50) nulo e indexado, enum
+`TipoEquipoCritico`: los 6 tipos críticos mínimos de la Res. Ex. 1341/2017 más `no_corresponde`.
+Nulo = sin clasificar. Un tipo de la norma exige `criticidad = critico`.
+
+### 3.15 `presupuestos_mantenimiento` (RF-76, implementado 2026-09-30)
+
+| Columna | Tipo | Nulo | Notas |
+|---|---|---|---|
+| id | bigint PK | No | |
+| recinto_id | bigint FK → recintos.id | No | `cascadeOnDelete` |
+| anio | smallint | No | |
+| gasto_programado_mp | decimal(14,2) | Sí | "GASTO PROGRAMADO MP" de la cabecera de la planilla |
+| gasto_programado_mc | decimal(14,2) | Sí | "GASTO PROGRAMADO MC" de la cabecera de la planilla |
+| created_at / updated_at | timestamp | — | |
+
+**Índices**: único `(recinto_id, anio)`. Es la base del programado del detalle de gasto (RF-33),
+prorrateado por período.
+
+### 3.14 `retiros_uso` (RF-73, implementado 2026-09-29)
+
+| Columna | Tipo | Nulo | Notas |
+|---|---|---|---|
+| id | bigint PK | No | |
+| equipo_id | bigint FK → equipos.id | No | `restrictOnDelete` |
+| fecha_retiro | date | No | |
+| motivo | text | No | |
+| documento_retiro | varchar(100) | No | Evidencia escrita que exige la Res. Ex. 1341/2017 §7.4.iii |
+| fecha_reingreso | date | Sí | Nulo = retiro abierto: el equipo sigue retirado |
+| documento_reingreso | varchar(100) | Sí | |
+| registrado_por_id | bigint FK → users.id | Sí | `nullOnDelete` |
+| created_at / updated_at | timestamp | — | |
+
+**Índices**: `(equipo_id, fecha_reingreso)`. Retirar deja `equipos.activo` en falso y reingresar
+lo vuelve a verdadero (`RegistrarRetiroUsoAction`). Un equipo no puede tener dos retiros abiertos.
+
+### 3.13 `recinto_user` (RF-63, implementado 2026-09-25)
+
+| Columna | Tipo | Nulo | Notas |
+|---|---|---|---|
+| recinto_id | bigint FK → recintos.id | No | `cascadeOnDelete` |
+| user_id | bigint FK → users.id | No | `cascadeOnDelete` |
+
+**Clave primaria**: compuesta `(recinto_id, user_id)`, más un índice en `user_id`.
+
+Recintos asignados a cada usuario. Un usuario sin filas aquí (personal del subdepartamento del
+SSA) ve todos los recintos. Uno con filas solo ve y registra datos de esos recintos. El alcance se
+aplica con el global scope `App\Models\Scopes\AlcanceRecintoScope` sobre `recintos`, `equipos`,
+`planes_mantenimiento`, `ejecuciones_mensuales` y `mantenimientos_correctivos`, y con
+`App\Support\AlcanceRecinto` en las consultas `DB::table()` de los indicadores. Los convenios no
+tienen recinto y siguen siendo globales.
 
 ### 3.12 `audits` (transversal, implementa RF-36, implementado 2026-09-09)
 
@@ -375,13 +449,13 @@ Idénticos a los verificados en la planilla (`BRIEF.md` §2), con su equivalente
 
 | Pregunta abierta (BRIEF) | Impacto en el modelo si cambia la respuesta |
 |---|---|
-| PA-1 Alcance de recintos | Ya soportado — `recintos` es catálogo desde el inicio, sin cambio de esquema |
+| PA-1 Alcance de recintos | **Resuelta (25-09-2026)**: multi-establecimiento. Se agregó `recinto_user` (§3.13) para acotar cada usuario a sus recintos |
 | PA-2 Criterio de criticidad | Si se define una fórmula, `criticidad` pasa de campo capturado a campo calculado (nueva `Action`, sin cambio de columna) |
-| PA-3 Servicio clínico 1:N vs M:N | Si es M:N, se agrega tabla pivote `equipo_servicio_clinico` y se retira `equipos.servicio_clinico_id` |
+| PA-3 Servicio clínico 1:N vs M:N | **Decidida 1:N (25-09-2026, a confirmar)**: el segundo valor de las celdas con "/" es una ubicación. Si se confirmara M:N, se agrega la tabla pivote `equipo_servicio_clinico` y se retira `equipos.servicio_clinico_id` |
 | PA-5 Integración SIGFE | Si se requiere integración real, `subasignacion_sigfe` deja de ser texto libre y se referencia a un catálogo o servicio externo |
 | PA-6 Detalle de mantenimiento correctivo | Si se confirman categorías fijas, `mantenimientos_correctivos.tipo_gasto` pasa de texto libre a catálogo (`tipos_gasto_correctivo`) |
 | PA-9 Migración de histórico | Define si se cargan años 2023–2025 en `planes_mantenimiento`/`ejecuciones_mensuales` o solo 2026 |
-| PA-10 Vida útil residual | Define si se agrega columna editable manualmente (ver §3.5) |
+| PA-10 Vida útil residual | **Resuelta sin cambio de esquema (25-09-2026)**: la vida útil se ingresa por equipo y el residual se sigue calculando (ver §3.5) |
 | PA-12 Autenticación institucional | Si hay SSO/LDAP, `usuarios.password` puede quedar en desuso y se agrega `usuarios.sso_id` |
 
 Estas decisiones no bloquean el inicio de la Etapa 2: el modelo está diseñado para que cada

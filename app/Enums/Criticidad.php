@@ -22,6 +22,23 @@ enum Criticidad: string implements HasColor, HasLabel
         };
     }
 
+    /**
+     * RN-08 del BRIEF (Res. Ex. 1341/2017 del MINSAL, §7.4): el equipamiento crítico recibe MP al
+     * menos dos veces al año. El resto de las criticidades no tiene mínimo normativo.
+     */
+    public function frecuenciaMinima(): int
+    {
+        return match ($this) {
+            self::Critico => 2,
+            default => 1,
+        };
+    }
+
+    public function admiteFrecuencia(FrecuenciaAnual $frecuencia): bool
+    {
+        return (int) $frecuencia->value >= $this->frecuenciaMinima();
+    }
+
     public function getColor(): string
     {
         return match ($this) {

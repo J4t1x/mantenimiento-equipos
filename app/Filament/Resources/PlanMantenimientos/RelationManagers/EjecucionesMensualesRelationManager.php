@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\PlanMantenimientos\RelationManagers;
 
 use App\Enums\EstadoEjecucion;
+use App\Exceptions\ReprogramacionSinCausaException;
 use App\Models\EjecucionMensual;
 use App\Rules\TransicionBitacoraValida;
 use App\Support\AlcanceTecnicoInterno;
@@ -11,6 +12,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Contracts\View\View;
@@ -86,12 +88,24 @@ class EjecucionesMensualesRelationManager extends RelationManager
                     ->label('Estado')
                     ->options(EstadoEjecucion::class)
                     ->required()
+                    ->live()
                     ->rule(fn (Get $get) => new TransicionBitacoraValida($this->buscarEjecucion((int) $get('mes')))),
                 DatePicker::make('fecha_real')
                     ->label('Fecha real de ejecución'),
+                // RF-66 (RN-09): la reprogramación exige su causa; mismo criterio que la guarda de
+                // `EjecucionMensual`.
                 Textarea::make('observaciones')
                     ->label('Observaciones')
+                    ->required(fn (Get $get): bool => EstadoEjecucion::desde($get('estado')) === EstadoEjecucion::Reprogramado)
+                    ->validationMessages(['required' => ReprogramacionSinCausaException::MENSAJE])
+                    ->helperText('Obligatorio al reprogramar: indica la causa (Res. Ex. 1341/2017).')
                     ->columnSpanFull(),
+                // RF-74 (Res. Ex. 1341/2017 §7.4.ii): referencia al documento formal de la justificación.
+                TextInput::make('documento_justificacion')
+                    ->label('N° de documento de justificación')
+                    ->placeholder('Ej.: Memo N° 45')
+                    ->maxLength(100)
+                    ->visible(fn (Get $get): bool => EstadoEjecucion::desde($get('estado')) === EstadoEjecucion::Reprogramado),
             ])
             ->fillForm(function (array $arguments): array {
                 $ejecucion = $this->buscarEjecucion($arguments['mes']);
@@ -101,6 +115,7 @@ class EjecucionesMensualesRelationManager extends RelationManager
                     'estado' => $ejecucion?->estado?->value ?? EstadoEjecucion::SinProgramar->value,
                     'fecha_real' => $ejecucion?->fecha_real,
                     'observaciones' => $ejecucion?->observaciones,
+                    'documento_justificacion' => $ejecucion?->documento_justificacion,
                 ];
             })
             ->action(function (array $arguments, array $data): void {

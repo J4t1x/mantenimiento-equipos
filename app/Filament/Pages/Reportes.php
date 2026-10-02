@@ -5,13 +5,17 @@ namespace App\Filament\Pages;
 use App\Actions\CalcularCumplimientoMpAction;
 use App\Actions\ObtenerDetalleGastoAction;
 use App\Actions\ObtenerFilasCatastroPlanAction;
+use App\Actions\ObtenerInformeCriticosAction;
+use App\Enums\Periodo;
 use App\Exports\CatastroPlanExport;
 use App\Exports\CumplimientoExport;
 use App\Exports\DetalleGastoExport;
+use App\Exports\InformeCriticosExport;
 use App\Filament\Widgets\CumplimientoMpWidget;
 use App\Models\Recinto;
 use App\Models\ServicioClinico;
 use BackedEnum;
+use Closure;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -47,6 +51,14 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  * 3. Un botón "Descargar Excel" por reporte, sin modal, que usa el alcance del formulario.
  *
  * El contenido y formato de los tres exports no cambia (RNF-09).
+ *
+ * RF-67 (Módulo 15): la barra suma un selector de período (año completo, semestre o trimestre)
+ * que acota el indicador de cumplimiento y el detalle de gasto, sus resúmenes y sus archivos. El
+ * catastro + plan anual es anual por definición (12 meses del plan) y no usa el período.
+ *
+ * RF-68 (Módulo 15): cuarta sección con el informe de cumplimiento de equipos críticos de la Res.
+ * Ex. 1341/2017 (indicador por equipos, detalle y reprogramaciones con causa), con el mismo
+ * alcance y período de la barra.
  */
 class Reportes extends Page
 {
@@ -59,7 +71,7 @@ class Reportes extends Page
     protected static ?int $navigationSort = 90;
 
     /**
-     * @var array{anio?: int|string|null, recinto_id?: int|string|null, servicio_clinico_id?: int|string|null}|null
+     * @var array{anio?: int|string|null, periodo?: Periodo|string|null, recinto_id?: int|string|null, servicio_clinico_id?: int|string|null}|null
      */
     public ?array $filtros = [];
 
@@ -78,14 +90,14 @@ class Reportes extends Page
 
     public function getSubheading(): ?string
     {
-        return 'Exportación a Excel con el mismo formato de la planilla vigente. El alcance elegido se aplica a los tres reportes.';
+        return 'Exportación a Excel con el mismo formato de la planilla vigente. El alcance elegido se aplica a todos los reportes.';
     }
 
     public function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                Grid::make(['default' => 1, 'md' => 3])
+                Grid::make(['default' => 1, 'md' => 2, 'xl' => 4])
                     ->schema([
                         TextInput::make('anio')
                             ->label('Año')
@@ -95,6 +107,13 @@ class Reportes extends Page
                             ->maxValue(2100)
                             ->default(now()->year)
                             ->live(debounce: 500),
+                        Select::make('periodo')
+                            ->label('Período')
+                            ->options(Periodo::opcionesAgrupadas())
+                            ->default(Periodo::Anual->value)
+                            ->selectablePlaceholder(false)
+                            ->helperText('Aplica al cumplimiento, al gasto y al informe de críticos.')
+                            ->live(),
                         Select::make('recinto_id')
                             ->label('Recinto')
                             ->options(fn () => Recinto::query()->orderBy('nombre')->pluck('nombre', 'id'))
@@ -121,11 +140,12 @@ class Reportes extends Page
                     ->compact()
                     ->schema([EmbeddedSchema::make('form')]),
 
-                Grid::make(['default' => 1, 'lg' => 3])
+                Grid::make(['default' => 1, 'lg' => 2])
                     ->schema([
                         $this->seccionCatastroPlan(),
                         $this->seccionCumplimiento(),
                         $this->seccionDetalleGasto(),
+                        $this->seccionInformeCriticos(),
                     ]),
             ]);
     }
@@ -134,7 +154,7 @@ class Reportes extends Page
     {
         return Section::make('Catastro + plan anual')
             ->icon(Heroicon::OutlinedClipboardDocumentList)
-            ->description('Cada equipo con plan de MP y sus 12 meses marcados (X, √, ꓣ).')
+            ->description('Cada equipo con plan de MP y sus 12 meses marcados (X, √, ꓣ). Siempre es anual.')
             ->schema(fn (): array => $this->resumen(function (int $anio, ?int $recintoId, ?int $servicioClinicoId): array {
                 $planes = app(ObtenerFilasCatastroPlanAction::class)->contar($anio, $recintoId, $servicioClinicoId);
 
@@ -151,19 +171,19 @@ class Reportes extends Page
         return Section::make('Indicador de cumplimiento')
             ->icon(Heroicon::OutlinedChartBar)
             ->description('Ejecutadas sobre programadas: total, EQC, EQR e IM ≥ 12.')
-            ->schema(fn (): array => $this->resumen(function (int $anio, ?int $recintoId, ?int $servicioClinicoId): array {
+            ->schema(fn (): array => $this->resumen(function (int $anio, ?int $recintoId, ?int $servicioClinicoId, Periodo $periodo): array {
                 $total = app(CalcularCumplimientoMpAction::class)
-                    ->execute($anio, recintoId: $recintoId, servicioClinicoId: $servicioClinicoId)['total'];
+                    ->execute($anio, recintoId: $recintoId, servicioClinicoId: $servicioClinicoId, periodo: $periodo)['total'];
 
                 return [
                     $this->cifra(
                         $total['porcentaje'] === null ? 'Sin datos' : "{$total['porcentaje']}%",
                         CumplimientoMpWidget::colorParaPorcentaje($total['porcentaje']),
                     ),
-                    Text::make("{$total['ejecutados']} de {$total['programados']} programadas en {$anio}"),
+                    Text::make("{$total['ejecutados']} de {$total['programados']} programadas en {$periodo->descripcion($anio)}"),
                 ];
             }))
-            ->footer([Actions::make([$this->descargarCumplimientoAction()])]);
+            ->footer([Actions::make([$this->descargarCumplimientoAction(), $this->imprimirInformeCumplimientoAction()])]);
     }
 
     private function seccionDetalleGasto(): Section
@@ -171,48 +191,134 @@ class Reportes extends Page
         return Section::make('Detalle de gasto')
             ->icon(Heroicon::OutlinedBanknotes)
             ->description('Gasto ejecutado en mantenimiento preventivo y correctivo.')
-            ->schema(fn (): array => $this->resumen(function (int $anio, ?int $recintoId, ?int $servicioClinicoId): array {
-                $gasto = app(ObtenerDetalleGastoAction::class)->execute($anio, $recintoId, $servicioClinicoId);
+            ->schema(fn (): array => $this->resumen(function (int $anio, ?int $recintoId, ?int $servicioClinicoId, Periodo $periodo): array {
+                $gasto = app(ObtenerDetalleGastoAction::class)->execute($anio, $recintoId, $servicioClinicoId, $periodo);
                 $total = $gasto['mp']['ejecutado'] + $gasto['mc']['ejecutado'];
 
                 return [
                     $this->cifra(self::pesos($total), $total > 0 ? 'primary' : 'gray'),
                     Text::make('Preventivo '.self::pesos($gasto['mp']['ejecutado']).' · Correctivo '.self::pesos($gasto['mc']['ejecutado'])),
+                    // RF-76: gasto programado del período, cuando el recinto lo tiene registrado.
+                    ...($gasto['mc']['programado'] !== null ? [
+                        Text::make('Programado: preventivo '.self::pesos($gasto['mp']['programado']).' · correctivo '.self::pesos($gasto['mc']['programado']))->color('gray'),
+                    ] : []),
                 ];
             }))
             ->footer([Actions::make([$this->descargarDetalleGastoAction()])]);
     }
 
+    private function seccionInformeCriticos(): Section
+    {
+        return Section::make('Cumplimiento de equipos críticos')
+            ->icon(Heroicon::OutlinedShieldCheck)
+            ->description('Informe de la norma MINSAL: equipos críticos con MP ejecutada sobre programada, con las reprogramaciones y sus causas. La norma lo pide por 1er semestre y por año.')
+            ->schema(fn (): array => $this->resumen(function (int $anio, ?int $recintoId, ?int $servicioClinicoId, Periodo $periodo): array {
+                $resumen = app(ObtenerInformeCriticosAction::class)->execute($anio, $periodo, $recintoId, $servicioClinicoId)['resumen'];
+
+                return [
+                    $this->cifra(
+                        $resumen['porcentaje'] === null ? 'Sin datos' : "{$resumen['porcentaje']}%",
+                        CumplimientoMpWidget::colorParaPorcentaje($resumen['porcentaje']),
+                    ),
+                    Text::make("{$resumen['con_mp_ejecutada']} de {$resumen['con_mp_programada']} equipos críticos con MP completa en {$periodo->descripcion($anio)}"),
+                    Text::make($resumen['reprogramaciones'] === 1 ? '1 reprogramación en el período' : "{$resumen['reprogramaciones']} reprogramaciones en el período")->color('gray'),
+                ];
+            }))
+            ->footer([Actions::make([$this->descargarInformeCriticosAction(), $this->imprimirInformeCriticosAction()])]);
+    }
+
     public function descargarCatastroPlanAction(): Action
     {
-        return $this->accionDescarga('descargarCatastroPlan', 'catastro-plan', CatastroPlanExport::class);
+        return $this->accionDescarga(
+            'descargarCatastroPlan',
+            'catastro-plan',
+            fn (int $anio, ?int $recintoId, ?int $servicioClinicoId): CatastroPlanExport => new CatastroPlanExport($anio, $recintoId, $servicioClinicoId),
+            usaPeriodo: false,
+        );
     }
 
     public function descargarCumplimientoAction(): Action
     {
-        return $this->accionDescarga('descargarCumplimiento', 'cumplimiento-mp', CumplimientoExport::class);
+        return $this->accionDescarga(
+            'descargarCumplimiento',
+            'cumplimiento-mp',
+            fn (int $anio, ?int $recintoId, ?int $servicioClinicoId, Periodo $periodo): CumplimientoExport => new CumplimientoExport($anio, $recintoId, $servicioClinicoId, $periodo),
+        );
     }
 
     public function descargarDetalleGastoAction(): Action
     {
-        return $this->accionDescarga('descargarDetalleGasto', 'detalle-gasto', DetalleGastoExport::class);
+        return $this->accionDescarga(
+            'descargarDetalleGasto',
+            'detalle-gasto',
+            fn (int $anio, ?int $recintoId, ?int $servicioClinicoId, Periodo $periodo): DetalleGastoExport => new DetalleGastoExport($anio, $recintoId, $servicioClinicoId, $periodo),
+        );
+    }
+
+    public function descargarInformeCriticosAction(): Action
+    {
+        return $this->accionDescarga(
+            'descargarInformeCriticos',
+            'informe-criticos',
+            fn (int $anio, ?int $recintoId, ?int $servicioClinicoId, Periodo $periodo): InformeCriticosExport => new InformeCriticosExport($anio, $recintoId, $servicioClinicoId, $periodo),
+        );
     }
 
     /**
-     * @param  class-string<CatastroPlanExport|CumplimientoExport|DetalleGastoExport>  $export
+     * RF-77: abre en otra pestaña la versión imprimible del informe de críticos, con el alcance de
+     * la barra, para guardarla como PDF desde el navegador, firmarla y enviarla.
      */
-    private function accionDescarga(string $nombre, string $prefijoArchivo, string $export): Action
+    public function imprimirInformeCriticosAction(): Action
+    {
+        return $this->accionImprimible('imprimirInformeCriticos', 'filament.admin.informe-criticos.imprimir');
+    }
+
+    /**
+     * RF-78: informe trimestral / anual de cumplimiento y gasto, imprimible, con el alcance de la
+     * barra.
+     */
+    public function imprimirInformeCumplimientoAction(): Action
+    {
+        return $this->accionImprimible('imprimirInformeCumplimiento', 'filament.admin.informe-cumplimiento.imprimir');
+    }
+
+    private function accionImprimible(string $nombre, string $ruta): Action
+    {
+        return Action::make($nombre)
+            ->label('Versión imprimible')
+            ->icon(Heroicon::OutlinedPrinter)
+            ->color('gray')
+            ->url(function () use ($ruta): ?string {
+                $alcance = $this->alcance($this->filtros ?? []);
+
+                if ($alcance['anio'] === null) {
+                    return null;
+                }
+
+                return route($ruta, array_filter([
+                    'anio' => $alcance['anio'],
+                    'periodo' => $alcance['periodo']->value,
+                    'recinto_id' => $alcance['recintoId'],
+                    'servicio_clinico_id' => $alcance['servicioClinicoId'],
+                ], fn (mixed $valor): bool => $valor !== null));
+            }, shouldOpenInNewTab: true);
+    }
+
+    /**
+     * @param  Closure(int, int|null, int|null, Periodo): (CatastroPlanExport|CumplimientoExport|DetalleGastoExport|InformeCriticosExport)  $crearExport
+     */
+    private function accionDescarga(string $nombre, string $prefijoArchivo, Closure $crearExport, bool $usaPeriodo = true): Action
     {
         return Action::make($nombre)
             ->label('Descargar Excel')
             ->icon(Heroicon::OutlinedArrowDownTray)
-            ->action(function () use ($prefijoArchivo, $export): BinaryFileResponse {
+            ->action(function () use ($prefijoArchivo, $crearExport, $usaPeriodo): BinaryFileResponse {
                 $filtros = $this->form->getState();
-                ['anio' => $anio, 'recintoId' => $recintoId, 'servicioClinicoId' => $servicioClinicoId] = $this->alcance($filtros);
+                ['anio' => $anio, 'periodo' => $periodo, 'recintoId' => $recintoId, 'servicioClinicoId' => $servicioClinicoId] = $this->alcance($filtros);
 
                 return Excel::download(
-                    new $export($anio, $recintoId, $servicioClinicoId),
-                    $this->nombreArchivo($prefijoArchivo, $anio, $recintoId, $servicioClinicoId),
+                    $crearExport($anio, $recintoId, $servicioClinicoId, $periodo),
+                    $this->nombreArchivo($prefijoArchivo, $anio, $usaPeriodo ? $periodo : null, $recintoId, $servicioClinicoId),
                 );
             });
     }
@@ -221,7 +327,7 @@ class Reportes extends Page
      * Resumen de una sección para el alcance actual del formulario; si el año todavía no es válido
      * (p. ej. mientras se escribe), muestra un aviso en vez de calcular sobre un año incompleto.
      *
-     * @param  callable(int, int|null, int|null): array<int, Text>  $calcular
+     * @param  callable(int, int|null, int|null, Periodo): array<int, Text>  $calcular
      * @return array<int, Text>
      */
     private function resumen(callable $calcular): array
@@ -232,7 +338,7 @@ class Reportes extends Page
             return [Text::make('Ingrese un año válido para ver el resumen.')->color('gray')];
         }
 
-        return $calcular($alcance['anio'], $alcance['recintoId'], $alcance['servicioClinicoId']);
+        return $calcular($alcance['anio'], $alcance['recintoId'], $alcance['servicioClinicoId'], $alcance['periodo']);
     }
 
     private function cifra(string $valor, string $color): Text
@@ -245,28 +351,31 @@ class Reportes extends Page
 
     /**
      * @param  array<string, mixed>  $filtros
-     * @return array{anio: int|null, recintoId: int|null, servicioClinicoId: int|null}
+     * @return array{anio: int|null, periodo: Periodo, recintoId: int|null, servicioClinicoId: int|null}
      */
     private function alcance(array $filtros): array
     {
         $anio = filter_var($filtros['anio'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 2000, 'max_range' => 2100]]);
+        $periodo = $filtros['periodo'] ?? null;
 
         return [
             'anio' => $anio === false ? null : $anio,
+            'periodo' => $periodo instanceof Periodo ? $periodo : (Periodo::tryFrom((string) $periodo) ?? Periodo::Anual),
             'recintoId' => filled($filtros['recinto_id'] ?? null) ? (int) $filtros['recinto_id'] : null,
             'servicioClinicoId' => filled($filtros['servicio_clinico_id'] ?? null) ? (int) $filtros['servicio_clinico_id'] : null,
         ];
     }
 
     /**
-     * Nombre de archivo de antes (`{prefijo}-{año}.xlsx`) más el recinto y/o servicio clínico cuando
-     * hay filtro, para distinguir varias descargas del mismo año.
+     * Nombre de archivo de antes (`{prefijo}-{año}.xlsx`) más el período (RF-67), el recinto y/o el
+     * servicio clínico cuando corresponde, para distinguir varias descargas del mismo año.
      */
-    private function nombreArchivo(string $prefijo, int $anio, ?int $recintoId, ?int $servicioClinicoId): string
+    private function nombreArchivo(string $prefijo, int $anio, ?Periodo $periodo, ?int $recintoId, ?int $servicioClinicoId): string
     {
         $partes = [
             $prefijo,
             $anio,
+            $periodo?->codigo() !== null ? strtolower($periodo->codigo()) : null,
             $recintoId !== null ? Str::slug((string) Recinto::find($recintoId)?->nombre) : null,
             $servicioClinicoId !== null ? Str::slug((string) ServicioClinico::find($servicioClinicoId)?->nombre) : null,
         ];

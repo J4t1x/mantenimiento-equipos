@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+
+use App\Filament\Pages\Escritorio;
 use App\Filament\Widgets\CumplimientoMpMensualWidget;
 use App\Filament\Widgets\DistribucionCatastroCriticidadWidget;
 use BezhanSalleh\FilamentShield\Resources\Roles\RoleResource;
@@ -223,6 +225,7 @@ return [
         'prefix' => 'view',
         'exclude' => [
             Dashboard::class,
+            Escritorio::class,
         ],
     ],
 

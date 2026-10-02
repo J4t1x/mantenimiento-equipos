@@ -5,6 +5,11 @@ namespace App\Filament\Resources\Equipos\Schemas;
 use App\Enums\Criticidad;
 use App\Enums\EstadoEquipo;
 use App\Enums\Propiedad;
+use App\Enums\TipoEquipoCritico;
+use App\Exceptions\FrecuenciaInsuficienteException;
+use App\Exceptions\TipoCriticoSinCriticidadException;
+use App\Models\Equipo;
+use Closure;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -106,7 +111,44 @@ class EquipoForm
                         Select::make('criticidad')
                             ->label('Criticidad')
                             ->options(Criticidad::class)
-                            ->required(),
+                            ->required()
+                            // RF-65/RF-69 (RN-08): la criticidad y la garantía que se guardan no pueden
+                            // dejar un plan vigente con una frecuencia que el equipo ya no admite; mismo
+                            // criterio que la guarda de `Equipo`, evaluado sobre el estado del formulario.
+                            ->rules([
+                                fn (?Equipo $record, $get): Closure => function (string $attribute, mixed $value, Closure $fail) use ($record, $get): void {
+                                    if ($record === null) {
+                                        return;
+                                    }
+
+                                    $candidato = (clone $record)->forceFill([
+                                        'criticidad' => $value instanceof Criticidad ? $value : Criticidad::tryFrom((string) $value),
+                                        'en_garantia' => (bool) $get('en_garantia'),
+                                        'garantia_anio_vencimiento' => filled($get('garantia_anio_vencimiento')) ? (int) $get('garantia_anio_vencimiento') : null,
+                                    ]);
+
+                                    if ($candidato->tienePlanVigenteQueNoAdmite()) {
+                                        $fail(FrecuenciaInsuficienteException::MENSAJE.' Sube primero la frecuencia de su plan vigente.');
+                                    }
+                                },
+                                // RF-75: un tipo de equipo crítico de la norma exige criticidad Crítico.
+                                fn ($get): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get): void {
+                                    $tipoEnFormulario = $get('tipo_critico_norma');
+                                    $tipo = $tipoEnFormulario instanceof TipoEquipoCritico ? $tipoEnFormulario : TipoEquipoCritico::tryFrom((string) $tipoEnFormulario);
+                                    $criticidad = $value instanceof Criticidad ? $value : Criticidad::tryFrom((string) $value);
+
+                                    if ($tipo?->exigeCriticidadCritica() && $criticidad !== Criticidad::Critico) {
+                                        $fail(TipoCriticoSinCriticidadException::MENSAJE);
+                                    }
+                                },
+                            ]),
+                        // RF-75 (Res. Ex. 1341/2017, "Definiciones").
+                        Select::make('tipo_critico_norma')
+                            ->label('Tipo de equipo crítico (norma MINSAL)')
+                            ->options(TipoEquipoCritico::class)
+                            ->placeholder('Sin clasificar')
+                            ->helperText('Los 6 tipos que la Res. Ex. 1341/2017 exige considerar críticos. Si corresponde a uno, la criticidad debe ser "Crítico".')
+                            ->live(),
                         Toggle::make('en_garantia')
                             ->label('En garantía')
                             ->default(false)

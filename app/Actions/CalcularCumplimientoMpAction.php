@@ -4,6 +4,8 @@ namespace App\Actions;
 
 use App\Enums\Criticidad;
 use App\Enums\EstadoEjecucion;
+use App\Enums\Periodo;
+use App\Support\AlcanceRecinto;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -23,6 +25,13 @@ use Illuminate\Support\Facades\DB;
  *
  * RF-54: `execute()` acepta un filtro opcional por recinto y/o servicio clínico del equipo, para el
  * reporte de cumplimiento (RF-32); el Escritorio sigue llamándolo sin filtro.
+ *
+ * RF-63: como `DB::table()` no pasa por el global scope de recinto de los modelos, `execute()` y
+ * `porMes()` aplican el alcance del usuario con {@see AlcanceRecinto::limitarConsulta()}.
+ * `paraEquipo()` no lo necesita: recibe un equipo ya resuelto desde su ficha, que sí está acotada.
+ *
+ * RF-67: `execute()` acepta además un {@see Periodo} (trimestre o semestre) que acota los meses
+ * del año; `null` o `Periodo::Anual` equivalen al año completo.
  */
 class CalcularCumplimientoMpAction
 {
@@ -35,7 +44,7 @@ class CalcularCumplimientoMpAction
     /**
      * @return array<string, array{programados: int, ejecutados: int, porcentaje: float|null}>
      */
-    public function execute(int $anio, ?int $mes = null, ?int $recintoId = null, ?int $servicioClinicoId = null): array
+    public function execute(int $anio, ?int $mes = null, ?int $recintoId = null, ?int $servicioClinicoId = null, ?Periodo $periodo = null): array
     {
         $query = DB::table('ejecuciones_mensuales')
             ->join('planes_mantenimiento', 'planes_mantenimiento.id', '=', 'ejecuciones_mensuales.plan_mantenimiento_id')
@@ -47,6 +56,10 @@ class CalcularCumplimientoMpAction
             $query->where('ejecuciones_mensuales.mes', $mes);
         }
 
+        if ($periodo !== null && ! $periodo->esAnual()) {
+            $query->whereIn('ejecuciones_mensuales.mes', $periodo->meses());
+        }
+
         if ($recintoId !== null) {
             $query->where('equipos.recinto_id', $recintoId);
         }
@@ -54,6 +67,8 @@ class CalcularCumplimientoMpAction
         if ($servicioClinicoId !== null) {
             $query->where('equipos.servicio_clinico_id', $servicioClinicoId);
         }
+
+        AlcanceRecinto::limitarConsulta($query, 'equipos.recinto_id');
 
         $filas = $query
             ->selectRaw('equipos.criticidad as criticidad, ejecuciones_mensuales.estado as estado, count(*) as total')
@@ -73,10 +88,13 @@ class CalcularCumplimientoMpAction
      */
     public function porMes(int $anio): array
     {
-        $filas = DB::table('ejecuciones_mensuales')
+        $query = DB::table('ejecuciones_mensuales')
             ->join('planes_mantenimiento', 'planes_mantenimiento.id', '=', 'ejecuciones_mensuales.plan_mantenimiento_id')
+            ->join('equipos', 'equipos.id', '=', 'planes_mantenimiento.equipo_id')
             ->where('planes_mantenimiento.anio', $anio)
-            ->whereIn('ejecuciones_mensuales.estado', self::ESTADOS_PROGRAMADOS)
+            ->whereIn('ejecuciones_mensuales.estado', self::ESTADOS_PROGRAMADOS);
+
+        $filas = AlcanceRecinto::limitarConsulta($query, 'equipos.recinto_id')
             ->selectRaw('ejecuciones_mensuales.mes as mes, ejecuciones_mensuales.estado as estado, count(*) as total')
             ->groupBy('ejecuciones_mensuales.mes', 'ejecuciones_mensuales.estado')
             ->get();

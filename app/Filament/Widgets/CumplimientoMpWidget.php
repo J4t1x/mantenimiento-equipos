@@ -4,9 +4,11 @@ namespace App\Filament\Widgets;
 
 use App\Actions\CalcularCumplimientoMpAction;
 use App\Enums\Criticidad;
+use App\Enums\Periodo;
 use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Livewire\Attributes\Reactive;
 
 /**
  * RN-03 (RF-21/RF-22/RF-23): % de cumplimiento de MP = ejecutados/programados, desagregado en los
@@ -17,8 +19,12 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
  * formulario agregado ahí (probado con `Select` y `TextInput`, con y sin opciones dinámicas)
  * produce un error 500 (`trim(): Argument #1 must be of type string, array given` en
  * `ComponentAttributeBag.php:502`, al renderizar el `loading-section` del widget) — incompatibilidad
- * de esta combinación exacta Filament 5.7.8 + Livewire 4.4.3, no un error de esta app. Se deja
- * fijo en el año actual hasta que el framework lo corrija o se investigue un rodeo distinto.
+ * de esta combinación exacta Filament 5.7.8 + Livewire 4.4.3, no un error de esta app.
+ *
+ * RF-21 (cierre, Módulo 17): el rodeo está en `App\Filament\Pages\Escritorio`, que tiene su propio
+ * formulario y pasa el período como dos propiedades escalares reactivas (`anio`, `periodo`) en vez
+ * del array `pageFilters`. Sin página que las entregue (p. ej. en tests), el widget usa el año en
+ * curso completo, como antes.
  *
  * Mejora de diseño (14-09-2026, sin cambios de cálculo): el color de cada tile pasa a representar
  * el **estado** del % de cumplimiento (bueno/alerta/crítico), no la identidad del corte — antes
@@ -43,9 +49,28 @@ class CumplimientoMpWidget extends StatsOverviewWidget
 
     private const UMBRAL_ALERTA = 50.0;
 
+    #[Reactive]
+    public ?int $anio = null;
+
+    #[Reactive]
+    public ?string $periodo = null;
+
+    private function anioSeleccionado(): int
+    {
+        return $this->anio ?? now()->year;
+    }
+
+    private function periodoSeleccionado(): Periodo
+    {
+        return Periodo::tryFrom((string) $this->periodo) ?? Periodo::Anual;
+    }
+
     protected function getHeading(): ?string
     {
-        return 'Cumplimiento de mantenimiento preventivo '.now()->year;
+        $periodo = $this->periodoSeleccionado();
+        $anio = $this->anioSeleccionado();
+
+        return 'Cumplimiento de mantenimiento preventivo '.($periodo->esAnual() ? $anio : "· {$periodo->getLabel()} {$anio}");
     }
 
     /**
@@ -58,10 +83,8 @@ class CumplimientoMpWidget extends StatsOverviewWidget
 
     protected function getStats(): array
     {
-        $anio = now()->year;
-
         $accion = app(CalcularCumplimientoMpAction::class);
-        $cortes = $accion->execute($anio);
+        $cortes = $accion->execute($this->anioSeleccionado(), periodo: $this->periodoSeleccionado());
 
         return [
             $this->stat('Total', $cortes['total'])

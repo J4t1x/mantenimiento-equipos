@@ -56,4 +56,28 @@ class CatalogosTest extends TestCase
 
         $this->assertModelMissing($recinto);
     }
+
+    /**
+     * RF-70 (Res. Ex. 1341/2017 §7.1): el recinto registra al responsable de MP designado.
+     */
+    public function test_registra_el_responsable_de_mp_del_recinto(): void
+    {
+        $this->actuarComo('Encargado de Mantención');
+        $recinto = Recinto::factory()->create();
+
+        Livewire::test(EditRecinto::class, ['record' => $recinto->getRouteKey()])
+            ->fillForm([
+                'responsable_mp_nombre' => 'Raúl Aravena Turra',
+                'responsable_mp_cargo' => 'Ingeniero de equipos médicos',
+                'responsable_mp_documento' => 'Res. Ex. N° 1234',
+                'responsable_mp_fecha_designacion' => '2026-03-02',
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame(
+            'Raúl Aravena Turra (Ingeniero de equipos médicos) — designación: Res. Ex. N° 1234, 02-03-2026',
+            $recinto->fresh()->descripcionResponsableMp(),
+        );
+    }
 }

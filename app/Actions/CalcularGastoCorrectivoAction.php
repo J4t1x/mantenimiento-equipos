@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Enums\Periodo;
 use App\Models\MantenimientoCorrectivo;
 
 /**
@@ -16,10 +17,15 @@ class CalcularGastoCorrectivoAction
      * Gasto MC ejecutado de todo el catastro en un año (usado por RF-33, `ObtenerDetalleGastoAction`),
      * opcionalmente acotado al recinto y/o servicio clínico del equipo (RF-54).
      */
-    public function execute(int $anio, ?int $recintoId = null, ?int $servicioClinicoId = null): float
+    public function execute(int $anio, ?int $recintoId = null, ?int $servicioClinicoId = null, ?Periodo $periodo = null): float
     {
         return (float) MantenimientoCorrectivo::query()
-            ->whereYear('fecha', $anio)
+            ->when(
+                $periodo === null || $periodo->esAnual(),
+                fn ($query) => $query->whereYear('fecha', $anio),
+                // RF-67: trimestre o semestre del año.
+                fn ($query) => $query->whereBetween('fecha', [$periodo->inicio($anio)->toDateString(), $periodo->fin($anio)->toDateString()]),
+            )
             ->when($recintoId !== null || $servicioClinicoId !== null, fn ($query) => $query->whereHas(
                 'equipo',
                 fn ($equipo) => $equipo->delAlcance($recintoId, $servicioClinicoId)

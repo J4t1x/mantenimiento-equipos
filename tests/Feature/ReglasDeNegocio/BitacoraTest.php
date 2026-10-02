@@ -31,7 +31,7 @@ class BitacoraTest extends TestCase
         $plan = PlanMantenimiento::factory()->create(['frecuencia_anual' => FrecuenciaAnual::Cuatro]);
 
         $this->mes($plan, 3)->update(['estado' => EstadoEjecucion::Realizado, 'fecha_real' => now()]);
-        $this->mes($plan, 6)->update(['estado' => EstadoEjecucion::Reprogramado]);
+        $this->mes($plan, 6)->update(['estado' => EstadoEjecucion::Reprogramado, 'observaciones' => 'Equipo en uso en pabellón']);
 
         $this->assertSame(EstadoEjecucion::Realizado, $this->mes($plan, 3)->estado);
         $this->assertSame(EstadoEjecucion::Reprogramado, $this->mes($plan, 6)->estado);

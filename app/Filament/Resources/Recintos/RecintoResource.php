@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Recintos;
 use App\Filament\Resources\Recintos\Pages\CreateRecinto;
 use App\Filament\Resources\Recintos\Pages\EditRecinto;
 use App\Filament\Resources\Recintos\Pages\ListRecintos;
+use App\Filament\Resources\Recintos\RelationManagers\PresupuestosMantenimientoRelationManager;
+use App\Filament\Resources\Recintos\RelationManagers\ProgramasAnualesMantenimientoRelationManager;
 use App\Filament\Resources\Recintos\Schemas\RecintoForm;
 use App\Filament\Resources\Recintos\Tables\RecintosTable;
 use App\Models\Recinto;
@@ -41,7 +43,8 @@ class RecintoResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            ProgramasAnualesMantenimientoRelationManager::class,
+            PresupuestosMantenimientoRelationManager::class,
         ];
     }
 

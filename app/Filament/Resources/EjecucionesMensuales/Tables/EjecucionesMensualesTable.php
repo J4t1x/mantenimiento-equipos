@@ -8,12 +8,19 @@ use App\Models\PlanMantenimiento;
 use App\Support\AlcanceTecnicoInterno;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * RF-66 (Módulo 15): columnas de causa y plazo de la reprogramación, y filtro de reprogramaciones
+ * vencidas de equipos críticos (enlazado desde la alerta del Escritorio).
+ */
 class EjecucionesMensualesTable
 {
+    public const FILTRO_REPROGRAMACIONES_VENCIDAS = 'reprogramacion_vencida';
+
     private const MESES = [
         1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
         5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
@@ -42,6 +49,22 @@ class EjecucionesMensualesTable
                     ->label('Fecha real')
                     ->date('d-m-Y')
                     ->placeholder('—'),
+                TextColumn::make('plazo_reprogramacion')
+                    ->label('Plazo reprogramación')
+                    ->state(fn (EjecucionMensual $record) => $record->plazoReprogramacion())
+                    ->date('d-m-Y')
+                    ->color(fn (EjecucionMensual $record): ?string => $record->plazoReprogramacion()?->isPast() ? 'danger' : null)
+                    ->placeholder('—'),
+                TextColumn::make('observaciones')
+                    ->label('Observaciones / causa')
+                    ->limit(60)
+                    ->tooltip(fn (EjecucionMensual $record): ?string => $record->observaciones)
+                    ->placeholder('—')
+                    ->toggleable(),
+                TextColumn::make('documento_justificacion')
+                    ->label('Documento de justificación')
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('estado')
@@ -60,6 +83,9 @@ class EjecucionesMensualesTable
                     ->relationship('planMantenimiento.equipo', 'nombre')
                     ->searchable()
                     ->preload(),
+                Filter::make(self::FILTRO_REPROGRAMACIONES_VENCIDAS)
+                    ->label('Críticos con reprogramación vencida (más de 30 días)')
+                    ->query(fn (Builder $query): Builder => $query->reprogramacionesVencidas()),
             ])
             ->recordActions([
                 // RF-20: un técnico interno solo edita la ejecución de los equipos que tiene

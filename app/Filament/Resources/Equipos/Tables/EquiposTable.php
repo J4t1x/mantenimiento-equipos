@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Equipos\Tables;
 
 use App\Enums\Criticidad;
 use App\Enums\EstadoEquipo;
+use App\Enums\TipoEquipoCritico;
 use App\Exports\EquiposFiltradosExport;
 use App\Filament\Support\AccionExportarTablaFiltrada;
 use Filament\Actions\BulkActionGroup;
@@ -16,12 +17,16 @@ use Filament\Actions\ViewAction;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class EquiposTable
 {
+    public const FILTRO_CRITICOS_SIN_PLAN = 'criticos_sin_plan';
+
     public static function configure(Table $table): Table
     {
         return $table
@@ -86,6 +91,10 @@ class EquiposTable
                 TextColumn::make('criticidad')
                     ->label('Criticidad')
                     ->badge(),
+                TextColumn::make('tipo_critico_norma')
+                    ->label('Tipo norma MINSAL')
+                    ->placeholder('Sin clasificar')
+                    ->toggleable(),
                 IconColumn::make('en_garantia')
                     ->label('En garantía')
                     ->boolean()
@@ -137,9 +146,22 @@ class EquiposTable
                 SelectFilter::make('criticidad')
                     ->options(Criticidad::class)
                     ->label('Criticidad'),
+                // RF-75: incluye "Sin clasificar" para avanzar con la clasificación pendiente.
+                SelectFilter::make('tipo_critico_norma')
+                    ->label('Tipo norma MINSAL')
+                    ->options(['sin_clasificar' => 'Sin clasificar', ...collect(TipoEquipoCritico::cases())->mapWithKeys(fn (TipoEquipoCritico $tipo): array => [$tipo->value => $tipo->getLabel()])->all()])
+                    ->query(fn (Builder $query, array $data): Builder => match ($data['value'] ?? null) {
+                        null, '' => $query,
+                        'sin_clasificar' => $query->whereNull('tipo_critico_norma'),
+                        default => $query->where('tipo_critico_norma', $data['value']),
+                    }),
                 SelectFilter::make('estado')
                     ->options(EstadoEquipo::class)
                     ->label('Estado'),
+                // RF-71 (Res. Ex. 1341/2017 §7.2): enlazado desde la alerta del Escritorio.
+                Filter::make(self::FILTRO_CRITICOS_SIN_PLAN)
+                    ->label('Críticos activos sin plan del año en curso')
+                    ->query(fn (Builder $query): Builder => $query->criticosSinPlan()),
                 TrashedFilter::make(),
             ])
             ->recordActions([

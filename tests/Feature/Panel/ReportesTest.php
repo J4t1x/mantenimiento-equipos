@@ -4,6 +4,7 @@ namespace Tests\Feature\Panel;
 
 use App\Enums\EstadoEjecucion;
 use App\Enums\FrecuenciaAnual;
+use App\Enums\Periodo;
 use App\Exports\CatastroPlanExport;
 use App\Exports\CumplimientoExport;
 use App\Exports\DetalleGastoExport;
@@ -84,6 +85,33 @@ class ReportesTest extends TestCase
 
         Livewire::test(Reportes::class)->callAction('descargarDetalleGasto');
         Excel::assertDownloaded('detalle-gasto-2026.xlsx', fn (DetalleGastoExport $export): bool => true);
+    }
+
+    /**
+     * RF-67: el período acota el cumplimiento y el gasto, sus resúmenes y sus archivos; el catastro
+     * + plan sigue siendo anual.
+     */
+    public function test_el_periodo_acota_cumplimiento_y_gasto(): void
+    {
+        Excel::fake();
+
+        Livewire::test(Reportes::class)
+            ->assertSet('filtros.periodo', Periodo::Anual->value)
+            ->set('filtros.periodo', Periodo::PrimerSemestre->value)
+            ->assertSee('1 de 2 programadas en el 1er semestre de 2026')
+            ->assertSee('Correctivo $350.000')
+            ->set('filtros.periodo', Periodo::SegundoTrimestre->value)
+            ->assertSee('Correctivo $0')
+            ->assertSee('equipos con plan de MP en 2026');
+
+        Livewire::test(Reportes::class)
+            ->set('filtros.periodo', Periodo::PrimerSemestre->value)
+            ->callAction('descargarCumplimiento')
+            ->callAction('descargarCatastroPlan');
+
+        Excel::assertDownloaded('cumplimiento-mp-2026-s1.xlsx', fn (CumplimientoExport $export): bool => $export->array()[0][1] === 2
+            && $export->title() === 'Cumplimiento MP 2026 S1');
+        Excel::assertDownloaded('catastro-plan-2026.xlsx', fn (CatastroPlanExport $export): bool => $export->collection()->count() === 2);
     }
 
     public function test_sin_anio_no_descarga(): void

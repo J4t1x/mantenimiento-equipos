@@ -28,6 +28,10 @@ class UsersTable
                     ->label('Roles')
                     ->badge()
                     ->placeholder('Sin rol asignado'),
+                TextColumn::make('recintos.nombre')
+                    ->label('Recintos')
+                    ->badge()
+                    ->placeholder('Todos'),
                 IconColumn::make('activo')
                     ->label('Activo')
                     ->boolean(),
@@ -53,6 +57,11 @@ class UsersTable
                 SelectFilter::make('roles')
                     ->label('Rol')
                     ->relationship('roles', 'name')
+                    ->searchable()
+                    ->preload(),
+                SelectFilter::make('recintos')
+                    ->label('Recinto')
+                    ->relationship('recintos', 'nombre')
                     ->searchable()
                     ->preload(),
                 TernaryFilter::make('activo')

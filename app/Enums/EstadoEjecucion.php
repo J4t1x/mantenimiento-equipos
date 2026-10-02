@@ -36,6 +36,14 @@ enum EstadoEjecucion: string implements HasColor, HasLabel
     }
 
     /**
+     * Normaliza el estado tal como llega de un formulario de Filament (instancia del enum o string).
+     */
+    public static function desde(mixed $valor): ?self
+    {
+        return $valor instanceof self ? $valor : self::tryFrom((string) $valor);
+    }
+
+    /**
      * RN-02 del BRIEF: un mes sin marca "Programado" previa no puede pasar directamente a
      * "Realizado" o "Reprogramado". Cualquier otra transición (incluidas correcciones entre
      * Realizado y Reprogramado) queda permitida.

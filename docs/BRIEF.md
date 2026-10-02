@@ -3,8 +3,8 @@ documento: BRIEF
 proyecto: Sistema de Bitácora de Mantenimiento de Equipos
 servicio: Servicio de Salud Aysén
 perfil: lite
-version: 1.0
-estado: validado — aprobado telefónicamente por Cristian Santander (registrado 07-09-2026)
+version: 1.1
+estado: validado — aprobado telefónicamente por Cristian Santander (registrado 07-09-2026); v1.1 incorpora las respuestas del requirente a las preguntas abiertas (25-09-2026)
 marco: v3.4
 autor: Javier Mansilla
 para: Cristian Santander Marchant
@@ -118,12 +118,36 @@ estructura de datos; baja = se deduce y debe confirmarse).
 - **RN-05** (media): un convenio de mantenimiento tiene un monto anual que se imputa mes a mes
   contra órdenes de compra/facturas; la suma de los 12 meses debe conciliar con el monto anual
   del convenio.
-- **RN-06** (baja — a confirmar, pregunta abierta 10): vida útil residual = vida útil − (año
-  actual − año de adquisición); puede resultar negativa cuando el equipo ya superó su vida útil
-  (se observan valores negativos reales en la planilla, ej. `-4`).
-- **RN-07** (baja — a confirmar, pregunta abierta 2): el criterio exacto para clasificar un
-  equipo como Crítico / Relevante / IM≥12 / No aplica no está documentado en los insumos
-  disponibles; solo se conoce el resultado ya asignado por equipo.
+- **RN-06** (media — pregunta abierta 10 respondida el 25-09-2026, interpretación a confirmar):
+  vida útil residual = vida útil − (año de levantamiento − año de adquisición). Puede resultar
+  negativa cuando el equipo ya superó su vida útil (hay valores negativos reales en la planilla,
+  ej. `-4`). La planilla la calcula con fórmula (`K − ($B$9 − J)`, con `$B$9` = "Año de
+  levantamiento" = 2026) y coincide con este cálculo en los 409 equipos con año de adquisición.
+  El requirente indica que el dato "se realiza manualmente ya que todo el equipamiento tiene
+  periodo de vida útil distinta": lo que se ingresa a mano es la **vida útil** de cada equipo.
+- **RN-07** (alta en lo resuelto — pregunta abierta 2 respondida el 25-09-2026): un equipo es
+  **Crítico** según la Resolución Exenta 1341/2017 del MINSAL (ver
+  `docs/normativa/NORMA-MP-EQUIPAMIENTO-CRITICO.md`). Esa norma define como mínimo los equipos
+  de monitorización hemodinámica invasiva, monitores desfibriladores, ventiladores mecánicos,
+  incubadoras, máquinas de diálisis y máquinas de anestesia. Lo que no es crítico pasa a ser
+  **Relevante**. Siguen sin definir **IM≥12** y **No aplica**, que no aparecen en la planilla 2026
+  (360 críticos + 109 relevantes).
+- **RN-08** (alta — Res. Ex. 1341/2017 §7.4.i; corregida el 28-09-2026): un equipo crítico bajo
+  plan de MP debe tener una frecuencia anual de al menos 2, **salvo los equipos nuevos en
+  garantía**, que pueden seguir la periodicidad del fabricante o proveedor. En la planilla 2026
+  los 360 críticos tienen frecuencia 2, y 8 de ellos están en garantía.
+- **RN-09** (alta — Res. Ex. 1341/2017): una MP no ejecutada se justifica formalmente y se puede
+  reprogramar a no más de 30 días. Si la MP reprogramada tampoco se realiza, el equipo se retira
+  de uso y del servicio clínico, con evidencia escrita.
+- **RN-11** (alta — Res. Ex. 1341/2017 §7.2): el programa anual de MP considera como mínimo el
+  catastro de equipos críticos vigente, así que todo crítico activo debe tener plan del año. El
+  programa se define a más tardar en marzo y lo valida la Dirección del establecimiento (§7.3).
+- **RN-12** (alta — Res. Ex. 1341/2017 §7.1 y §7.4.iii): cada establecimiento tiene un profesional
+  responsable de la MP, designado formalmente. Un equipo retirado de uso por no realizarse su MP
+  reprogramada queda con evidencia escrita del retiro.
+- **RN-10** (alta — Res. Ex. 1341/2017): el cumplimiento de MP de equipos críticos (corte EQC de
+  RN-03) se informa por semestre (enero–junio) y por año (enero–diciembre), junto con las
+  reprogramaciones del período y sus causas.
 
 ## 3. Requisitos
 
@@ -253,6 +277,10 @@ cambia de perfil.
 
 ## Preguntas abiertas (dependen del requirente)
 
+> Las preguntas 1 a 11 se enviaron al requirente el 23-09-2026 (correo de Cristian Santander) y
+> las respondió Edgon Mauricio Pérez el 25-09-2026. El texto original se conserva abajo. Las
+> respuestas y su efecto están en "Respuestas del requirente".
+
 1. **Alcance de recintos**: ¿el sistema cubre un único establecimiento o el conjunto de
    establecimientos del Servicio de Salud Aysén (hospitales, CESFAM, postas)? La planilla actual
    solo trae un recinto cargado como ejemplo, pero su encabezado dice "Servicio de Salud Aysén".
@@ -286,3 +314,28 @@ cambia de perfil.
 12. **Autenticación institucional**: ¿existe una política de SSO/LDAP del Servicio de Salud que el
     sistema deba respetar, o basta con autenticación local de Laravel (Fortify/Breeze) con roles
     internos?
+
+## Respuestas del requirente (25-09-2026)
+
+Respondidas por Edgon Mauricio Pérez Pérez, Encargado Sección Equipos Médicos e Industriales,
+Subdirección Gestión Asistencial, SSA. Adjuntó la Resolución Exenta 1341/2017 del MINSAL
+(`docs/normativa/`) y la planilla del Hospital Coyhaique.
+
+| PA | Respuesta | Efecto | Estado |
+|---|---|---|---|
+| 1 | Cada establecimiento se cubre por separado. La planilla "Servicio de Salud Aysén" es el equipamiento a cargo del subdepartamento. | Multi-recinto confirmado, con acceso por recinto (SRS RF-63). El catálogo de Recintos es administrable. | Resuelta |
+| 2 | Crítico según la norma técnica adjunta. Lo que no es crítico pasa a Relevante. | RN-07 actualizada; RN-08 a RN-10 nuevas. IM≥12 y No aplica se conservan sin regla (SRS Módulo 15). | Resuelta con decisión, a confirmar |
+| 3 | Adjunta la planilla del Hospital Coyhaique (con Puerto Aysén, los de más equipamiento). | Un servicio clínico por equipo (1:N). El segundo valor de las celdas con "/" es una ubicación ("Equipos Médicos", "Bodega", "Domicilio") (SRS Módulo 15). | Resuelta con decisión, a confirmar |
+| 4 | No existe un listado maestro, solo las empresas representantes de cada marca. | Se mantiene el catálogo de proveedores tomado de la planilla. | Resuelta |
+| 5 | Basta con registrar el código como referencia manual. | Sin cambios; ya implementado así. | Resuelta |
+| 6 | Registra el MC el encargado de mantención de cada establecimiento. | MC acotado al recinto del usuario (SRS RF-63). | Resuelta |
+| 7 | Siempre a través de un usuario interno. | Sin rol de proveedor externo; RF-20 se cierra con el Técnico Interno. | Resuelta |
+| 8 | Informes trimestrales y, a fin de año, el informe completo. | Trimestral: reportes existentes filtrados por trimestre (SRS RF-67). Fin de año: reportes del año más el informe de críticos (SRS RF-68). | Resuelta con decisión, a confirmar |
+| 9 | Solo el año vigente, una vez funcionando la aplicación. | Coincide con el importador actual (año 2026). | Resuelta |
+| 10 | Se realiza manualmente: cada equipo tiene una vida útil distinta. | RN-06 actualizada. Sin cambios: la fórmula de la planilla coincide con RF-09. | Resuelta con decisión, a confirmar |
+| 11 | Se puede registrar como "Sin evaluar". | Ya implementado (`EstadoEquipo::SinEvaluar`). | Resuelta |
+| 12 | No se incluyó en el correo del 23-09-2026. | Se mantiene la autenticación local. | Abierta |
+
+Las consultas de seguimiento (IM≥12 / No aplica, relación con los servicios clínicos,
+interpretación de la vida útil, listado de establecimientos, planilla de Puerto Aysén y formato del
+informe trimestral) quedaron redactadas el 25-09-2026. Se envían primero a Cristian Santander, que evaluará cuáles corresponde hacer al requirente.

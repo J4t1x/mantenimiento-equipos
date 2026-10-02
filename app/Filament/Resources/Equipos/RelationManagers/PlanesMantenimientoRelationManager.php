@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Equipos\RelationManagers;
 
 use App\Enums\FrecuenciaAnual;
 use App\Enums\TipoMantenimiento;
+use App\Rules\FrecuenciaMinimaSegunCriticidad;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -33,7 +34,14 @@ class PlanesMantenimientoRelationManager extends RelationManager
                 Select::make('frecuencia_anual')
                     ->label('Frecuencia anual')
                     ->options(FrecuenciaAnual::class)
-                    ->required(),
+                    ->required()
+                    ->helperText('Los equipos críticos requieren al menos 2 mantenciones al año, salvo con garantía vigente, en que se puede usar la periodicidad del fabricante (Res. Ex. 1341/2017).')
+                    ->rules([
+                        fn ($get): FrecuenciaMinimaSegunCriticidad => new FrecuenciaMinimaSegunCriticidad(
+                            $this->getOwnerRecord(),
+                            filled($get('anio')) ? (int) $get('anio') : null,
+                        ),
+                    ]),
                 Select::make('tipo_mantenimiento')
                     ->label('Tipo de mantenimiento')
                     ->options(TipoMantenimiento::class)

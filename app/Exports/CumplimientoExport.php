@@ -4,6 +4,7 @@ namespace App\Exports;
 
 use App\Actions\CalcularCumplimientoMpAction;
 use App\Enums\Criticidad;
+use App\Enums\Periodo;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
@@ -12,7 +13,7 @@ use Maatwebsite\Excel\Concerns\WithTitle;
  * RF-32 del SRS: indicador de cumplimiento de MP por período, en los 4 cortes de RN-03. Reutiliza
  * `CalcularCumplimientoMpAction`, la misma lógica que ya muestra el Escritorio y la ficha de
  * equipo (RF-21/RF-22/RF-23) — no se recalcula distinto para el reporte. Filtro opcional de
- * recinto/servicio clínico (RF-54).
+ * recinto/servicio clínico (RF-54) y período de trimestre o semestre (RF-67).
  */
 class CumplimientoExport implements FromArray, WithHeadings, WithTitle
 {
@@ -20,11 +21,12 @@ class CumplimientoExport implements FromArray, WithHeadings, WithTitle
         private readonly int $anio,
         private readonly ?int $recintoId = null,
         private readonly ?int $servicioClinicoId = null,
+        private readonly ?Periodo $periodo = null,
     ) {}
 
     public function array(): array
     {
-        $cortes = app(CalcularCumplimientoMpAction::class)->execute($this->anio, recintoId: $this->recintoId, servicioClinicoId: $this->servicioClinicoId);
+        $cortes = app(CalcularCumplimientoMpAction::class)->execute($this->anio, recintoId: $this->recintoId, servicioClinicoId: $this->servicioClinicoId, periodo: $this->periodo);
 
         $etiquetas = [
             'total' => 'Total',
@@ -51,6 +53,6 @@ class CumplimientoExport implements FromArray, WithHeadings, WithTitle
 
     public function title(): string
     {
-        return "Cumplimiento MP {$this->anio}";
+        return trim("Cumplimiento MP {$this->anio} {$this->periodo?->codigo()}");
     }
 }

@@ -93,6 +93,9 @@ class EquipoInfolist
                         TextEntry::make('criticidad')
                             ->label('Criticidad')
                             ->badge(),
+                        TextEntry::make('tipo_critico_norma')
+                            ->label('Tipo norma MINSAL')
+                            ->placeholder('Sin clasificar'),
                         IconEntry::make('en_garantia')
                             ->label('En garantía')
                             ->boolean(),

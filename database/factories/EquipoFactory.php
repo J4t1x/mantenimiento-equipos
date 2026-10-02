@@ -34,4 +34,14 @@ class EquipoFactory extends Factory
             'activo' => true,
         ];
     }
+
+    /**
+     * Equipo relevante: admite cualquier frecuencia de MP (RF-65 solo exige mínimo 2 a los críticos).
+     */
+    public function relevante(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'criticidad' => Criticidad::Relevante,
+        ]);
+    }
 }

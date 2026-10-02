@@ -20,6 +20,10 @@ class UserInfolist
                     ->label('Roles')
                     ->badge()
                     ->placeholder('Sin rol asignado'),
+                TextEntry::make('recintos.nombre')
+                    ->label('Recintos')
+                    ->badge()
+                    ->placeholder('Todos (subdepartamento del SSA)'),
                 IconEntry::make('activo')
                     ->label('Activo')
                     ->boolean(),
