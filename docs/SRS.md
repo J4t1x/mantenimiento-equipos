@@ -436,6 +436,32 @@ completo (respuesta 8 del BRIEF). RF-32 contemplaba "PDF o Excel", pero solo exi
 
 **Estado (01-10-2026)**: implementado. `ImprimirInformeCumplimientoController` usa las mismas Actions que Reportes y la ruta autenticada del panel `filament.admin.informe-cumplimiento.imprimir`, con el permiso `view.reportes`. La vista `informes.informe-cumplimiento` comparte los estilos con el informe de críticos (partial `informes.partials.estilos`).
 
+#### Módulo 19 — Alineación con el mockup (a partir de la revisión del sistema contra el mockup del 31-08-2026, 19-10-2026)
+
+Origen: la revisión del 02-10 confirmó que las 9 pantallas del mockup están cubiertas, y la del
+19-10 detalló los elementos del mockup que el sistema aún no tiene. No son funcionalidades nuevas
+de negocio: completan lo que el mockup mostraba sobre las pantallas existentes.
+
+| ID | Descripción | Prioridad |
+|---|---|---|
+| RF-79 | La Bitácora debe ofrecer una **vista anual consolidada**: una fila por plan del año (equipo, n° de inventario, servicio clínico, criticidad y frecuencia) y 12 columnas de meses con los símbolos de la planilla (X Programado, √ Realizado, ꓣ Reprogramado), filtrable por año, recinto, servicio clínico y criticidad. Respeta el alcance por recinto (RF-63). Desde cada celda se registra la ejecución con las mismas validaciones de la grilla del plan (RN-02, RF-20, RF-66). | Alta |
+| RF-80 | El Escritorio debe alertar los **equipos con MP atrasada**: planes activos con un mes en estado "Programado" anterior al mes en curso del año seleccionado. La tarjeta enlaza a la Bitácora filtrada. | Alta |
+| RF-81 | El Escritorio debe mostrar en una tarjeta el **% de gasto MP ejecutado** del período seleccionado frente al programado (RF-76), con el mismo criterio del detalle de gasto (RF-33). | Alta |
+| RF-82 | Reportes debe ofrecer una tarjeta **"Convenios y ejecución"**: resumen de convenios activos, monto anual, ejecutado y % del año, con descarga en Excel del detalle mensual por convenio. | Media |
+| RF-83 | El formulario de Planificación MP debe mostrar una **vista previa de los meses programados** que generará la frecuencia elegida (RN-01), antes de guardar. | Media |
+| RF-84 | El listado de Servicios clínicos debe mostrar la cantidad de **equipos asociados**. | Baja |
+| RF-85 | El listado de Equipos debe mostrar la **frecuencia MP** del plan del año en curso. | Baja |
+| RF-86 | El listado de Convenios debe mostrar la **vigencia como estado** (vigente, vence en N días, vencido) junto a la fecha de expiración. | Baja |
+
+**Estado (19-10-2026)**: especificados, sin implementar. Specs de desarrollo: SPEC-ME-003 (RF-79),
+SPEC-ME-004 (RF-80 y RF-81), SPEC-ME-005 (RF-82 y RF-83) y SPEC-ME-006 (RF-84 a RF-86).
+
+**Correcciones detectadas en la misma revisión** (no son RF nuevos):
+- RF-21: el período del Escritorio solo lo recibe `CumplimientoMpWidget`; el resto de los widgets usa el año en curso.
+- Escritorio (`IndicadoresGeneralesWidget`): la tarjeta "Equipos críticos" cuenta equipos inactivos.
+- RNF-04: las excepciones de dominio que protegen las reglas en el backend no se muestran como mensajes en el panel cuando la validación del formulario no las ataja antes.
+- Las descripciones de algunas tarjetas y mensajes muestran referencias internas (RF-NN, RN-NN), el mismo problema que RF-62 corrigió en Reportes.
+
 ### 3.2 Requisitos no funcionales
 
 | ID | Categoría | Descripción |
@@ -533,6 +559,7 @@ Stack TRA §5 sin excepciones (ver `BRIEF.md` §4 y `SAD.md` §8). Cualquier exc
 | — (revisión de cobertura de la Res. Ex. 1341/2017, 28-09-2026) | — | RF-69 a RF-75 |
 | — (cierre de RF-21 y mejoras, 30-09-2026) | — | RF-76 y RF-77 |
 | 5 — Indicadores y reportes (respuesta 8 del requirente, 01-10-2026) | HU-08 | RF-78 |
+| — (alineación con el mockup, 19-10-2026) | HU-04, HU-05, HU-07, HU-08 | RF-79 a RF-86 |
 
 Para la verificación esperada de cada requisito, ver `BRIEF.md` §6 "Trazabilidad mínima" (se
 mantiene vigente; este SRS no la reemplaza, solo aporta el detalle de RF que la sustentan).

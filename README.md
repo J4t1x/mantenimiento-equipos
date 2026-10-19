@@ -90,7 +90,7 @@ planilla.
 | Documento | Contenido |
 |---|---|
 | [`docs/BRIEF.md`](docs/BRIEF.md) ([PDF](docs/BRIEF.pdf)) | Análisis: problema, reglas de negocio, historias de usuario y preguntas abiertas. |
-| [`docs/SRS.md`](docs/SRS.md) | Requisitos funcionales (RF-01 a RF-68) y no funcionales, con trazabilidad. |
+| [`docs/SRS.md`](docs/SRS.md) | Requisitos funcionales (RF-01 a RF-86) y no funcionales, con trazabilidad. |
 | [`docs/SAD.md`](docs/SAD.md) | Arquitectura y decisiones (ADR). |
 | [`docs/MODELO-DATOS.md`](docs/MODELO-DATOS.md) | Modelo de datos. |
 | [`docs/DESCRIPCION-SISTEMA.md`](docs/DESCRIPCION-SISTEMA.md) | Descripción funcional del sistema. |
