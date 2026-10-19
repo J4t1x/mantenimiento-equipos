@@ -44,8 +44,8 @@ class IndicadoresGeneralesWidget extends StatsOverviewWidget
                 ->icon(Heroicon::OutlinedCube)
                 ->color('primary'),
 
-            Stat::make('Equipos críticos', Equipo::where('criticidad', Criticidad::Critico)->count())
-                ->description('Criticidad "Crítico"')
+            Stat::make('Equipos críticos', Equipo::where('activo', true)->where('criticidad', Criticidad::Critico)->count())
+                ->description('Activos con criticidad "Crítico"')
                 ->icon(Heroicon::OutlinedExclamationTriangle)
                 ->color('danger'),
 

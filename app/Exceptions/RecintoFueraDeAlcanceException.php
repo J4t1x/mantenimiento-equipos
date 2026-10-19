@@ -14,11 +14,11 @@ class RecintoFueraDeAlcanceException extends RuntimeException
 {
     public static function paraRecinto(): self
     {
-        return new self('No puedes registrar datos de un recinto que no tienes asignado (RF-63).');
+        return new self('No puedes registrar datos de un recinto que no tienes asignado.');
     }
 
     public static function paraEquipo(): self
     {
-        return new self('No puedes registrar datos de un equipo de un recinto que no tienes asignado (RF-63).');
+        return new self('No puedes registrar datos de un equipo de un recinto que no tienes asignado.');
     }
 }

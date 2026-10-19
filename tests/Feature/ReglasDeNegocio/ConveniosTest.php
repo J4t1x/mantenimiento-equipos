@@ -3,9 +3,12 @@
 namespace Tests\Feature\ReglasDeNegocio;
 
 use App\Actions\CalcularEjecucionConvenioAction;
+use App\Filament\Resources\Convenios\Pages\ListConvenios;
 use App\Models\Convenio;
 use App\Models\ConvenioEjecucionMensual;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
+use Mockery\MockInterface;
 use Tests\TestCase;
 
 /**
@@ -57,5 +60,21 @@ class ConveniosTest extends TestCase
 
         $this->assertSame(1, $accion->contarSobregirados(2026));
         $this->assertSame(1, $accion->contarPorVencer(60));
+    }
+
+    public function test_el_listado_calcula_la_ejecucion_una_sola_vez_por_convenio(): void
+    {
+        $this->actuarComo('Encargado de Convenios');
+        $convenios = Convenio::factory()->count(2)->create(['monto_anual' => 100]);
+
+        $this->partialMock(CalcularEjecucionConvenioAction::class, function (MockInterface $mock): void {
+            $mock->shouldReceive('paraConvenio')
+                ->twice()
+                ->andReturn(['monto_anual' => 100.0, 'monto_ejecutado' => 120.0, 'porcentaje' => 120.0, 'sobregirado' => true]);
+        });
+
+        Livewire::test(ListConvenios::class)
+            ->assertCanSeeTableRecords($convenios)
+            ->assertSee('120%');
     }
 }

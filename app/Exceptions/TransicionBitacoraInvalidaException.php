@@ -12,11 +12,11 @@ use RuntimeException;
  */
 class TransicionBitacoraInvalidaException extends RuntimeException
 {
+    public const MENSAJE = 'No se puede marcar como "Realizado" o "Reprogramado" un mes sin una marca '
+        .'"Programado" previa.';
+
     public static function porFaltaDeProgramacion(): self
     {
-        return new self(
-            'No se puede marcar como "Realizado" o "Reprogramado" un mes sin una marca '
-            .'"Programado" previa (RN-02).'
-        );
+        return new self(self::MENSAJE);
     }
 }

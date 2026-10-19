@@ -3,6 +3,7 @@
 namespace App\Rules;
 
 use App\Enums\EstadoEjecucion;
+use App\Exceptions\TransicionBitacoraInvalidaException;
 use App\Models\EjecucionMensual;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -26,8 +27,7 @@ class TransicionBitacoraValida implements ValidationRule
         }
 
         if (! EstadoEjecucion::esTransicionValida($estadoAnterior, $estadoNuevo)) {
-            $fail('No se puede marcar como "Realizado" o "Reprogramado" un mes sin una marca '
-                .'"Programado" previa (RN-02).');
+            $fail(TransicionBitacoraInvalidaException::MENSAJE);
         }
     }
 }

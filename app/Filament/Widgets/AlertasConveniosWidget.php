@@ -46,7 +46,7 @@ class AlertasConveniosWidget extends StatsOverviewWidget
 
         return [
             Stat::make('Convenios sobregirados', $sobregirados)
-                ->description('Ejecución '.now()->year.' supera el monto anual (RN-05)')
+                ->description('Ejecución '.now()->year.' supera el monto anual')
                 ->icon(Heroicon::OutlinedExclamationTriangle)
                 ->color($sobregirados > 0 ? 'danger' : 'success')
                 ->url($puedeVerConvenios ? ConvenioResource::getUrl('index') : null),

@@ -123,7 +123,7 @@ class EquipoInfolist
                     ]),
 
                 Section::make('Cumplimiento de mantenimiento preventivo')
-                    ->description('RN-03 — ejecutados / programados del año en curso')
+                    ->description('Ejecutados / programados del año en curso')
                     ->icon(Heroicon::OutlinedChartBar)
                     ->schema([
                         TextEntry::make('cumplimiento_mp')
@@ -141,7 +141,7 @@ class EquipoInfolist
                     ]),
 
                 Section::make('Gasto de mantenimiento correctivo')
-                    ->description('RF-25 — suma de eventos correctivos del año en curso')
+                    ->description('Suma de los eventos correctivos del año en curso')
                     ->icon(Heroicon::OutlinedWrenchScrewdriver)
                     ->schema([
                         TextEntry::make('gasto_correctivo')
@@ -152,7 +152,7 @@ class EquipoInfolist
                     ]),
 
                 Section::make('Registro')
-                    ->description('Trazabilidad de creación y modificación (RF-36)')
+                    ->description('Trazabilidad de creación y modificación')
                     ->icon(Heroicon::OutlinedClock)
                     ->collapsible()
                     ->collapsed()

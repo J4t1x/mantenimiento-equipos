@@ -16,7 +16,7 @@ class EquipoNoAsignadoException extends RuntimeException
     {
         return new self(
             'No puedes registrar la ejecución de un equipo que no tienes asignado como '
-            .'responsable interno (RF-20).'
+            .'responsable interno.'
         );
     }
 }

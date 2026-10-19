@@ -50,7 +50,7 @@ class ConvenioInfolist
                     ->visible(fn (Convenio $record): bool => $record->trashed()),
 
                 Section::make('Ejecución presupuestaria')
-                    ->description('RN-05 — monto ejecutado / monto anual del año en curso')
+                    ->description('Monto ejecutado / monto anual del año en curso')
                     ->schema([
                         TextEntry::make('ejecucion_convenio')
                             ->label('Ejecución '.now()->year)

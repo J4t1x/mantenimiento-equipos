@@ -85,7 +85,7 @@ class CatastroAlertasWidget extends StatsOverviewWidget
 
         $stats = [
             Stat::make('Equipos sin evaluar', $sinEvaluar)
-                ->description('Estado "Sin evaluar" (RF-12)')
+                ->description('Estado "Sin evaluar"')
                 ->icon(Heroicon::OutlinedQuestionMarkCircle)
                 ->color($sinEvaluar > 0 ? 'warning' : 'success')
                 ->url($puedeVerEquipos ? EquipoResource::getUrl('index', ['filters' => ['estado' => ['value' => EstadoEquipo::SinEvaluar->value]]]) : null),
@@ -97,7 +97,7 @@ class CatastroAlertasWidget extends StatsOverviewWidget
                 ->url($urlEquipos),
 
             Stat::make('Vida útil residual negativa', $vidaUtilNegativa)
-                ->description('Superaron su vida útil estimada (RF-09)')
+                ->description('Superaron su vida útil estimada')
                 ->icon(Heroicon::OutlinedExclamationCircle)
                 ->color($vidaUtilNegativa > 0 ? 'danger' : 'success')
                 ->url($urlEquipos),

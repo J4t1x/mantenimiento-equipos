@@ -136,6 +136,17 @@ class EscritorioTest extends TestCase
         $this->assertSame([2, 0, 0, 1], $criticidad['datasets'][0]['data']);
     }
 
+    public function test_equipos_criticos_cuenta_solo_equipos_activos(): void
+    {
+        $this->actuarComo('Jefatura');
+        Equipo::factory()->count(2)->create(['criticidad' => Criticidad::Critico]);
+        Equipo::factory()->create(['criticidad' => Criticidad::Critico, 'activo' => false]);
+
+        [, $criticos] = $this->invocar(new IndicadoresGeneralesWidget, 'getStats');
+
+        $this->assertSame(2, $criticos->getValue());
+    }
+
     public function test_las_tarjetas_de_alerta_enlazan_al_listado_filtrado(): void
     {
         $tecnico = User::factory()->create();

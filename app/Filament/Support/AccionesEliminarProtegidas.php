@@ -66,7 +66,7 @@ class AccionesEliminarProtegidas
         $notification = Notification::make()
             ->danger()
             ->title('No se puede eliminar')
-            ->body('Tiene equipos asociados en el catastro. Desactívalo en vez de eliminarlo (RF-04).');
+            ->body('Tiene equipos asociados en el catastro. Desactívalo en vez de eliminarlo.');
 
         $notification->send();
 

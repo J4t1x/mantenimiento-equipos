@@ -25,6 +25,18 @@ class ConveniosTable
 {
     public static function configure(Table $table): Table
     {
+        /**
+         * Ejecución del año por convenio, calculada una sola vez por fila y compartida por el
+         * texto y el color de la columna (antes se calculaba dos veces por fila).
+         *
+         * @var array<int, array{monto_anual: float, monto_ejecutado: float, porcentaje: float|null, sobregirado: bool}> $ejecuciones
+         */
+        $ejecuciones = [];
+        $ejecucionDe = function (Convenio $record) use (&$ejecuciones): array {
+            return $ejecuciones[$record->getKey()] ??= app(CalcularEjecucionConvenioAction::class)
+                ->paraConvenio($record, now()->year);
+        };
+
         return $table
             ->headerActions([
                 AccionExportarTablaFiltrada::make(
@@ -64,20 +76,14 @@ class ConveniosTable
                     ->boolean(),
                 TextColumn::make('ejecucion_convenio')
                     ->label('Ejecución '.now()->year)
-                    ->state(function (Convenio $record): string {
-                        $ejecucion = app(CalcularEjecucionConvenioAction::class)
-                            ->paraConvenio($record, now()->year);
+                    ->state(function (Convenio $record) use ($ejecucionDe): string {
+                        $ejecucion = $ejecucionDe($record);
 
                         return $ejecucion['porcentaje'] === null ? 'Sin datos' : "{$ejecucion['porcentaje']}%";
                     })
                     ->badge()
-                    ->color(function (Convenio $record): string {
-                        $ejecucion = app(CalcularEjecucionConvenioAction::class)
-                            ->paraConvenio($record, now()->year);
-
-                        return $ejecucion['sobregirado'] ? 'danger' : 'success';
-                    })
-                    ->tooltip('RN-05 — % del monto anual ejecutado; en rojo si supera el monto anual'),
+                    ->color(fn (Convenio $record): string => $ejecucionDe($record)['sobregirado'] ? 'danger' : 'success')
+                    ->tooltip('% del monto anual ejecutado; en rojo si supera el monto anual'),
                 TextColumn::make('created_at')
                     ->label('Creado')
                     ->dateTime('d-m-Y H:i')
