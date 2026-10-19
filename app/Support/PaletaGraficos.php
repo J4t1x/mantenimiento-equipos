@@ -6,27 +6,27 @@ namespace App\Support;
  * Módulo 13 (RF-58 a RF-60): colores de los gráficos del Escritorio, en hexadecimal.
  *
  * Chart.js no entiende los colores `oklch()` con que Filament define su paleta (los usa para
- * calcular el color de hover), así que no se le pueden pasar tal cual. Por la nota de alcance del
- * Módulo 13 ("sin introducir colores nuevos") estos valores no son una paleta propia: `PRIMARIO` y
- * `PELIGRO` son los mismos hex de `AdminPanelProvider`, y el resto es el tono 500 de la paleta
- * por defecto de Filament para cada color semántico (`success` = Green, `warning` = Amber,
- * `info` = Blue, `gray` = Zinc), convertido a hex.
+ * calcular el color de hover), así que no se le pueden pasar tal cual. Estos valores replican la
+ * paleta del panel (`AdminPanelProvider`): `PRIMARIO` y `PELIGRO` son el azul y el rojo
+ * institucionales, y el resto es el tono 500 de la paleta de Filament asignada a cada color
+ * semántico (`success` = Emerald, `warning` = Amber, `info` = Sky, `gray` = Slate), convertido a
+ * hex.
  */
 class PaletaGraficos
 {
-    public const PRIMARIO = '#006BBB';
+    public const PRIMARIO = '#0060AF';
 
-    public const PRIMARIO_TENUE = 'rgba(0, 107, 187, 0.3)';
+    public const PRIMARIO_TENUE = 'rgba(0, 96, 175, 0.3)';
 
-    public const PELIGRO = '#F10533';
+    public const PELIGRO = '#E2001A';
 
-    public const EXITO = '#00C950';
+    public const EXITO = '#00BC7D';
 
     public const ALERTA = '#FE9A00';
 
-    public const INFO = '#2B7FFF';
+    public const INFO = '#00A6F4';
 
-    public const GRIS = '#9F9FA9';
+    public const GRIS = '#62748E';
 
     /**
      * Traduce un color semántico de Filament (`success`, `warning`, `danger`, `info`, `gray`, `primary`) al

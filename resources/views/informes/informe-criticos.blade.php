@@ -16,6 +16,7 @@
     </div>
 
     <header>
+        <img class="logo" src="{{ asset('images/logo-ssa.png') }}" alt="Servicio de Salud Aysén">
         <div class="institucion">Servicio de Salud Aysén · Sistema de Bitácora de Mantenimiento de Equipos</div>
         <h1>Informe de cumplimiento — Mantenimiento preventivo de equipamiento médico crítico</h1>
         <div class="subtitulo">Norma de Seguridad del Paciente y Calidad de la Atención, Res. Ex. N° 1341/2017 del MINSAL</div>

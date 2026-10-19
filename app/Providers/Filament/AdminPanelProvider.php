@@ -15,6 +15,7 @@ use App\Filament\Widgets\IndicadoresGeneralesWidget;
 use App\Filament\Widgets\MisPlanesDelMesWidget;
 use App\Http\Controllers\ImprimirInformeCriticosController;
 use App\Http\Controllers\ImprimirInformeCumplimientoController;
+use App\Support\PaletaInstitucional;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
@@ -59,12 +60,21 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->brandName('Bitácora de Mantenimiento de Equipos')
-            ->brandLogo(asset('images/logo-ssa.jpg'))
+            ->brandLogo(asset('images/logo-ssa.png'))
             ->brandLogoHeight('2.5rem')
-            ->favicon(asset('images/logo-ssa.jpg'))
+            ->favicon(asset('images/logo-ssa.png'))
+            // Paleta institucional (Gobierno de Chile / Servicio de Salud Aysén, mismos valores del
+            // mockup aprobado): azul y rojo del logo, grises azulados en vez de neutros, e "info" en
+            // celeste para que no se confunda con el azul principal (lo usan "Programado" e "IM ≥ 12").
+            // `PaletaInstitucional` deja el tono 600 en el color exacto (ver su docblock). Los
+            // gráficos usan los mismos tonos en hex (`App\Support\PaletaGraficos`).
             ->colors([
-                'primary' => Color::hex('#006BBB'),
-                'danger' => Color::hex('#F10533'),
+                'primary' => PaletaInstitucional::escala('#0060AF'),
+                'danger' => PaletaInstitucional::escala('#E2001A'),
+                'gray' => Color::Slate,
+                'info' => Color::Sky,
+                'success' => Color::Emerald,
+                'warning' => Color::Amber,
             ])
             ->databaseNotifications()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')

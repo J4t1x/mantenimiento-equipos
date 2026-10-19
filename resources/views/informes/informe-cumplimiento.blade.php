@@ -22,6 +22,7 @@
     </div>
 
     <header>
+        <img class="logo" src="{{ asset('images/logo-ssa.png') }}" alt="Servicio de Salud Aysén">
         <div class="institucion">Servicio de Salud Aysén · Sistema de Bitácora de Mantenimiento de Equipos</div>
         <h1>Informe de cumplimiento y gasto de mantenimiento de equipos médicos</h1>
         <div class="subtitulo">{{ $etiquetaPeriodo }}</div>
