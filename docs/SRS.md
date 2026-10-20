@@ -453,10 +453,18 @@ de negocio: completan lo que el mockup mostraba sobre las pantallas existentes.
 | RF-85 | El listado de Equipos debe mostrar la **frecuencia MP** del plan del año en curso. | Baja |
 | RF-86 | El listado de Convenios debe mostrar la **vigencia como estado** (vigente, vence en N días, vencido) junto a la fecha de expiración. | Baja |
 
-**Estado (19-10-2026)**: especificados, sin implementar. Specs de desarrollo: SPEC-ME-003 (RF-79),
-SPEC-ME-004 (RF-80 y RF-81), SPEC-ME-005 (RF-82 y RF-83) y SPEC-ME-006 (RF-84 a RF-86).
+**Estado (20-10-2026)**: RF-80 y RF-81 implementados. RF-79 y RF-82 a RF-86 siguen especificados, sin
+implementar. Specs de desarrollo: SPEC-ME-003 (RF-79), SPEC-ME-004 (RF-80 y RF-81, completa),
+SPEC-ME-005 (RF-82 y RF-83) y SPEC-ME-006 (RF-84 a RF-86).
 
-**Correcciones detectadas en la misma revisión** (no son RF nuevos):
+**Criterios de implementación**:
+- RF-80: scope `EjecucionMensual::atrasadas($anio)`. En el año en curso cuentan los meses anteriores al actual, en un año pasado los 12 y en uno futuro ninguno. No cuentan los reprogramados, que tienen su propio plazo (RF-66), ni los equipos inactivos.
+  - La tarjeta "MP atrasada" va primera entre las alertas de catastro. Cuenta equipos, no meses, y se marca en rojo si alguno es crítico.
+  - El técnico interno ve la misma alerta en "Mis planes", acotada a sus planes.
+  - La Bitácora suma el filtro "MP atrasada".
+- RF-81: `GastoMpWidget`, con la misma fuente que el detalle de gasto (`ObtenerDetalleGastoAction`) para el año y el período del Escritorio. Muestra también el correctivo y reutiliza el permiso `view.gasto_mensual_widget`.
+
+**Correcciones detectadas en la misma revisión** (no son RF nuevos; todas resueltas el 19 y el 20-10-2026, SPEC-ME-001 y SPEC-ME-002):
 - RF-21: el período del Escritorio solo lo recibe `CumplimientoMpWidget`; el resto de los widgets usa el año en curso.
 - Escritorio (`IndicadoresGeneralesWidget`): la tarjeta "Equipos críticos" cuenta equipos inactivos.
 - RNF-04: las excepciones de dominio que protegen las reglas en el backend no se muestran como mensajes en el panel cuando la validación del formulario no las ataja antes.
