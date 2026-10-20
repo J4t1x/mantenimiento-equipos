@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Filament\Pages\Escritorio;
 use App\Filament\Widgets\CumplimientoMpMensualWidget;
 use App\Filament\Widgets\DistribucionCatastroCriticidadWidget;
+use App\Filament\Widgets\GastoMpWidget;
 use BezhanSalleh\FilamentShield\Resources\Roles\RoleResource;
 use Filament\Pages\Dashboard;
 use Filament\Widgets\AccountWidget;
@@ -250,6 +251,8 @@ return [
             // RF-60 → `view.distribucion_catastro_widget`), así que no se les genera uno propio.
             CumplimientoMpMensualWidget::class,
             DistribucionCatastroCriticidadWidget::class,
+            // RF-81 (Módulo 19): reutiliza `view.gasto_mensual_widget`.
+            GastoMpWidget::class,
         ],
     ],
 

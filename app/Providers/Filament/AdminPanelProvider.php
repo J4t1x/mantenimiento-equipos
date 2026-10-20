@@ -11,6 +11,7 @@ use App\Filament\Widgets\CumplimientoMpWidget;
 use App\Filament\Widgets\DistribucionCatastroCriticidadWidget;
 use App\Filament\Widgets\DistribucionCatastroWidget;
 use App\Filament\Widgets\GastoMensualWidget;
+use App\Filament\Widgets\GastoMpWidget;
 use App\Filament\Widgets\IndicadoresGeneralesWidget;
 use App\Filament\Widgets\MisPlanesDelMesWidget;
 use App\Http\Controllers\ImprimirInformeCriticosController;
@@ -100,6 +101,7 @@ class AdminPanelProvider extends PanelProvider
                 CatastroAlertasWidget::class,
                 CumplimientoMpMensualWidget::class,
                 GastoMensualWidget::class,
+                GastoMpWidget::class,
                 DistribucionCatastroWidget::class,
                 DistribucionCatastroCriticidadWidget::class,
                 AccountWidget::class,

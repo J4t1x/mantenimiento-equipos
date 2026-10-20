@@ -9,6 +9,7 @@ use App\Filament\Widgets\ConveniosEncargadoWidget;
 use App\Filament\Widgets\CumplimientoMpMensualWidget;
 use App\Filament\Widgets\CumplimientoMpWidget;
 use App\Filament\Widgets\GastoMensualWidget;
+use App\Filament\Widgets\GastoMpWidget;
 use App\Filament\Widgets\IndicadoresGeneralesWidget;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -47,6 +48,7 @@ class Escritorio extends Dashboard
         CumplimientoMpWidget::class,
         CumplimientoMpMensualWidget::class,
         GastoMensualWidget::class,
+        GastoMpWidget::class,
         CatastroAlertasWidget::class,
         AlertasConveniosWidget::class,
         ConveniosEncargadoWidget::class,

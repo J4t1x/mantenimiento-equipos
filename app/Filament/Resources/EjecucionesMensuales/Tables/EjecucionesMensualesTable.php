@@ -21,6 +21,8 @@ class EjecucionesMensualesTable
 {
     public const FILTRO_REPROGRAMACIONES_VENCIDAS = 'reprogramacion_vencida';
 
+    public const FILTRO_ATRASADAS = 'atrasadas';
+
     private const MESES = [
         1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
         5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
@@ -86,6 +88,10 @@ class EjecucionesMensualesTable
                 Filter::make(self::FILTRO_REPROGRAMACIONES_VENCIDAS)
                     ->label('Críticos con reprogramación vencida (más de 30 días)')
                     ->query(fn (Builder $query): Builder => $query->reprogramacionesVencidas()),
+                // RF-80: meses programados del año en curso que ya pasaron sin registrarse.
+                Filter::make(self::FILTRO_ATRASADAS)
+                    ->label('MP atrasada (meses programados ya vencidos, año en curso)')
+                    ->query(fn (Builder $query): Builder => $query->atrasadas(now()->year)),
             ])
             ->recordActions([
                 // RF-20: un técnico interno solo edita la ejecución de los equipos que tiene

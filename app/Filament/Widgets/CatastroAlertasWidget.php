@@ -2,6 +2,8 @@
 
 namespace App\Filament\Widgets;
 
+use App\Enums\Criticidad;
+use App\Enums\EstadoEjecucion;
 use App\Enums\EstadoEquipo;
 use App\Filament\Resources\EjecucionesMensuales\EjecucionMensualResource;
 use App\Filament\Resources\EjecucionesMensuales\Tables\EjecucionesMensualesTable;
@@ -46,6 +48,11 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
  * muestra desde abril en el año en curso, siempre en años pasados y nunca en años futuros. El
  * enlace de críticos sin plan y el de programa sin validar solo se ofrecen en el año en curso, que
  * es el que filtran los listados.
+ *
+ * RF-80 (Módulo 19): primera tarjeta con los equipos que tienen MP atrasada (meses "Programado" ya
+ * vencidos sin registrar, ver `EjecucionMensual::atrasadas()`). Cuenta equipos, no meses, y se
+ * marca en rojo si alguno es crítico. Enlaza a la Bitácora: con el filtro de atrasadas en el año en
+ * curso, o con el año y el estado "Programado" en un año pasado.
  */
 class CatastroAlertasWidget extends StatsOverviewWidget
 {
@@ -90,10 +97,32 @@ class CatastroAlertasWidget extends StatsOverviewWidget
 
         $criticosSinPlan = Equipo::query()->criticosSinPlan($anio)->count();
 
+        $atrasadas = fn () => EjecucionMensual::query()
+            ->atrasadas($anio)
+            ->join('planes_mantenimiento', 'planes_mantenimiento.id', '=', 'ejecuciones_mensuales.plan_mantenimiento_id');
+        $equiposAtrasados = $atrasadas()->distinct()->count('planes_mantenimiento.equipo_id');
+        $criticosAtrasados = $atrasadas()
+            ->join('equipos', 'equipos.id', '=', 'planes_mantenimiento.equipo_id')
+            ->where('equipos.criticidad', Criticidad::Critico)
+            ->distinct()
+            ->count('planes_mantenimiento.equipo_id');
+
         $puedeVerEquipos = EquipoResource::canViewAny();
         $urlEquipos = $puedeVerEquipos ? EquipoResource::getUrl('index') : null;
 
         $stats = [
+            Stat::make('MP atrasada', $equiposAtrasados)
+                ->description($criticosAtrasados > 0
+                    ? "Equipos con meses programados sin registrar ({$criticosAtrasados} críticos)"
+                    : 'Equipos con meses programados sin registrar')
+                ->icon(Heroicon::OutlinedExclamationTriangle)
+                ->color(match (true) {
+                    $criticosAtrasados > 0 => 'danger',
+                    $equiposAtrasados > 0 => 'warning',
+                    default => 'success',
+                })
+                ->url($this->urlBitacoraAtrasadas($anio)),
+
             Stat::make('Equipos sin evaluar', $sinEvaluar)
                 ->description('Estado "Sin evaluar"')
                 ->icon(Heroicon::OutlinedQuestionMarkCircle)
@@ -153,5 +182,18 @@ class CatastroAlertasWidget extends StatsOverviewWidget
         }
 
         return $anio < now()->year;
+    }
+
+    private function urlBitacoraAtrasadas(int $anio): ?string
+    {
+        if (! EjecucionMensualResource::canViewAny() || $anio > now()->year) {
+            return null;
+        }
+
+        $filtros = $this->esAnioEnCurso()
+            ? [EjecucionesMensualesTable::FILTRO_ATRASADAS => ['isActive' => true]]
+            : ['anio' => ['value' => $anio], 'estado' => ['value' => EstadoEjecucion::Programado->value]];
+
+        return EjecucionMensualResource::getUrl('index', ['filters' => $filtros]);
     }
 }

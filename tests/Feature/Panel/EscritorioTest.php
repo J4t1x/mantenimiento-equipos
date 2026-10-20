@@ -14,6 +14,7 @@ use App\Filament\Widgets\CumplimientoMpWidget;
 use App\Filament\Widgets\DistribucionCatastroCriticidadWidget;
 use App\Filament\Widgets\DistribucionCatastroWidget;
 use App\Filament\Widgets\GastoMensualWidget;
+use App\Filament\Widgets\GastoMpWidget;
 use App\Filament\Widgets\IndicadoresGeneralesWidget;
 use App\Filament\Widgets\MisPlanesDelMesWidget;
 use App\Models\ConvenioEjecucionMensual;
@@ -55,7 +56,7 @@ class EscritorioTest extends TestCase
     {
         return [
             'Encargado de Mantención' => ['Encargado de Mantención', [
-                AlertasConveniosWidget::class, CatastroAlertasWidget::class, CumplimientoMpWidget::class,
+                AlertasConveniosWidget::class, CatastroAlertasWidget::class, CumplimientoMpWidget::class, GastoMpWidget::class,
                 CumplimientoMpMensualWidget::class, GastoMensualWidget::class, DistribucionCatastroWidget::class,
                 DistribucionCatastroCriticidadWidget::class, IndicadoresGeneralesWidget::class,
             ]],
@@ -63,10 +64,10 @@ class EscritorioTest extends TestCase
                 MisPlanesDelMesWidget::class, CumplimientoMpWidget::class, CumplimientoMpMensualWidget::class,
             ]],
             'Encargado de Convenios' => ['Encargado de Convenios', [
-                AlertasConveniosWidget::class, GastoMensualWidget::class, ConveniosEncargadoWidget::class,
+                AlertasConveniosWidget::class, GastoMpWidget::class, GastoMensualWidget::class, ConveniosEncargadoWidget::class,
             ]],
             'Jefatura' => ['Jefatura', [
-                CatastroAlertasWidget::class, CumplimientoMpWidget::class, CumplimientoMpMensualWidget::class,
+                CatastroAlertasWidget::class, CumplimientoMpWidget::class, GastoMpWidget::class, CumplimientoMpMensualWidget::class,
                 GastoMensualWidget::class, DistribucionCatastroWidget::class, DistribucionCatastroCriticidadWidget::class,
                 IndicadoresGeneralesWidget::class,
             ]],
@@ -152,7 +153,7 @@ class EscritorioTest extends TestCase
         $tecnico = User::factory()->create();
         $this->actuarComo('Encargado de Mantención');
 
-        [$sinEvaluar] = $this->invocar(new CatastroAlertasWidget, 'getStats');
+        $sinEvaluar = collect($this->invocar(new CatastroAlertasWidget, 'getStats'))->first(fn ($stat): bool => $stat->getLabel() === 'Equipos sin evaluar');
         [, $porVencer] = $this->invocar(new AlertasConveniosWidget, 'getStats');
 
         $this->assertStringContainsString('filters[estado][value]=sin_evaluar', urldecode($sinEvaluar->getUrl()));

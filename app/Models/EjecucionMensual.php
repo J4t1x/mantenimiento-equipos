@@ -75,6 +75,30 @@ class EjecucionMensual extends Model implements AcotadoPorRecinto, AuditableCont
     }
 
     /**
+     * RF-80 (Módulo 19): meses "Programado" de equipos activos que ya pasaron sin registrarse. En el
+     * año en curso cuentan los meses anteriores al actual (el mes en curso todavía está en plazo); en
+     * un año pasado, los 12 meses, y en uno futuro ninguno. Los meses reprogramados no cuentan: tienen
+     * su propio plazo y alerta ({@see reprogramacionesVencidas()}).
+     */
+    #[Scope]
+    protected function atrasadas(Builder $query, int $anio, ?CarbonInterface $hoy = null): void
+    {
+        $hoy ??= now();
+        $hastaMes = match (true) {
+            $anio < $hoy->year => 13,
+            $anio === $hoy->year => $hoy->month,
+            default => 1,
+        };
+
+        $query
+            ->where($this->qualifyColumn('estado'), EstadoEjecucion::Programado)
+            ->where($this->qualifyColumn('mes'), '<', $hastaMes)
+            ->whereHas('planMantenimiento', fn (Builder $plan) => $plan
+                ->where('anio', $anio)
+                ->whereHas('equipo', fn (Builder $equipo) => $equipo->where('activo', true)));
+    }
+
+    /**
      * RF-66: fecha hasta la que se puede realizar una mantención reprogramada (último día del mes
      * más 30 días, mismo criterio que {@see reprogramacionesVencidas()}).
      */

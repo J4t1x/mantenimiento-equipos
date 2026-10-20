@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Enums\EstadoEjecucion;
 use App\Filament\Resources\EjecucionesMensuales\EjecucionMensualResource;
+use App\Filament\Resources\EjecucionesMensuales\Tables\EjecucionesMensualesTable;
 use App\Models\EjecucionMensual;
 use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\StatsOverviewWidget;
@@ -19,6 +20,10 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
  * RF-61 (Módulo 13): cada tarjeta enlaza a la Bitácora filtrada por el año en curso y por el
  * estado de la tarjeta. La Bitácora no tiene filtro por mes ni por responsable, así que el listado
  * muestra más filas que el número de la tarjeta (todo el año, todos los técnicos).
+ *
+ * RF-80 (Módulo 19): cuarta tarjeta con los equipos asignados al técnico que tienen MP atrasada en
+ * el año (`EjecucionMensual::atrasadas()`), aunque el mes atrasado no sea el actual. Enlaza a la
+ * Bitácora con el filtro de atrasadas, que tampoco distingue técnico.
  */
 class MisPlanesDelMesWidget extends StatsOverviewWidget
 {
@@ -57,6 +62,13 @@ class MisPlanesDelMesWidget extends StatsOverviewWidget
             ->get()
             ->countBy(fn (EjecucionMensual $ejecucion) => $ejecucion->estado->value);
 
+        $equiposAtrasados = EjecucionMensual::query()
+            ->atrasadas($anio)
+            ->join('planes_mantenimiento', 'planes_mantenimiento.id', '=', 'ejecuciones_mensuales.plan_mantenimiento_id')
+            ->where('planes_mantenimiento.responsable_interno_id', auth()->id())
+            ->distinct()
+            ->count('planes_mantenimiento.equipo_id');
+
         $etiquetaMes = self::MESES[$mes];
         $urlBitacora = fn (EstadoEjecucion $estado): ?string => EjecucionMensualResource::canViewAny()
             ? EjecucionMensualResource::getUrl('index', ['filters' => [
@@ -83,6 +95,14 @@ class MisPlanesDelMesWidget extends StatsOverviewWidget
                 ->icon(Heroicon::OutlinedArrowPath)
                 ->color('warning')
                 ->url($urlBitacora(EstadoEjecucion::Reprogramado)),
+
+            Stat::make('MP atrasada', $equiposAtrasados)
+                ->description('Mis equipos con meses anteriores sin registrar')
+                ->icon(Heroicon::OutlinedExclamationTriangle)
+                ->color($equiposAtrasados > 0 ? 'danger' : 'success')
+                ->url(EjecucionMensualResource::canViewAny()
+                    ? EjecucionMensualResource::getUrl('index', ['filters' => [EjecucionesMensualesTable::FILTRO_ATRASADAS => ['isActive' => true]]])
+                    : null),
         ];
     }
 }

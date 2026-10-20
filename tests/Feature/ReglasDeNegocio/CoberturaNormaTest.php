@@ -71,7 +71,7 @@ class CoberturaNormaTest extends TestCase
         $sinPlan = Equipo::factory()->create();
         $conPlan = PlanMantenimiento::factory()->create(['anio' => self::ANIO])->equipo;
 
-        $alerta = $this->statsDelWidget()[3];
+        $alerta = collect($this->statsDelWidget())->first(fn ($stat): bool => $stat->getLabel() === 'Críticos sin plan '.self::ANIO);
 
         $this->assertSame(1, $alerta->getValue());
         $this->assertStringContainsString('filters[criticos_sin_plan][isActive]=1', urldecode($alerta->getUrl()));

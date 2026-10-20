@@ -147,13 +147,13 @@ class ProgramaAnualTiposEInformeCumplimientoTest extends TestCase
         ProgramaAnualMantenimiento::factory()->for($validado)->create();
         ProgramaAnualMantenimiento::factory()->for($this->recinto)->sinValidar()->create();
 
-        $alerta = $this->statsDelWidget()[5];
+        $alerta = collect($this->statsDelWidget())->first(fn ($stat): bool => $stat->getLabel() === 'Programa '.self::ANIO.' sin validar');
 
         $this->assertSame(1, $alerta->getValue());
         $this->assertStringContainsString('filters[programa_sin_validar][isActive]=1', urldecode($alerta->getUrl()));
 
         $this->travelTo(now()->setDate(self::ANIO, 2, 10));
-        $this->assertCount(5, $this->statsDelWidget());
+        $this->assertNull(collect($this->statsDelWidget())->first(fn ($stat): bool => $stat->getLabel() === 'Programa '.self::ANIO.' sin validar'));
     }
 
     public function test_el_programa_se_registra_desde_la_ficha_del_recinto(): void
