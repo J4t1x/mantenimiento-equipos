@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Enums\Criticidad;
+use App\Filament\Support\RecibePeriodoDelEscritorio;
 use App\Models\Convenio;
 use App\Models\Equipo;
 use App\Models\MantenimientoCorrectivo;
@@ -18,9 +19,15 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
  *
  * RF-61 (Módulo 13): "Correctivos este año" lleva una mini-tendencia con la cantidad de correctivos
  * de cada uno de los últimos 12 meses.
+ *
+ * Período del Escritorio (corrección de RF-21, SPEC-ME-002): "Correctivos" cuenta los del año y
+ * período elegidos, y su tendencia termina en el mes actual (año en curso) o en diciembre del año
+ * elegido. Equipos, críticos y convenios activos son el estado actual y no dependen del año.
  */
 class IndicadoresGeneralesWidget extends StatsOverviewWidget
 {
+    use RecibePeriodoDelEscritorio;
+
     /**
      * RF-57: ver el criterio de orden en `AlertasConveniosWidget::$sort`.
      */
@@ -54,8 +61,10 @@ class IndicadoresGeneralesWidget extends StatsOverviewWidget
                 ->icon(Heroicon::OutlinedDocumentCheck)
                 ->color('success'),
 
-            Stat::make('Correctivos este año', MantenimientoCorrectivo::whereYear('fecha', now()->year)->count())
-                ->description((string) now()->year)
+            Stat::make($this->etiquetaCorrectivos(), $this->contarCorrectivosDelPeriodo())
+                ->description($this->periodoSeleccionado()->esAnual()
+                    ? (string) $this->anioSeleccionado()
+                    : "{$this->periodoSeleccionado()->getLabel()} {$this->anioSeleccionado()}")
                 ->icon(Heroicon::OutlinedWrenchScrewdriver)
                 ->color('warning')
                 ->chart($this->correctivosUltimos12Meses()),
@@ -67,15 +76,40 @@ class IndicadoresGeneralesWidget extends StatsOverviewWidget
      */
     private function correctivosUltimos12Meses(): array
     {
-        $desde = now()->startOfMonth()->subMonths(11);
+        $hasta = $this->esAnioEnCurso() || $this->anioSeleccionado() > now()->year
+            ? now()->startOfMonth()
+            : now()->setDate($this->anioSeleccionado(), 12, 1)->startOfMonth();
+        $desde = $hasta->copy()->subMonths(11);
 
         $porMes = MantenimientoCorrectivo::query()
             ->where('fecha', '>=', $desde)
+            ->where('fecha', '<=', $hasta->copy()->endOfMonth())
             ->get(['fecha'])
             ->countBy(fn (MantenimientoCorrectivo $correctivo): string => $correctivo->fecha->format('Y-m'));
 
         return collect(range(0, 11))
             ->map(fn (int $desplazamiento): int => $porMes[$desde->copy()->addMonths($desplazamiento)->format('Y-m')] ?? 0)
             ->all();
+    }
+
+    private function etiquetaCorrectivos(): string
+    {
+        $periodo = $this->periodoSeleccionado();
+
+        if ($periodo->esAnual()) {
+            return $this->esAnioEnCurso() ? 'Correctivos este año' : "Correctivos {$this->anioSeleccionado()}";
+        }
+
+        return 'Correctivos del período';
+    }
+
+    private function contarCorrectivosDelPeriodo(): int
+    {
+        $periodo = $this->periodoSeleccionado();
+        $anio = $this->anioSeleccionado();
+
+        return MantenimientoCorrectivo::query()
+            ->whereBetween('fecha', [$periodo->inicio($anio)->toDateString(), $periodo->fin($anio)->toDateString()])
+            ->count();
     }
 }

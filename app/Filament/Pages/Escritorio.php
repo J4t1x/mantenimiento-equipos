@@ -3,7 +3,13 @@
 namespace App\Filament\Pages;
 
 use App\Enums\Periodo;
+use App\Filament\Widgets\AlertasConveniosWidget;
+use App\Filament\Widgets\CatastroAlertasWidget;
+use App\Filament\Widgets\ConveniosEncargadoWidget;
+use App\Filament\Widgets\CumplimientoMpMensualWidget;
 use App\Filament\Widgets\CumplimientoMpWidget;
+use App\Filament\Widgets\GastoMensualWidget;
+use App\Filament\Widgets\IndicadoresGeneralesWidget;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Pages\Dashboard;
@@ -12,6 +18,7 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Widgets\Widget;
 
 /**
  * RF-21 (cierre, Módulo 17): Escritorio con selector de período para el indicador de cumplimiento
@@ -23,10 +30,29 @@ use Filament\Support\Icons\Heroicon;
  * como atributo del placeholder. Aquí el formulario es propio de la página (mismo rodeo que
  * `Reportes`, RF-62) y el período llega a los widgets como dos valores escalares, `anio` y
  * `periodo`, vía `getWidgetData()`. Los widgets que los usan los declaran como propiedades
- * `#[Reactive]`; el resto los ignora.
+ * `#[Reactive]` con el trait `RecibePeriodoDelEscritorio`; el resto los ignora.
+ *
+ * Corrección de RF-21 (SPEC-ME-002): antes solo `CumplimientoMpWidget` recibía el período. Hoy lo
+ * reciben todos los widgets de {@see self::WIDGETS_CON_PERIODO}. Los gráficos lo usan como valor de
+ * su filtro de año (`FiltroDeAnioSincronizadoConEscritorio`).
  */
 class Escritorio extends Dashboard
 {
+    /**
+     * Widgets que dependen del año o del período elegidos en el Escritorio.
+     *
+     * @var array<int, class-string<Widget>>
+     */
+    public const WIDGETS_CON_PERIODO = [
+        CumplimientoMpWidget::class,
+        CumplimientoMpMensualWidget::class,
+        GastoMensualWidget::class,
+        CatastroAlertasWidget::class,
+        AlertasConveniosWidget::class,
+        ConveniosEncargadoWidget::class,
+        IndicadoresGeneralesWidget::class,
+    ];
+
     /**
      * @var array{anio?: int|string|null, periodo?: string|null}|null
      */
@@ -65,12 +91,12 @@ class Escritorio extends Dashboard
     {
         return $schema
             ->components([
-                Section::make('Período del indicador de cumplimiento')
+                Section::make('Período del Escritorio')
                     ->icon(Heroicon::OutlinedCalendar)
                     ->compact()
                     ->collapsible()
                     ->schema([EmbeddedSchema::make('form')])
-                    ->visible(fn (): bool => CumplimientoMpWidget::canView()),
+                    ->visible(fn (): bool => collect(self::WIDGETS_CON_PERIODO)->contains(fn (string $widget): bool => $widget::canView())),
                 $this->getWidgetsContentComponent(),
             ]);
     }

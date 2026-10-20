@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Actions\CalcularEjecucionConvenioAction;
 use App\Filament\Resources\Convenios\ConvenioResource;
+use App\Filament\Support\RecibePeriodoDelEscritorio;
 use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -17,9 +18,14 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
  * por vigencia "Vigente" (el filtro más cercano que tiene el listado); "Sobregirados" llega sin
  * filtro, porque el listado no tiene uno de sobregiro — la columna de ejecución ya marca en rojo
  * los convenios sobregirados (RN-05).
+ *
+ * El sobregiro se calcula para el año elegido en el Escritorio (el monto del convenio es anual, así
+ * que no se acota al período). "Por vencer" es una alerta operativa y se cuenta siempre desde hoy.
  */
 class AlertasConveniosWidget extends StatsOverviewWidget
 {
+    use RecibePeriodoDelEscritorio;
+
     /**
      * RF-57 (Módulo 13): orden del Escritorio por jerarquía de uso — alertas (10-19), cumplimiento
      * MP (20-29), gráficos (30-39, reservado para RF-58 a RF-60) y resumen de contexto (40-49).
@@ -40,19 +46,20 @@ class AlertasConveniosWidget extends StatsOverviewWidget
     {
         $accion = app(CalcularEjecucionConvenioAction::class);
 
-        $sobregirados = $accion->contarSobregirados(now()->year);
+        $anio = $this->anioSeleccionado();
+        $sobregirados = $accion->contarSobregirados($anio);
         $porVencer = $accion->contarPorVencer(self::DIAS_POR_VENCER);
         $puedeVerConvenios = ConvenioResource::canViewAny();
 
         return [
             Stat::make('Convenios sobregirados', $sobregirados)
-                ->description('Ejecución '.now()->year.' supera el monto anual')
+                ->description("Ejecución {$anio} supera el monto anual")
                 ->icon(Heroicon::OutlinedExclamationTriangle)
                 ->color($sobregirados > 0 ? 'danger' : 'success')
                 ->url($puedeVerConvenios ? ConvenioResource::getUrl('index') : null),
 
             Stat::make('Convenios por vencer', $porVencer)
-                ->description('Vencen en los próximos '.self::DIAS_POR_VENCER.' días')
+                ->description('Vencen en los próximos '.self::DIAS_POR_VENCER.' días desde hoy')
                 ->icon(Heroicon::OutlinedCalendarDays)
                 ->color($porVencer > 0 ? 'warning' : 'success')
                 ->url($puedeVerConvenios ? ConvenioResource::getUrl('index', ['filters' => ['vigencia' => ['value' => 'vigente']]]) : null),

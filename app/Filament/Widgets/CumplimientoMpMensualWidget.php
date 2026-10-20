@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Actions\CalcularCumplimientoMpAction;
+use App\Filament\Support\FiltroDeAnioSincronizadoConEscritorio;
 use App\Models\PlanMantenimiento;
 use App\Support\PaletaGraficos;
 use Filament\Support\RawJs;
@@ -15,15 +16,16 @@ use Filament\Widgets\ChartWidget;
  * umbrales de `CumplimientoMpWidget` (≥80% éxito, 50-79% alerta, <50% crítico).
  *
  * El año se elige con el filtro propio del gráfico (`getFilters()`, una propiedad Livewire del
- * widget), no con `HasFiltersForm` del Escritorio: este mecanismo no produce el error 500 de
- * Filament 5.7.8 + Livewire 4.4.3 descrito en `CumplimientoMpWidget`, así que es la única vía hoy
- * disponible para mirar el cumplimiento de otro año desde el Escritorio.
+ * widget), que parte en el año del Escritorio y lo sigue cuando cambia
+ * (`FiltroDeAnioSincronizadoConEscritorio`).
  *
  * Mismo permiso que `CumplimientoMpWidget` (`view.cumplimiento_mp_widget`, lo pide así RF-58); por
  * eso esta clase está excluida de la generación de permisos de Shield (`config/filament-shield.php`).
  */
 class CumplimientoMpMensualWidget extends ChartWidget
 {
+    use FiltroDeAnioSincronizadoConEscritorio;
+
     /**
      * RF-57: ver el criterio de orden en `AlertasConveniosWidget::$sort`.
      */
@@ -44,27 +46,12 @@ class CumplimientoMpMensualWidget extends ChartWidget
         return (bool) auth()->user()?->can('view.cumplimiento_mp_widget');
     }
 
-    public function mount(): void
-    {
-        $this->filter ??= (string) now()->year;
-
-        parent::mount();
-    }
-
     /**
      * @return array<string, string>
      */
     protected function getFilters(): ?array
     {
-        return PlanMantenimiento::query()
-            ->distinct()
-            ->pluck('anio')
-            ->map(fn ($anio): int => (int) $anio)
-            ->push(now()->year)
-            ->unique()
-            ->sortDesc()
-            ->mapWithKeys(fn (int $anio): array => [(string) $anio => (string) $anio])
-            ->all();
+        return $this->opcionesDeAnio(PlanMantenimiento::query()->distinct()->pluck('anio'));
     }
 
     protected function getType(): string
@@ -74,6 +61,8 @@ class CumplimientoMpMensualWidget extends ChartWidget
 
     protected function getData(): array
     {
+        $this->sincronizarFiltroConEscritorio();
+
         $meses = app(CalcularCumplimientoMpAction::class)->porMes((int) $this->filter);
 
         $programadosAcumulados = 0;

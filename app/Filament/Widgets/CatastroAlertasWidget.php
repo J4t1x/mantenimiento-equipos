@@ -9,6 +9,7 @@ use App\Filament\Resources\Equipos\EquipoResource;
 use App\Filament\Resources\Equipos\Tables\EquiposTable;
 use App\Filament\Resources\Recintos\RecintoResource;
 use App\Filament\Resources\Recintos\Tables\RecintosTable;
+use App\Filament\Support\RecibePeriodoDelEscritorio;
 use App\Models\EjecucionMensual;
 use App\Models\Equipo;
 use App\Models\Recinto;
@@ -38,9 +39,18 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
  *
  * RF-72 (Módulo 16, §7.2–7.3): desde abril (el plazo de la norma es marzo), una tarjeta con los
  * recintos activos sin programa anual validado por la Dirección. Enlaza a Recintos filtrado.
+ *
+ * Año del Escritorio (corrección de RF-21, SPEC-ME-002): garantía, vida útil residual, críticos sin
+ * plan y programa sin validar se calculan para el año elegido. "Sin evaluar" y "a retirar de uso"
+ * son alertas operativas sobre el estado actual y no dependen del año. Programa sin validar se
+ * muestra desde abril en el año en curso, siempre en años pasados y nunca en años futuros. El
+ * enlace de críticos sin plan y el de programa sin validar solo se ofrecen en el año en curso, que
+ * es el que filtran los listados.
  */
 class CatastroAlertasWidget extends StatsOverviewWidget
 {
+    use RecibePeriodoDelEscritorio;
+
     /**
      * RF-57: ver el criterio de orden en `AlertasConveniosWidget::$sort`.
      */
@@ -55,7 +65,7 @@ class CatastroAlertasWidget extends StatsOverviewWidget
 
     protected function getStats(): array
     {
-        $anio = now()->year;
+        $anio = $this->anioSeleccionado();
 
         $sinEvaluar = Equipo::where('activo', true)
             ->where('estado', EstadoEquipo::SinEvaluar)
@@ -90,7 +100,7 @@ class CatastroAlertasWidget extends StatsOverviewWidget
                 ->color($sinEvaluar > 0 ? 'warning' : 'success')
                 ->url($puedeVerEquipos ? EquipoResource::getUrl('index', ['filters' => ['estado' => ['value' => EstadoEquipo::SinEvaluar->value]]]) : null),
 
-            Stat::make('Garantía vence este año', $garantiaPorVencer)
+            Stat::make($this->esAnioEnCurso() ? 'Garantía vence este año' : "Garantía vence en {$anio}", $garantiaPorVencer)
                 ->description("Vencimiento en {$anio}")
                 ->icon(Heroicon::OutlinedShieldExclamation)
                 ->color($garantiaPorVencer > 0 ? 'warning' : 'success')
@@ -106,7 +116,7 @@ class CatastroAlertasWidget extends StatsOverviewWidget
                 ->description('El programa anual debe incluir todo crítico')
                 ->icon(Heroicon::OutlinedCalendarDays)
                 ->color($criticosSinPlan > 0 ? 'danger' : 'success')
-                ->url($puedeVerEquipos ? EquipoResource::getUrl('index', ['filters' => [EquiposTable::FILTRO_CRITICOS_SIN_PLAN => ['isActive' => true]]]) : null),
+                ->url($puedeVerEquipos && $this->esAnioEnCurso() ? EquipoResource::getUrl('index', ['filters' => [EquiposTable::FILTRO_CRITICOS_SIN_PLAN => ['isActive' => true]]]) : null),
 
             Stat::make('Críticos a retirar de uso', $criticosARetirar)
                 ->description('Reprogramación sin realizar tras 30 días')
@@ -117,18 +127,31 @@ class CatastroAlertasWidget extends StatsOverviewWidget
                     : null),
         ];
 
-        if (now()->month >= 4) {
+        if ($this->mostrarProgramaSinValidar($anio)) {
             $sinProgramaValidado = Recinto::query()->sinProgramaValidado($anio)->count();
 
             $stats[] = Stat::make("Programa {$anio} sin validar", $sinProgramaValidado)
                 ->description('Recintos sin programa anual validado por la Dirección (plazo: marzo)')
                 ->icon(Heroicon::OutlinedDocumentCheck)
                 ->color($sinProgramaValidado > 0 ? 'danger' : 'success')
-                ->url(RecintoResource::canViewAny()
+                ->url(RecintoResource::canViewAny() && $this->esAnioEnCurso()
                     ? RecintoResource::getUrl('index', ['filters' => [RecintosTable::FILTRO_PROGRAMA_SIN_VALIDAR => ['isActive' => true]]])
                     : null);
         }
 
         return $stats;
+    }
+
+    /**
+     * El plazo de la norma para validar el programa es marzo: en el año en curso la alerta aparece
+     * desde abril; en un año pasado el plazo ya venció, y en uno futuro todavía no corre.
+     */
+    private function mostrarProgramaSinValidar(int $anio): bool
+    {
+        if ($anio === now()->year) {
+            return now()->month >= 4;
+        }
+
+        return $anio < now()->year;
     }
 }

@@ -9,7 +9,7 @@ use RuntimeException;
  * exige considerar críticos no puede tener otra criticidad. Guarda de última instancia a nivel de
  * modelo (RNF-04).
  */
-class TipoCriticoSinCriticidadException extends RuntimeException
+class TipoCriticoSinCriticidadException extends RuntimeException implements ExcepcionDeDominio
 {
     public const MENSAJE = 'Este tipo de equipo es crítico según la Res. Ex. 1341/2017 del MINSAL: su criticidad debe ser "Crítico".';
 

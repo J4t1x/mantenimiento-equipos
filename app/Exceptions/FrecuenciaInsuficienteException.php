@@ -9,7 +9,7 @@ use RuntimeException;
  * frecuencia anual menor que 2, salvo con garantía vigente (periodicidad del fabricante). Guarda de última instancia a nivel de modelo (RNF-04, mismo criterio que
  * {@see TransicionBitacoraInvalidaException} para RN-02).
  */
-class FrecuenciaInsuficienteException extends RuntimeException
+class FrecuenciaInsuficienteException extends RuntimeException implements ExcepcionDeDominio
 {
     public const MENSAJE = 'Un equipo crítico debe tener mantenimiento preventivo al menos 2 veces al año, '
         .'salvo que tenga garantía vigente y siga la periodicidad del fabricante (Res. Ex. 1341/2017 del MINSAL).';

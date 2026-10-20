@@ -10,7 +10,7 @@ use RuntimeException;
  * "defensa en profundidad"): se lanza sin importar si el intento vino de Filament, tinker,
  * un seeder o una futura API.
  */
-class TransicionBitacoraInvalidaException extends RuntimeException
+class TransicionBitacoraInvalidaException extends RuntimeException implements ExcepcionDeDominio
 {
     public const MENSAJE = 'No se puede marcar como "Realizado" o "Reprogramado" un mes sin una marca '
         .'"Programado" previa.';

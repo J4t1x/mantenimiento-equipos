@@ -10,7 +10,7 @@ use RuntimeException;
  * {@see EquipoNoAsignadoException} para RF-20): se lanza sin importar si el intento vino de
  * Filament, tinker o una futura API.
  */
-class RecintoFueraDeAlcanceException extends RuntimeException
+class RecintoFueraDeAlcanceException extends RuntimeException implements ExcepcionDeDominio
 {
     public static function paraRecinto(): self
     {

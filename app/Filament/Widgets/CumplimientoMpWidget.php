@@ -5,10 +5,10 @@ namespace App\Filament\Widgets;
 use App\Actions\CalcularCumplimientoMpAction;
 use App\Enums\Criticidad;
 use App\Enums\Periodo;
+use App\Filament\Support\RecibePeriodoDelEscritorio;
 use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
-use Livewire\Attributes\Reactive;
 
 /**
  * RN-03 (RF-21/RF-22/RF-23): % de cumplimiento de MP = ejecutados/programados, desagregado en los
@@ -40,6 +40,8 @@ use Livewire\Attributes\Reactive;
  */
 class CumplimientoMpWidget extends StatsOverviewWidget
 {
+    use RecibePeriodoDelEscritorio;
+
     /**
      * RF-57: ver el criterio de orden en `AlertasConveniosWidget::$sort`.
      */
@@ -48,22 +50,6 @@ class CumplimientoMpWidget extends StatsOverviewWidget
     private const UMBRAL_EXITO = 80.0;
 
     private const UMBRAL_ALERTA = 50.0;
-
-    #[Reactive]
-    public ?int $anio = null;
-
-    #[Reactive]
-    public ?string $periodo = null;
-
-    private function anioSeleccionado(): int
-    {
-        return $this->anio ?? now()->year;
-    }
-
-    private function periodoSeleccionado(): Periodo
-    {
-        return Periodo::tryFrom((string) $this->periodo) ?? Periodo::Anual;
-    }
 
     protected function getHeading(): ?string
     {

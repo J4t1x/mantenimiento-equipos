@@ -10,7 +10,7 @@ use RuntimeException;
  * (RNF-04, "defensa en profundidad", mismo criterio que {@see TransicionBitacoraInvalidaException}
  * para RN-02): se lanza sin importar si el intento vino de Filament, tinker o una futura API.
  */
-class EquipoNoAsignadoException extends RuntimeException
+class EquipoNoAsignadoException extends RuntimeException implements ExcepcionDeDominio
 {
     public static function porFaltaDeAsignacion(): self
     {

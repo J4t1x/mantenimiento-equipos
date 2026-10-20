@@ -8,7 +8,7 @@ use RuntimeException;
  * RF-73 del SRS: un equipo no puede retirarse de uso dos veces sin reingreso intermedio, ni
  * reingresar si no está retirado.
  */
-class RetiroUsoInvalidoException extends RuntimeException
+class RetiroUsoInvalidoException extends RuntimeException implements ExcepcionDeDominio
 {
     public static function yaRetirado(): self
     {

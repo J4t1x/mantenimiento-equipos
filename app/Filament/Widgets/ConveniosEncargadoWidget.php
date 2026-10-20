@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Support\RecibePeriodoDelEscritorio;
 use App\Models\Convenio;
 use App\Models\ConvenioEjecucionMensual;
 use Filament\Support\Icons\Heroicon;
@@ -16,6 +17,8 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
  */
 class ConveniosEncargadoWidget extends StatsOverviewWidget
 {
+    use RecibePeriodoDelEscritorio;
+
     /**
      * RF-57: ver el criterio de orden en `AlertasConveniosWidget::$sort`.
      */
@@ -30,7 +33,7 @@ class ConveniosEncargadoWidget extends StatsOverviewWidget
 
     protected function getStats(): array
     {
-        $anio = now()->year;
+        $anio = $this->anioSeleccionado();
 
         $montoComprometido = (float) Convenio::where('activo', true)->sum('monto_anual');
 

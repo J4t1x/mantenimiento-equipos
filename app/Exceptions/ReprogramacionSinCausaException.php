@@ -10,7 +10,7 @@ use RuntimeException;
  * última instancia a nivel de modelo (RNF-04, mismo criterio que
  * {@see TransicionBitacoraInvalidaException} para RN-02).
  */
-class ReprogramacionSinCausaException extends RuntimeException
+class ReprogramacionSinCausaException extends RuntimeException implements ExcepcionDeDominio
 {
     public const MENSAJE = 'Indica la causa de la reprogramación en observaciones (Res. Ex. 1341/2017).';
 

@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Actions\CalcularGastoCorrectivoAction;
+use App\Filament\Support\FiltroDeAnioSincronizadoConEscritorio;
 use App\Models\ConvenioEjecucionMensual;
 use App\Support\PaletaGraficos;
 use Filament\Support\RawJs;
@@ -19,6 +20,8 @@ use Filament\Widgets\ChartWidget;
  */
 class GastoMensualWidget extends ChartWidget
 {
+    use FiltroDeAnioSincronizadoConEscritorio;
+
     /**
      * RF-57: ver el criterio de orden en `AlertasConveniosWidget::$sort`.
      */
@@ -39,27 +42,12 @@ class GastoMensualWidget extends ChartWidget
         return (bool) auth()->user()?->can('view.gasto_mensual_widget');
     }
 
-    public function mount(): void
-    {
-        $this->filter ??= (string) now()->year;
-
-        parent::mount();
-    }
-
     /**
      * @return array<string, string>
      */
     protected function getFilters(): ?array
     {
-        return ConvenioEjecucionMensual::query()
-            ->distinct()
-            ->pluck('anio')
-            ->map(fn ($anio): int => (int) $anio)
-            ->push(now()->year)
-            ->unique()
-            ->sortDesc()
-            ->mapWithKeys(fn (int $anio): array => [(string) $anio => (string) $anio])
-            ->all();
+        return $this->opcionesDeAnio(ConvenioEjecucionMensual::query()->distinct()->pluck('anio'));
     }
 
     protected function getType(): string
@@ -69,6 +57,8 @@ class GastoMensualWidget extends ChartWidget
 
     protected function getData(): array
     {
+        $this->sincronizarFiltroConEscritorio();
+
         $anio = (int) $this->filter;
 
         $mpPorMes = ConvenioEjecucionMensual::query()
