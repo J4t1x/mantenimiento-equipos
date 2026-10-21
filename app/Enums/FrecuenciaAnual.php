@@ -24,4 +24,32 @@ enum FrecuenciaAnual: string implements HasLabel
             self::Doce => '12 veces al año',
         };
     }
+
+    /**
+     * Meses que quedan "Programado" con esta frecuencia (RN-01): uniformemente espaciados y
+     * terminando en diciembre (frecuencia 4 → marzo, junio, septiembre y diciembre). Lo usan la
+     * generación del plan (`GenerarPlanAnualAction`) y la vista previa del formulario (RF-83).
+     *
+     * @return array<int, int>
+     */
+    public function mesesProgramados(): array
+    {
+        $frecuencia = (int) $this->value;
+        $paso = intdiv(12, $frecuencia);
+
+        return array_map(fn (int $i): int => $i * $paso, range(1, $frecuencia));
+    }
+
+    /**
+     * Normaliza la frecuencia tal como llega de un formulario de Filament o del modelo (instancia
+     * del enum, string o entero).
+     */
+    public static function desde(mixed $valor): ?self
+    {
+        if ($valor instanceof self) {
+            return $valor;
+        }
+
+        return filled($valor) ? self::tryFrom((string) $valor) : null;
+    }
 }

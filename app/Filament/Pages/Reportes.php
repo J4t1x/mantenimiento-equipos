@@ -3,11 +3,13 @@
 namespace App\Filament\Pages;
 
 use App\Actions\CalcularCumplimientoMpAction;
+use App\Actions\ObtenerConveniosEjecucionAction;
 use App\Actions\ObtenerDetalleGastoAction;
 use App\Actions\ObtenerFilasCatastroPlanAction;
 use App\Actions\ObtenerInformeCriticosAction;
 use App\Enums\Periodo;
 use App\Exports\CatastroPlanExport;
+use App\Exports\ConveniosEjecucionExport;
 use App\Exports\CumplimientoExport;
 use App\Exports\DetalleGastoExport;
 use App\Exports\InformeCriticosExport;
@@ -59,6 +61,9 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  * RF-68 (Módulo 15): cuarta sección con el informe de cumplimiento de equipos críticos de la Res.
  * Ex. 1341/2017 (indicador por equipos, detalle y reprogramaciones con causa), con el mismo
  * alcance y período de la barra.
+ *
+ * RF-82 (Módulo 19): quinta sección, "Convenios y ejecución", a ancho completo. Usa el año y el
+ * período, pero no el recinto ni el servicio, porque los convenios son comunes a todos los recintos.
  */
 class Reportes extends Page
 {
@@ -146,6 +151,7 @@ class Reportes extends Page
                         $this->seccionCumplimiento(),
                         $this->seccionDetalleGasto(),
                         $this->seccionInformeCriticos(),
+                        $this->seccionConvenios(),
                     ]),
             ]);
     }
@@ -227,6 +233,34 @@ class Reportes extends Page
             ->footer([Actions::make([$this->descargarInformeCriticosAction(), $this->imprimirInformeCriticosAction()])]);
     }
 
+    /**
+     * RF-82 (Módulo 19): convenios y su ejecución. Los convenios son comunes a todos los recintos,
+     * así que la tarjeta usa el año y el período de la barra, pero no el recinto ni el servicio.
+     * Ocupa el ancho completo porque es la quinta tarjeta de la grilla de dos columnas.
+     */
+    private function seccionConvenios(): Section
+    {
+        return Section::make('Convenios y ejecución')
+            ->icon(Heroicon::OutlinedBanknotes)
+            ->description('Monto anual, ejecución y detalle mensual por orden de compra de cada convenio. Los convenios son comunes a todos los recintos: no se acotan por recinto ni servicio clínico.')
+            ->columnSpanFull()
+            ->schema(fn (): array => $this->resumen(function (int $anio, ?int $recintoId, ?int $servicioClinicoId, Periodo $periodo): array {
+                $resumen = app(ObtenerConveniosEjecucionAction::class)->execute($anio, $periodo)['resumen'];
+
+                return [
+                    $this->cifra(
+                        $resumen['porcentaje'] === null ? 'Sin monto comprometido' : "{$resumen['porcentaje']}%",
+                        $resumen['sobregirados'] > 0 ? 'danger' : 'primary',
+                    ),
+                    Text::make("{$resumen['convenios_activos']} convenios activos · ".self::pesos($resumen['ejecutado_anio']).' ejecutado de '.self::pesos($resumen['monto_comprometido'])." comprometido en {$anio}"),
+                    ...(! $periodo->esAnual() ? [Text::make('Ejecutado en '.$periodo->descripcion($anio).': '.self::pesos($resumen['ejecutado_periodo']))] : []),
+                    Text::make($resumen['sobregirados'] === 1 ? '1 convenio sobregirado' : "{$resumen['sobregirados']} convenios sobregirados")
+                        ->color($resumen['sobregirados'] > 0 ? 'danger' : 'gray'),
+                ];
+            }))
+            ->footer([Actions::make([$this->descargarConveniosAction()])]);
+    }
+
     public function descargarCatastroPlanAction(): Action
     {
         return $this->accionDescarga(
@@ -261,6 +295,16 @@ class Reportes extends Page
             'descargarInformeCriticos',
             'informe-criticos',
             fn (int $anio, ?int $recintoId, ?int $servicioClinicoId, Periodo $periodo): InformeCriticosExport => new InformeCriticosExport($anio, $recintoId, $servicioClinicoId, $periodo),
+        );
+    }
+
+    public function descargarConveniosAction(): Action
+    {
+        return $this->accionDescarga(
+            'descargarConvenios',
+            'convenios-ejecucion',
+            fn (int $anio, ?int $recintoId, ?int $servicioClinicoId, Periodo $periodo): ConveniosEjecucionExport => new ConveniosEjecucionExport($anio, $periodo),
+            usaAlcance: false,
         );
     }
 
@@ -305,20 +349,21 @@ class Reportes extends Page
     }
 
     /**
-     * @param  Closure(int, int|null, int|null, Periodo): (CatastroPlanExport|CumplimientoExport|DetalleGastoExport|InformeCriticosExport)  $crearExport
+     * @param  Closure(int, int|null, int|null, Periodo): (CatastroPlanExport|CumplimientoExport|DetalleGastoExport|InformeCriticosExport|ConveniosEjecucionExport)  $crearExport
+     * @param  bool  $usaAlcance  false si el reporte no se acota por recinto ni servicio (convenios): el nombre del archivo no los incluye.
      */
-    private function accionDescarga(string $nombre, string $prefijoArchivo, Closure $crearExport, bool $usaPeriodo = true): Action
+    private function accionDescarga(string $nombre, string $prefijoArchivo, Closure $crearExport, bool $usaPeriodo = true, bool $usaAlcance = true): Action
     {
         return Action::make($nombre)
             ->label('Descargar Excel')
             ->icon(Heroicon::OutlinedArrowDownTray)
-            ->action(function () use ($prefijoArchivo, $crearExport, $usaPeriodo): BinaryFileResponse {
+            ->action(function () use ($prefijoArchivo, $crearExport, $usaPeriodo, $usaAlcance): BinaryFileResponse {
                 $filtros = $this->form->getState();
                 ['anio' => $anio, 'periodo' => $periodo, 'recintoId' => $recintoId, 'servicioClinicoId' => $servicioClinicoId] = $this->alcance($filtros);
 
                 return Excel::download(
                     $crearExport($anio, $recintoId, $servicioClinicoId, $periodo),
-                    $this->nombreArchivo($prefijoArchivo, $anio, $usaPeriodo ? $periodo : null, $recintoId, $servicioClinicoId),
+                    $this->nombreArchivo($prefijoArchivo, $anio, $usaPeriodo ? $periodo : null, $usaAlcance ? $recintoId : null, $usaAlcance ? $servicioClinicoId : null),
                 );
             });
     }

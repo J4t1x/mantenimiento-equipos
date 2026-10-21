@@ -14,16 +14,16 @@ use App\Models\PlanMantenimiento;
  * Idempotente (RF-15, ADR-03 del SAD): al regenerar (p. ej. porque la frecuencia cambió a mitad
  * de año) no toca los meses que ya quedaron "realizado" o "reprogramado".
  *
- * Algoritmo de distribución: meses uniformemente espaciados terminando en diciembre. El propio
- * BRIEF §5 deja este algoritmo "a definir en Etapa 2 con el requirente"; se adopta el reparto
- * uniforme por ser el criterio más simple y ser consistente con su propio ejemplo
- * (frecuencia 4 → trimestral: marzo/junio/septiembre/diciembre).
+ * Algoritmo de distribución ({@see FrecuenciaAnual::mesesProgramados()}): meses uniformemente
+ * espaciados terminando en diciembre. El propio BRIEF §5 deja este algoritmo "a definir en Etapa 2
+ * con el requirente"; se adopta el reparto uniforme por ser el criterio más simple y ser
+ * consistente con su propio ejemplo (frecuencia 4 → trimestral: marzo/junio/septiembre/diciembre).
  */
 class GenerarPlanAnualAction
 {
     public function execute(PlanMantenimiento $plan): void
     {
-        $mesesProgramados = $this->calcularMesesProgramados($this->frecuenciaComoEntero($plan));
+        $mesesProgramados = FrecuenciaAnual::desde($plan->frecuencia_anual)?->mesesProgramados() ?? [];
 
         for ($mes = 1; $mes <= 12; $mes++) {
             $ejecucion = EjecucionMensual::firstOrNew([
@@ -45,29 +45,5 @@ class GenerarPlanAnualAction
 
             $ejecucion->save();
         }
-    }
-
-    private function frecuenciaComoEntero(PlanMantenimiento $plan): int
-    {
-        return (int) ($plan->frecuencia_anual instanceof FrecuenciaAnual
-            ? $plan->frecuencia_anual->value
-            : $plan->frecuencia_anual);
-    }
-
-    /**
-     * @return array<int, int>
-     */
-    private function calcularMesesProgramados(int $frecuencia): array
-    {
-        if ($frecuencia < 1 || $frecuencia > 12) {
-            return [];
-        }
-
-        $paso = intdiv(12, $frecuencia);
-
-        return array_map(
-            fn (int $i): int => $i * $paso,
-            range(1, $frecuencia),
-        );
     }
 }
