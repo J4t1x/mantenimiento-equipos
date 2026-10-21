@@ -453,9 +453,9 @@ de negocio: completan lo que el mockup mostraba sobre las pantallas existentes.
 | RF-85 | El listado de Equipos debe mostrar la **frecuencia MP** del plan del año en curso. | Baja |
 | RF-86 | El listado de Convenios debe mostrar la **vigencia como estado** (vigente, vence en N días, vencido) junto a la fecha de expiración. | Baja |
 
-**Estado (21-10-2026)**: RF-79, RF-80 y RF-81 implementados. RF-82 a RF-86 siguen especificados, sin
-implementar. Specs de desarrollo: SPEC-ME-003 (RF-79, completa), SPEC-ME-004 (RF-80 y RF-81,
-completa), SPEC-ME-005 (RF-82 y RF-83) y SPEC-ME-006 (RF-84 a RF-86).
+**Estado (21-10-2026)**: RF-79 a RF-83 implementados. RF-84 a RF-86 siguen especificados, sin
+implementar. Specs de desarrollo: SPEC-ME-003 (RF-79), SPEC-ME-004 (RF-80 y RF-81) y SPEC-ME-005
+(RF-82 y RF-83), completas; SPEC-ME-006 (RF-84 a RF-86), pendiente.
 
 **Criterios de implementación**:
 - RF-79: página `App\Filament\Pages\BitacoraAnual` (permiso `view.bitacora_anual`), una tabla de Filament con una fila por plan del año y 12 columnas de meses.
@@ -466,6 +466,10 @@ completa), SPEC-ME-005 (RF-82 y RF-83) y SPEC-ME-006 (RF-84 a RF-86).
   - La tarjeta "MP atrasada" va primera entre las alertas de catastro. Cuenta equipos, no meses, y se marca en rojo si alguno es crítico.
   - El técnico interno ve la misma alerta en "Mis planes", acotada a sus planes.
   - La Bitácora suma el filtro "MP atrasada".
+- RF-82: `ObtenerConveniosEjecucionAction` y `ConveniosEjecucionExport`, con las hojas "Resumen" y "Detalle mensual".
+  - El % y el sobregiro se calculan con la ejecución del año completo, porque el monto del convenio es anual. El período acota lo ejecutado en el período y el detalle mensual.
+  - La tarjeta va a ancho completo en Reportes y no se acota por recinto ni servicio.
+- RF-83: `VistaPreviaPlanAnual` en el formulario de Planificación MP y en el de planes del equipo. Usa `FrecuenciaAnual::mesesProgramados()`, la misma distribución que `GenerarPlanAnualAction`. Al editar, avisa los meses ya registrados que se conservan.
 - RF-81: `GastoMpWidget`, con la misma fuente que el detalle de gasto (`ObtenerDetalleGastoAction`) para el año y el período del Escritorio. Muestra también el correctivo y reutiliza el permiso `view.gasto_mensual_widget`.
 
 **Correcciones detectadas en la misma revisión** (no son RF nuevos; todas resueltas el 19 y el 20-10-2026, SPEC-ME-001 y SPEC-ME-002):
