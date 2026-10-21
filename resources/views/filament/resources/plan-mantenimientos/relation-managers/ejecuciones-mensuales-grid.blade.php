@@ -26,7 +26,7 @@
                     </span>
 
                     <x-filament::badge :color="$estado->getColor()" class="h-7 w-full items-center justify-center font-bold">
-                        {{ $simbolos[$estado->value] }}
+                        {{ $estado->simbolo() }}
                     </x-filament::badge>
                 </button>
             @endforeach

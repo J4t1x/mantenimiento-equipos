@@ -25,6 +25,19 @@ enum EstadoEjecucion: string implements HasColor, HasLabel
         };
     }
 
+    /**
+     * Símbolo de la planilla para la grilla de la bitácora (X / √ / ꓣ; guion si no está programado).
+     */
+    public function simbolo(): string
+    {
+        return match ($this) {
+            self::SinProgramar => '–',
+            self::Programado => 'X',
+            self::Realizado => '√',
+            self::Reprogramado => 'ꓣ',
+        };
+    }
+
     public function getColor(): string
     {
         return match ($this) {
