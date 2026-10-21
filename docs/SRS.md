@@ -453,11 +453,15 @@ de negocio: completan lo que el mockup mostraba sobre las pantallas existentes.
 | RF-85 | El listado de Equipos debe mostrar la **frecuencia MP** del plan del año en curso. | Baja |
 | RF-86 | El listado de Convenios debe mostrar la **vigencia como estado** (vigente, vence en N días, vencido) junto a la fecha de expiración. | Baja |
 
-**Estado (20-10-2026)**: RF-80 y RF-81 implementados. RF-79 y RF-82 a RF-86 siguen especificados, sin
-implementar. Specs de desarrollo: SPEC-ME-003 (RF-79), SPEC-ME-004 (RF-80 y RF-81, completa),
-SPEC-ME-005 (RF-82 y RF-83) y SPEC-ME-006 (RF-84 a RF-86).
+**Estado (21-10-2026)**: RF-79, RF-80 y RF-81 implementados. RF-82 a RF-86 siguen especificados, sin
+implementar. Specs de desarrollo: SPEC-ME-003 (RF-79, completa), SPEC-ME-004 (RF-80 y RF-81,
+completa), SPEC-ME-005 (RF-82 y RF-83) y SPEC-ME-006 (RF-84 a RF-86).
 
 **Criterios de implementación**:
+- RF-79: página `App\Filament\Pages\BitacoraAnual` (permiso `view.bitacora_anual`), una tabla de Filament con una fila por plan del año y 12 columnas de meses.
+  - Cada celda abre el formulario del mes, que comparte con la grilla del plan (`App\Filament\Support\BitacoraMensual`).
+  - El pie muestra realizadas / programadas por mes, y el mes en curso va resaltado.
+  - El técnico interno solo registra en sus planes, y Jefatura ve la grilla en solo lectura.
 - RF-80: scope `EjecucionMensual::atrasadas($anio)`. En el año en curso cuentan los meses anteriores al actual, en un año pasado los 12 y en uno futuro ninguno. No cuentan los reprogramados, que tienen su propio plazo (RF-66), ni los equipos inactivos.
   - La tarjeta "MP atrasada" va primera entre las alertas de catastro. Cuenta equipos, no meses, y se marca en rojo si alguno es crítico.
   - El técnico interno ve la misma alerta en "Mis planes", acotada a sus planes.
