@@ -20,7 +20,7 @@ class EquiposFiltradosExport implements FromQuery, WithHeadings, WithMapping, Wi
 
     public function query(): Builder
     {
-        return $this->query->with(['recinto', 'servicioClinico', 'clase', 'subclase']);
+        return $this->query->with(['recinto', 'servicioClinico', 'clase', 'subclase', 'planActual']);
     }
 
     public function headings(): array
@@ -28,7 +28,7 @@ class EquiposFiltradosExport implements FromQuery, WithHeadings, WithMapping, Wi
         return [
             'Recinto', 'Servicio clínico', 'Clase', 'Subclase', 'Nombre', 'Marca', 'Modelo',
             'N° de serie', 'N° de inventario', 'Año adquisición', 'Vida útil (años)', 'Propiedad',
-            'Estado', 'Criticidad', 'En garantía', 'Vence garantía', 'Activo',
+            'Estado', 'Criticidad', 'Frecuencia MP '.now()->year, 'En garantía', 'Vence garantía', 'Activo',
         ];
     }
 
@@ -53,6 +53,7 @@ class EquiposFiltradosExport implements FromQuery, WithHeadings, WithMapping, Wi
             $equipo->propiedad->getLabel(),
             $equipo->estado->getLabel(),
             $equipo->criticidad->getLabel(),
+            $equipo->planActual?->frecuencia_anual?->getLabel() ?? 'Sin plan',
             $equipo->en_garantia ? 'Sí' : 'No',
             $equipo->garantia_anio_vencimiento,
             $equipo->activo ? 'Sí' : 'No',

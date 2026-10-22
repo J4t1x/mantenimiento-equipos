@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
@@ -196,6 +197,15 @@ class Equipo extends Model implements AcotadoPorRecinto, AuditableContract
     public function planesMantenimiento(): HasMany
     {
         return $this->hasMany(PlanMantenimiento::class);
+    }
+
+    /**
+     * RF-85 (Módulo 19): plan de MP del año en curso (hay a lo más uno por equipo y año, índice
+     * único `equipo_id` + `anio`). Lo usan la columna de frecuencia del listado y su exportación.
+     */
+    public function planActual(): HasOne
+    {
+        return $this->hasOne(PlanMantenimiento::class)->where('anio', now()->year);
     }
 
     /**

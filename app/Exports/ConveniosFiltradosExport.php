@@ -29,7 +29,7 @@ class ConveniosFiltradosExport implements FromQuery, WithHeadings, WithMapping, 
     {
         return [
             'Proveedor', 'Convenio', 'N° resolución', 'Fecha resolución', 'Fecha expiración',
-            'Monto anual', 'SIGFE', 'Activo', 'Ejecución '.now()->year.' (%)',
+            'Vigencia', 'Monto anual', 'SIGFE', 'Activo', 'Ejecución '.now()->year.' (%)',
         ];
     }
 
@@ -47,6 +47,7 @@ class ConveniosFiltradosExport implements FromQuery, WithHeadings, WithMapping, 
             $convenio->n_resolucion,
             $convenio->fecha_resolucion->format('d-m-Y'),
             $convenio->fecha_expiracion->format('d-m-Y'),
+            $convenio->estadoVigencia()['etiqueta'],
             (float) $convenio->monto_anual,
             $convenio->subasignacion_sigfe,
             $convenio->activo ? 'Sí' : 'No',

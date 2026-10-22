@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Equipos\Tables;
 
 use App\Enums\Criticidad;
 use App\Enums\EstadoEquipo;
+use App\Enums\FrecuenciaAnual;
 use App\Enums\TipoEquipoCritico;
 use App\Exports\EquiposFiltradosExport;
 use App\Filament\Support\AccionExportarTablaFiltrada;
@@ -91,6 +92,12 @@ class EquiposTable
                 TextColumn::make('criticidad')
                     ->label('Criticidad')
                     ->badge(),
+                // RF-85: frecuencia del plan de MP del año en curso.
+                TextColumn::make('planActual.frecuencia_anual')
+                    ->label('Frecuencia MP '.now()->year)
+                    ->formatStateUsing(fn ($state): string => (FrecuenciaAnual::desde($state)?->value ?? '?').'x / año')
+                    ->placeholder('Sin plan')
+                    ->toggleable(),
                 TextColumn::make('tipo_critico_norma')
                     ->label('Tipo norma MINSAL')
                     ->placeholder('Sin clasificar')

@@ -19,7 +19,15 @@ class ServicioClinicosTable
             ->columns([
                 TextColumn::make('nombre')
                     ->label('Nombre')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
+                // RF-84: equipos del catastro asociados al servicio. El conteo respeta el alcance
+                // por recinto del usuario (global scope de `Equipo`, RF-63).
+                TextColumn::make('equipos_count')
+                    ->label('Equipos asociados')
+                    ->counts('equipos')
+                    ->numeric()
+                    ->sortable(),
                 IconColumn::make('activo')
                     ->label('Activo')
                     ->boolean(),

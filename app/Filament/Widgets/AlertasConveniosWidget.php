@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Actions\CalcularEjecucionConvenioAction;
 use App\Filament\Resources\Convenios\ConvenioResource;
 use App\Filament\Support\RecibePeriodoDelEscritorio;
+use App\Models\Convenio;
 use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -35,8 +36,6 @@ class AlertasConveniosWidget extends StatsOverviewWidget
 
     protected ?string $heading = 'Convenios que requieren atención';
 
-    private const DIAS_POR_VENCER = 60;
-
     public static function canView(): bool
     {
         return (bool) auth()->user()?->can('view.alertas_convenios_widget');
@@ -48,7 +47,7 @@ class AlertasConveniosWidget extends StatsOverviewWidget
 
         $anio = $this->anioSeleccionado();
         $sobregirados = $accion->contarSobregirados($anio);
-        $porVencer = $accion->contarPorVencer(self::DIAS_POR_VENCER);
+        $porVencer = $accion->contarPorVencer(Convenio::DIAS_POR_VENCER);
         $puedeVerConvenios = ConvenioResource::canViewAny();
 
         return [
@@ -59,7 +58,7 @@ class AlertasConveniosWidget extends StatsOverviewWidget
                 ->url($puedeVerConvenios ? ConvenioResource::getUrl('index') : null),
 
             Stat::make('Convenios por vencer', $porVencer)
-                ->description('Vencen en los próximos '.self::DIAS_POR_VENCER.' días desde hoy')
+                ->description('Vencen en los próximos '.Convenio::DIAS_POR_VENCER.' días desde hoy')
                 ->icon(Heroicon::OutlinedCalendarDays)
                 ->color($porVencer > 0 ? 'warning' : 'success')
                 ->url($puedeVerConvenios ? ConvenioResource::getUrl('index', ['filters' => ['vigencia' => ['value' => 'vigente']]]) : null),

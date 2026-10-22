@@ -63,6 +63,12 @@ class ConveniosTable
                     ->label('Fecha expiración')
                     ->date('d-m-Y')
                     ->sortable(),
+                // RF-86: vigencia como estado (vigente, por vencer, vencido).
+                TextColumn::make('vigencia')
+                    ->label('Vigencia')
+                    ->state(fn (Convenio $record): string => $record->estadoVigencia()['etiqueta'])
+                    ->color(fn (Convenio $record): string => $record->estadoVigencia()['color'])
+                    ->badge(),
                 TextColumn::make('monto_anual')
                     ->label('Monto anual')
                     ->money('CLP')
