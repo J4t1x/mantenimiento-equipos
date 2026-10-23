@@ -165,9 +165,17 @@ class ConveniosReporteYVistaPreviaPlanTest extends TestCase
         $plan = PlanMantenimiento::factory()->create(['frecuencia_anual' => FrecuenciaAnual::Cuatro]);
         $plan->ejecucionesMensuales()->where('mes', 3)->first()->update(['estado' => EstadoEjecucion::Realizado, 'fecha_real' => '2026-03-10']);
 
+        // Un plan importado con meses distintos al reparto uniforme: se muestran los que tiene.
+        $plan->ejecucionesMensuales()->where('mes', 6)->update(['estado' => EstadoEjecucion::SinProgramar]);
+
         Livewire::test(EditPlanMantenimiento::class, ['record' => $plan->getRouteKey()])
-            ->assertSee('Marzo, junio, septiembre y diciembre (4 mantenciones)')
-            ->assertSee('se conservan los meses ya registrados: marzo (realizado).');
+            ->assertSee('Meses programados actualmente')
+            ->assertSee('Marzo, septiembre y diciembre (3 mantenciones)')
+            ->assertSee('Los meses solo se recalculan si cambias la frecuencia.')
+            ->fillForm(['frecuencia_anual' => FrecuenciaAnual::Dos->value])
+            ->assertSee('Meses que se programarán al guardar')
+            ->assertSee('Junio y diciembre (2 mantenciones)')
+            ->assertSee('Se conservan los meses ya registrados: marzo (realizado).');
     }
 
     public function test_el_relation_manager_del_equipo_tambien_muestra_la_vista_previa(): void

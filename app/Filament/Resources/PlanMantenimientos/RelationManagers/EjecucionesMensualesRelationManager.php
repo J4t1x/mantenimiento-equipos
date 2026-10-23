@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\PlanMantenimientos\RelationManagers;
 
+use App\Enums\EstadoEjecucion;
 use App\Filament\Support\BitacoraMensual;
 use App\Models\EjecucionMensual;
 use App\Support\AlcanceTecnicoInterno;
@@ -16,6 +17,10 @@ use Illuminate\Support\Collection;
  * RF-38 del SRS: la bitácora de un equipo se muestra como una cuadrícula compacta de 12 meses con
  * celdas coloreadas por estado y una leyenda visible, en vez de la tabla vertical de 12 filas que
  * tenía antes este relation manager.
+ *
+ * 23-10-2026: la vista se rehízo con estilos propios, porque las utilidades Tailwind no se compilan
+ * para el panel y la grilla se veía como texto corrido. Suma un resumen (programadas, realizadas,
+ * reprogramadas y cumplimiento), la fecha realizada en cada celda y el mes en curso destacado.
  *
  * RN-01 garantiza que un plan siempre tiene exactamente 12 `EjecucionMensual` (una por mes), así
  * que la grilla edita meses existentes — no crea ni elimina filas, a diferencia del CRUD genérico
@@ -39,11 +44,23 @@ class EjecucionesMensualesRelationManager extends RelationManager
         /** @var Collection<int, EjecucionMensual> $ejecucionesPorMes */
         $ejecucionesPorMes = $plan->ejecucionesMensuales()->orderBy('mes')->get()->keyBy('mes');
 
+        $programadas = $ejecucionesPorMes->filter(fn (EjecucionMensual $ejecucion): bool => $ejecucion->estado !== EstadoEjecucion::SinProgramar)->count();
+        $realizadas = $ejecucionesPorMes->filter(fn (EjecucionMensual $ejecucion): bool => $ejecucion->estado === EstadoEjecucion::Realizado)->count();
+
         return [
-            'anio' => $plan->anio,
+            'anio' => (int) $plan->anio,
             'ejecucionesPorMes' => $ejecucionesPorMes,
             'mesesAbreviados' => BitacoraMensual::MESES_ABREVIADOS,
+            'mesesCompletos' => BitacoraMensual::MESES,
             'puedeGestionar' => AlcanceTecnicoInterno::puedeGestionarPlan($plan),
+            // Mismo criterio que el indicador de cumplimiento (RN-03): programadas son los meses con
+            // marca (programado, realizado o reprogramado).
+            'resumen' => [
+                'programadas' => $programadas,
+                'realizadas' => $realizadas,
+                'reprogramadas' => $ejecucionesPorMes->filter(fn (EjecucionMensual $ejecucion): bool => $ejecucion->estado === EstadoEjecucion::Reprogramado)->count(),
+                'porcentaje' => $programadas > 0 ? round($realizadas / $programadas * 100, 1) : null,
+            ],
         ];
     }
 

@@ -211,4 +211,18 @@ class BitacoraAnualTest extends TestCase
 
         $this->assertSame(EstadoEjecucion::Realizado, $plan->ejecucionesMensuales()->where('mes', $mes)->first()->estado);
     }
+
+    public function test_la_grilla_del_plan_muestra_el_resumen_y_la_fecha_realizada(): void
+    {
+        $this->actuarComo('Encargado de Mantención');
+        $plan = $this->plan(marzoRealizado: true);
+
+        Livewire::test(EjecucionesMensualesRelationManager::class, ['ownerRecord' => $plan, 'pageClass' => ViewPlanMantenimiento::class])
+            ->assertSeeHtml('<strong>4</strong> programadas')
+            ->assertSeeHtml('<strong>1</strong> realizadas')
+            ->assertSeeHtml('Cumplimiento <strong>25%</strong>')
+            ->assertSee('10-03')
+            ->assertSeeHtml('bm-celda bm-sin_programar bm-actual')
+            ->assertSee('Haz clic en un mes para registrar su ejecución.');
+    }
 }
