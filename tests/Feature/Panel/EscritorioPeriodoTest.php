@@ -65,7 +65,8 @@ class EscritorioPeriodoTest extends TestCase
 
         $this->get('/admin')
             ->assertOk()
-            ->assertSee('Período del Escritorio');
+            ->assertSee('periodoEscritorio.periodo')
+            ->assertSee('Indicadores de todo 2026');
     }
 
     public function test_el_encargado_de_convenios_tambien_ve_el_selector(): void
@@ -74,7 +75,8 @@ class EscritorioPeriodoTest extends TestCase
 
         $this->get('/admin')
             ->assertOk()
-            ->assertSee('Período del Escritorio');
+            ->assertSee('periodoEscritorio.periodo')
+            ->assertSee('Indicadores de todo 2026');
     }
 
     public function test_la_pagina_entrega_anio_y_periodo_como_valores_escalares(): void
@@ -114,7 +116,8 @@ class EscritorioPeriodoTest extends TestCase
         $this->assertNotNull($sinPlan2026->getUrl());
         $this->assertNull($sinPlan2025->getUrl());
         $this->assertSame(1, $this->stat(CatastroAlertasWidget::class, ['anio' => 2025], 'Garantía vence en 2025')->getValue());
-        $this->assertSame(0, $this->stat(CatastroAlertasWidget::class, ['anio' => 2026], 'Garantía vence este año')->getValue());
+        // En 0 la alerta no se muestra (SPEC-ME-007).
+        $this->assertNull($this->stat(CatastroAlertasWidget::class, ['anio' => 2026], 'Garantía vence este año'));
     }
 
     public function test_programa_sin_validar_segun_el_anio_seleccionado(): void
@@ -134,7 +137,7 @@ class EscritorioPeriodoTest extends TestCase
         ConvenioEjecucionMensual::factory()->for($convenio)->create(['anio' => 2025, 'mes' => 1, 'monto' => 150]);
 
         $this->assertSame(1, $this->stat(AlertasConveniosWidget::class, ['anio' => 2025], 'Convenios sobregirados')->getValue());
-        $this->assertSame(0, $this->stat(AlertasConveniosWidget::class, ['anio' => 2026], 'Convenios sobregirados')->getValue());
+        $this->assertNull($this->stat(AlertasConveniosWidget::class, ['anio' => 2026], 'Convenios sobregirados'));
     }
 
     public function test_correctivos_del_anio_y_periodo_seleccionados(): void

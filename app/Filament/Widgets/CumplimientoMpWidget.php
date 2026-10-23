@@ -43,6 +43,17 @@ class CumplimientoMpWidget extends StatsOverviewWidget
     use RecibePeriodoDelEscritorio;
 
     /**
+     * SPEC-ME-007: en el grupo "Mantenimiento preventivo" ocupa 2/3 del ancho, con los 4 cortes en
+     * 2×2, junto al gasto (`GastoMpWidget`, 1/3).
+     */
+    protected int|string|array $columnSpan = ['default' => 'full', 'lg' => 2];
+
+    protected function getColumns(): int
+    {
+        return 2;
+    }
+
+    /**
      * RF-57: ver el criterio de orden en `AlertasConveniosWidget::$sort`.
      */
     protected static ?int $sort = 20;

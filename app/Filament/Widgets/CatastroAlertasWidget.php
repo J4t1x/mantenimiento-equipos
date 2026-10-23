@@ -12,6 +12,7 @@ use App\Filament\Resources\Equipos\Tables\EquiposTable;
 use App\Filament\Resources\Recintos\RecintoResource;
 use App\Filament\Resources\Recintos\Tables\RecintosTable;
 use App\Filament\Support\RecibePeriodoDelEscritorio;
+use App\Filament\Support\SoloAlertasPendientes;
 use App\Models\EjecucionMensual;
 use App\Models\Equipo;
 use App\Models\Recinto;
@@ -53,6 +54,9 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
  * vencidos sin registrar, ver `EjecucionMensual::atrasadas()`). Cuenta equipos, no meses, y se
  * marca en rojo si alguno es crítico. Enlaza a la Bitácora: con el filtro de atrasadas en el año en
  * curso, o con el año y el estado "Programado" en un año pasado.
+ *
+ * SPEC-ME-007: solo se muestran las tarjetas con casos, ordenadas por gravedad
+ * (`SoloAlertasPendientes`).
  */
 class CatastroAlertasWidget extends StatsOverviewWidget
 {
@@ -63,7 +67,7 @@ class CatastroAlertasWidget extends StatsOverviewWidget
      */
     protected static ?int $sort = 11;
 
-    protected ?string $heading = 'Catastro que requiere atención';
+    protected ?string $heading = 'Catastro y mantenimiento';
 
     public static function canView(): bool
     {
@@ -168,7 +172,7 @@ class CatastroAlertasWidget extends StatsOverviewWidget
                     : null);
         }
 
-        return $stats;
+        return SoloAlertasPendientes::filtrar($stats);
     }
 
     /**

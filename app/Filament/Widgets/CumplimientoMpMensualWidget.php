@@ -31,8 +31,6 @@ class CumplimientoMpMensualWidget extends ChartWidget
      */
     protected static ?int $sort = 30;
 
-    protected int|string|array $columnSpan = 'full';
-
     protected ?string $heading = 'Cumplimiento MP mes a mes';
 
     protected ?string $description = 'Programados vs. ejecutados por mes, con el % de cumplimiento acumulado';

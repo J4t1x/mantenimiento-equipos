@@ -27,8 +27,6 @@ class GastoMensualWidget extends ChartWidget
      */
     protected static ?int $sort = 31;
 
-    protected int|string|array $columnSpan = 'full';
-
     protected ?string $heading = 'Gasto mensual ejecutado';
 
     protected ?string $description = 'Mantenimiento preventivo (convenios) y correctivo, por mes';

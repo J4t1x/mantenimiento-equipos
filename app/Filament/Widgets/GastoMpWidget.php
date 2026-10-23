@@ -24,6 +24,16 @@ class GastoMpWidget extends StatsOverviewWidget
     use RecibePeriodoDelEscritorio;
 
     /**
+     * SPEC-ME-007: 1/3 del ancho junto al cumplimiento, con sus dos tarjetas apiladas.
+     */
+    protected int|string|array $columnSpan = ['default' => 'full', 'lg' => 1];
+
+    protected function getColumns(): int
+    {
+        return 1;
+    }
+
+    /**
      * RF-57: ver el criterio de orden en `AlertasConveniosWidget::$sort`. Va con el cumplimiento MP.
      */
     protected static ?int $sort = 21;

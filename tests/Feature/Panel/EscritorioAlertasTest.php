@@ -126,7 +126,8 @@ class EscritorioAlertasTest extends TestCase
         $this->assertSame(1, $tarjeta->getValue());
         $this->assertStringContainsString('filters[anio][value]=2025', $url);
         $this->assertStringContainsString('filters[estado][value]=programado', $url);
-        $this->assertNull($this->stat(CatastroAlertasWidget::class, ['anio' => 2027], 'MP atrasada')->getUrl());
+        // En un año futuro no hay atrasos y la alerta en 0 no se muestra (SPEC-ME-007).
+        $this->assertNull($this->stat(CatastroAlertasWidget::class, ['anio' => 2027], 'MP atrasada'));
     }
 
     public function test_respeta_el_alcance_por_recinto(): void

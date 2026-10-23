@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Actions\CalcularEjecucionConvenioAction;
 use App\Filament\Resources\Convenios\ConvenioResource;
 use App\Filament\Support\RecibePeriodoDelEscritorio;
+use App\Filament\Support\SoloAlertasPendientes;
 use App\Models\Convenio;
 use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\StatsOverviewWidget;
@@ -22,6 +23,8 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
  *
  * El sobregiro se calcula para el año elegido en el Escritorio (el monto del convenio es anual, así
  * que no se acota al período). "Por vencer" es una alerta operativa y se cuenta siempre desde hoy.
+ *
+ * SPEC-ME-007: solo se muestran las tarjetas con casos (`SoloAlertasPendientes`).
  */
 class AlertasConveniosWidget extends StatsOverviewWidget
 {
@@ -34,7 +37,7 @@ class AlertasConveniosWidget extends StatsOverviewWidget
      */
     protected static ?int $sort = 10;
 
-    protected ?string $heading = 'Convenios que requieren atención';
+    protected ?string $heading = 'Convenios';
 
     public static function canView(): bool
     {
@@ -50,7 +53,7 @@ class AlertasConveniosWidget extends StatsOverviewWidget
         $porVencer = $accion->contarPorVencer(Convenio::DIAS_POR_VENCER);
         $puedeVerConvenios = ConvenioResource::canViewAny();
 
-        return [
+        return SoloAlertasPendientes::filtrar([
             Stat::make('Convenios sobregirados', $sobregirados)
                 ->description("Ejecución {$anio} supera el monto anual")
                 ->icon(Heroicon::OutlinedExclamationTriangle)
@@ -62,6 +65,6 @@ class AlertasConveniosWidget extends StatsOverviewWidget
                 ->icon(Heroicon::OutlinedCalendarDays)
                 ->color($porVencer > 0 ? 'warning' : 'success')
                 ->url($puedeVerConvenios ? ConvenioResource::getUrl('index', ['filters' => ['vigencia' => ['value' => 'vigente']]]) : null),
-        ];
+        ]);
     }
 }

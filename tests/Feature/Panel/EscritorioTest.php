@@ -6,6 +6,7 @@ use App\Enums\Criticidad;
 use App\Enums\EstadoEjecucion;
 use App\Enums\EstadoEquipo;
 use App\Enums\FrecuenciaAnual;
+use App\Filament\Pages\Escritorio;
 use App\Filament\Widgets\AlertasConveniosWidget;
 use App\Filament\Widgets\CatastroAlertasWidget;
 use App\Filament\Widgets\ConveniosEncargadoWidget;
@@ -17,13 +18,12 @@ use App\Filament\Widgets\GastoMensualWidget;
 use App\Filament\Widgets\GastoMpWidget;
 use App\Filament\Widgets\IndicadoresGeneralesWidget;
 use App\Filament\Widgets\MisPlanesDelMesWidget;
+use App\Models\Convenio;
 use App\Models\ConvenioEjecucionMensual;
 use App\Models\Equipo;
 use App\Models\MantenimientoCorrectivo;
 use App\Models\PlanMantenimiento;
 use App\Models\User;
-use Filament\Facades\Filament;
-use Filament\Widgets\AccountWidget;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -50,47 +50,78 @@ class EscritorioTest extends TestCase
     }
 
     /**
-     * @return array<string, array{string, array<int, class-string>}>
+     * Widgets visibles por rol, en el orden de los grupos del Escritorio (SPEC-ME-007).
+     *
+     * @return array<string, array{string, array<int, class-string>, array<int, string>}>
      */
     public static function widgetsPorRol(): array
     {
         return [
             'Encargado de Mantención' => ['Encargado de Mantención', [
-                AlertasConveniosWidget::class, CatastroAlertasWidget::class, CumplimientoMpWidget::class, GastoMpWidget::class,
-                CumplimientoMpMensualWidget::class, GastoMensualWidget::class, DistribucionCatastroWidget::class,
-                DistribucionCatastroCriticidadWidget::class, IndicadoresGeneralesWidget::class,
-            ]],
+                CatastroAlertasWidget::class, AlertasConveniosWidget::class,
+                CumplimientoMpWidget::class, GastoMpWidget::class, CumplimientoMpMensualWidget::class, GastoMensualWidget::class,
+                IndicadoresGeneralesWidget::class, DistribucionCatastroWidget::class, DistribucionCatastroCriticidadWidget::class,
+            ], ['Requiere atención', 'Mantenimiento preventivo', 'Catastro de equipos']],
             'Técnico Interno' => ['Técnico Interno', [
                 MisPlanesDelMesWidget::class, CumplimientoMpWidget::class, CumplimientoMpMensualWidget::class,
-            ]],
+            ], ['Mi trabajo del mes', 'Mantenimiento preventivo']],
             'Encargado de Convenios' => ['Encargado de Convenios', [
                 AlertasConveniosWidget::class, GastoMpWidget::class, GastoMensualWidget::class, ConveniosEncargadoWidget::class,
-            ]],
+            ], ['Requiere atención', 'Mantenimiento preventivo', 'Convenios']],
             'Jefatura' => ['Jefatura', [
-                CatastroAlertasWidget::class, CumplimientoMpWidget::class, GastoMpWidget::class, CumplimientoMpMensualWidget::class,
-                GastoMensualWidget::class, DistribucionCatastroWidget::class, DistribucionCatastroCriticidadWidget::class,
-                IndicadoresGeneralesWidget::class,
-            ]],
+                CatastroAlertasWidget::class,
+                CumplimientoMpWidget::class, GastoMpWidget::class, CumplimientoMpMensualWidget::class, GastoMensualWidget::class,
+                IndicadoresGeneralesWidget::class, DistribucionCatastroWidget::class, DistribucionCatastroCriticidadWidget::class,
+            ], ['Requiere atención', 'Mantenimiento preventivo', 'Catastro de equipos']],
         ];
     }
 
     /**
      * @param  array<int, class-string>  $esperados
+     * @param  array<int, string>  $grupos
      */
     #[DataProvider('widgetsPorRol')]
-    public function test_cada_rol_ve_sus_widgets_en_orden_de_jerarquia(string $rol, array $esperados): void
+    public function test_cada_rol_ve_sus_grupos_y_widgets_en_orden(string $rol, array $esperados, array $grupos): void
     {
         $this->actuarComo($rol);
 
-        $visibles = collect(Filament::getPanel('admin')->getWidgets())
-            ->map(fn ($widget): string => is_string($widget) ? $widget : $widget->widget)
-            ->reject(fn (string $widget): bool => $widget === AccountWidget::class)
-            ->filter(fn (string $widget): bool => $widget::canView())
-            ->values()
-            ->all();
+        $this->assertSame($esperados, Escritorio::widgetsVisibles());
 
-        $this->assertSame($esperados, $visibles);
-        $this->get('/admin')->assertOk();
+        $respuesta = $this->get('/admin')->assertOk()->assertSeeInOrder($grupos);
+        $ocultos = array_diff(array_column(Escritorio::GRUPOS, 'titulo'), $grupos);
+
+        foreach ($ocultos as $grupo) {
+            $respuesta->assertDontSee($grupo.'</', false);
+        }
+
+        $respuesta->assertDontSee('Bienvenida');
+    }
+
+    public function test_sin_casos_las_alertas_muestran_una_sola_tarjeta_sin_alertas_pendientes(): void
+    {
+        $this->actuarComo('Jefatura');
+
+        $alertas = $this->invocar(new CatastroAlertasWidget, 'getStats');
+
+        $this->assertCount(1, $alertas);
+        $this->assertSame('Sin alertas pendientes', $alertas[0]->getLabel());
+    }
+
+    public function test_las_alertas_se_ordenan_por_gravedad(): void
+    {
+        $this->actuarComo('Encargado de Mantención');
+        Equipo::factory()->create(['estado' => EstadoEquipo::SinEvaluar]);
+        Equipo::factory()->create(['anio_adquisicion' => 2000, 'vida_util_anios' => 10]);
+
+        $alertas = collect($this->invocar(new CatastroAlertasWidget, 'getStats'));
+        $colores = $alertas->map(fn ($stat): string => $stat->getColor())->all();
+
+        $this->assertContains('Equipos sin evaluar', $alertas->map(fn ($stat): string => $stat->getLabel()));
+        $this->assertContains('warning', $colores);
+        $this->assertContains('danger', $colores);
+        // Todas las rojas antes que las amarillas, y ninguna en 0.
+        $this->assertSame($colores, collect($colores)->sortBy(fn (string $color): int => $color === 'danger' ? 0 : 1)->values()->all());
+        $this->assertTrue($alertas->every(fn ($stat): bool => $stat->getValue() > 0));
     }
 
     public function test_grafico_de_cumplimiento_mensual_con_filtro_de_anio(): void
@@ -152,9 +183,12 @@ class EscritorioTest extends TestCase
     {
         $tecnico = User::factory()->create();
         $this->actuarComo('Encargado de Mantención');
+        // Las alertas solo se muestran con casos (SPEC-ME-007).
+        Equipo::factory()->create(['estado' => EstadoEquipo::SinEvaluar]);
+        Convenio::factory()->create(['fecha_expiracion' => now()->addDays(10)]);
 
         $sinEvaluar = collect($this->invocar(new CatastroAlertasWidget, 'getStats'))->first(fn ($stat): bool => $stat->getLabel() === 'Equipos sin evaluar');
-        [, $porVencer] = $this->invocar(new AlertasConveniosWidget, 'getStats');
+        $porVencer = collect($this->invocar(new AlertasConveniosWidget, 'getStats'))->first(fn ($stat): bool => $stat->getLabel() === 'Convenios por vencer');
 
         $this->assertStringContainsString('filters[estado][value]=sin_evaluar', urldecode($sinEvaluar->getUrl()));
         $this->assertStringContainsString('filters[vigencia][value]=vigente', urldecode($porVencer->getUrl()));
