@@ -41,7 +41,7 @@ Laravel 13 · Filament 5 · Livewire 4 · PHP 8.4 · PostgreSQL 18 · Laravel Sa
 
 ## Puesta en marcha (desarrollo)
 
-Requisitos: Docker, y PHP 8.4 con Composer para el `composer install` inicial.
+Requisitos: Docker, y PHP 8.4.27 o superior (incluye el parche de PHP2Shell, CVE-2026-109618/109619) con Composer para el `composer install` inicial. La imagen de Sail (`docker/8.4`) verifica esa versión mínima al construirse.
 
 ```bash
 cp .env.example .env
