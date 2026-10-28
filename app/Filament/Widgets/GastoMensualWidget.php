@@ -53,6 +53,19 @@ class GastoMensualWidget extends ChartWidget
         return 'bar';
     }
 
+    /**
+     * SPEC-ME-010: sin gasto en el año, el gráfico quedaba vacío con un eje de $0 a $1 y sin
+     * explicación; la descripción lo indica.
+     */
+    public function getDescription(): ?string
+    {
+        $total = collect($this->getCachedData()['datasets'])->sum(fn (array $serie): float => array_sum($serie['data']));
+
+        return $total > 0
+            ? $this->description
+            : "Sin gasto registrado en {$this->filter}. Aparecerá al cargar la ejecución de convenios o mantenimientos correctivos.";
+    }
+
     protected function getData(): array
     {
         $this->sincronizarFiltroConEscritorio();
@@ -99,6 +112,7 @@ class GastoMensualWidget extends ChartWidget
                         stacked: true,
                         beginAtZero: true,
                         ticks: {
+                            precision: 0,
                             callback: (value) => '$' + Number(value).toLocaleString('es-CL'),
                         },
                     },

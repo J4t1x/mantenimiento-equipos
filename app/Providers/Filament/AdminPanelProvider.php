@@ -27,6 +27,8 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Contracts\View\View;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -77,6 +79,9 @@ class AdminPanelProvider extends PanelProvider
                 'warning' => Color::Amber,
             ])
             ->databaseNotifications()
+            // SPEC-ME-010: menú lateral con los colores institucionales del mockup (CSS inyectado,
+            // sin tema compilado).
+            ->renderHook(PanelsRenderHook::HEAD_END, fn (): View => view('filament.estilos-panel'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
@@ -116,7 +121,8 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->plugins([
-                FilamentShieldPlugin::make(),
+                // SPEC-ME-010: Roles junto a Usuarios, en vez del grupo "Filament Shield".
+                FilamentShieldPlugin::make()->navigationGroup('Administración'),
             ])
             ->authMiddleware([
                 Authenticate::class,

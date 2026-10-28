@@ -9,6 +9,7 @@ use App\Filament\Resources\MantenimientoCorrectivos\Pages\ViewMantenimientoCorre
 use App\Filament\Resources\MantenimientoCorrectivos\Schemas\MantenimientoCorrectivoForm;
 use App\Filament\Resources\MantenimientoCorrectivos\Schemas\MantenimientoCorrectivoInfolist;
 use App\Filament\Resources\MantenimientoCorrectivos\Tables\MantenimientoCorrectivosTable;
+use App\Filament\Support\EtiquetasEnEspanol;
 use App\Models\MantenimientoCorrectivo;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -21,6 +22,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class MantenimientoCorrectivoResource extends Resource
 {
+    use EtiquetasEnEspanol;
+
     protected static ?string $model = MantenimientoCorrectivo::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedWrenchScrewdriver;

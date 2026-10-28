@@ -35,7 +35,8 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
  * formulario de la grilla del plan (`BitacoraMensual`, con RN-02, RF-66 y RF-74). El técnico interno
  * ve todos los planes, pero solo registra en los que tiene asignados (RF-20), y un rol sin permiso
  * de edición de la bitácora (Jefatura) ve la grilla en solo lectura. El pie de cada mes muestra
- * realizadas / programadas del conjunto filtrado, y la columna del mes en curso va resaltada.
+ * realizadas / programadas del conjunto filtrado, y la columna del mes en curso va resaltada. La
+ * leyenda del pie y de los símbolos está en el subtítulo de la página.
  */
 class BitacoraAnual extends Page implements HasTable
 {
@@ -60,7 +61,7 @@ class BitacoraAnual extends Page implements HasTable
     {
         return collect(EstadoEjecucion::cases())
             ->map(fn (EstadoEjecucion $estado): string => "{$estado->simbolo()} {$estado->getLabel()}")
-            ->implode(' · ').' · Haz clic en un mes para registrar su ejecución.';
+            ->implode(' · ').' · Al pie de cada mes: realizadas / programadas. Haz clic en un mes para registrar su ejecución.';
     }
 
     public function content(Schema $schema): Schema
@@ -73,18 +74,23 @@ class BitacoraAnual extends Page implements HasTable
         return $table
             ->query(PlanMantenimiento::query()->with(['equipo.servicioClinico', 'ejecucionesMensuales']))
             ->columns([
-                TextColumn::make('equipo.n_inventario')
-                    ->label('N° inventario')
-                    ->searchable()
-                    ->sortable(),
+                // SPEC-ME-010: equipo e inventario en una sola columna (nombre en una línea, completo en
+                // el tooltip) y servicio oculto por defecto, para que los 12 meses quepan a 1440 px.
                 TextColumn::make('equipo.nombre')
                     ->label('Equipo')
-                    ->searchable()
+                    ->description(fn (PlanMantenimiento $record): ?string => $record->equipo?->n_inventario)
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->whereHas(
+                        'equipo',
+                        fn (Builder $equipo) => $equipo->where(fn (Builder $q) => $q
+                            ->whereLike('nombre', "%{$search}%", caseSensitive: false)
+                            ->orWhereLike('n_inventario', "%{$search}%", caseSensitive: false)),
+                    ))
                     ->sortable()
-                    ->wrap(),
+                    ->limit(22)
+                    ->tooltip(fn (PlanMantenimiento $record): ?string => $record->equipo?->nombre),
                 TextColumn::make('equipo.servicioClinico.nombre')
                     ->label('Servicio clínico')
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('equipo.criticidad')
                     ->label('Criticidad')
                     ->badge(),
@@ -139,9 +145,11 @@ class BitacoraAnual extends Page implements HasTable
     {
         $esMesActual = fn (): bool => $mes === now()->month
             && (int) ($this->getTableFilterState('anio')['value'] ?? now()->year) === now()->year;
-        $resaltado = fn (): array => $esMesActual()
-            ? ['style' => 'background-color: color-mix(in oklab, var(--primary-500) 12%, transparent);']
-            : [];
+        // Relleno lateral reducido para que entren los 12 meses (SPEC-ME-010; el relleno interno
+        // de la celda se ajusta en `filament.estilos-panel`).
+        $resaltado = fn (): array => ['style' => 'padding-inline: .25rem;'.($esMesActual()
+            ? ' background-color: color-mix(in oklab, var(--primary-500) 12%, transparent);'
+            : '')];
 
         return TextColumn::make("mes_{$mes}")
             ->label(BitacoraMensual::MESES_ABREVIADOS[$mes])
@@ -159,8 +167,8 @@ class BitacoraAnual extends Page implements HasTable
             ->extraHeaderAttributes($resaltado)
             ->extraCellAttributes($resaltado)
             ->action($this->accionEditarMes($mes))
+            // Solo la cifra: una etiqueta por columna ensanchaba los 12 meses (SPEC-ME-010).
             ->summarize(Summarizer::make()
-                ->label('Realizadas / programadas')
                 ->using(fn (QueryBuilder $query): string => $this->resumenDelMes($query, $mes)));
     }
 

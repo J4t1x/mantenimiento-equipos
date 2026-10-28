@@ -10,6 +10,7 @@ use App\Filament\Resources\Convenios\RelationManagers\EjecucionesMensualesRelati
 use App\Filament\Resources\Convenios\Schemas\ConvenioForm;
 use App\Filament\Resources\Convenios\Schemas\ConvenioInfolist;
 use App\Filament\Resources\Convenios\Tables\ConveniosTable;
+use App\Filament\Support\EtiquetasEnEspanol;
 use App\Models\Convenio;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -21,6 +22,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ConvenioResource extends Resource
 {
+    use EtiquetasEnEspanol;
+
     protected static ?string $model = Convenio::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;

@@ -37,60 +37,27 @@ class EquiposTable
                     fn ($query) => new EquiposFiltradosExport($query),
                 ),
             ])
+            // SPEC-ME-010: visibles por defecto solo las columnas que se usan para identificar y
+            // priorizar un equipo (como en la pantalla 3 del mockup). El resto queda disponible en el
+            // selector de columnas y sigue participando en la búsqueda.
             ->columns([
-                TextColumn::make('recinto.nombre')
-                    ->label('Recinto')
+                TextColumn::make('n_inventario')
+                    ->label('N° de inventario')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('nombre')
+                    ->label('Nombre')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('servicioClinico.nombre')
                     ->label('Servicio clínico')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('clase.nombre')
-                    ->label('Clase')
-                    ->searchable()
-                    ->toggleable(),
-                TextColumn::make('subclase.nombre')
-                    ->label('Subclase')
-                    ->searchable()
-                    ->toggleable(),
-                TextColumn::make('nombre')
-                    ->label('Nombre')
-                    ->searchable(),
-                TextColumn::make('marca')
-                    ->label('Marca')
-                    ->searchable()
-                    ->toggleable(),
-                TextColumn::make('modelo')
-                    ->label('Modelo')
-                    ->searchable()
-                    ->toggleable(),
-                TextColumn::make('serie')
-                    ->label('N° de serie')
-                    ->searchable()
-                    ->toggleable(),
-                TextColumn::make('n_inventario')
-                    ->label('N° de inventario')
-                    ->searchable(),
-                TextColumn::make('anio_adquisicion')
-                    ->label('Año adquisición')
-                    ->numeric()
-                    ->sortable()
-                    ->toggleable(),
-                TextColumn::make('vida_util_anios')
-                    ->label('Vida útil (años)')
-                    ->numeric()
-                    ->sortable()
-                    ->toggleable(),
-                TextColumn::make('propiedad')
-                    ->label('Propiedad')
-                    ->badge()
-                    ->toggleable(),
-                TextColumn::make('estado')
-                    ->label('Estado')
-                    ->badge(),
                 TextColumn::make('criticidad')
                     ->label('Criticidad')
+                    ->badge(),
+                TextColumn::make('estado')
+                    ->label('Estado')
                     ->badge(),
                 // RF-85: frecuencia del plan de MP del año en curso.
                 TextColumn::make('planActual.frecuencia_anual')
@@ -98,32 +65,71 @@ class EquiposTable
                     ->formatStateUsing(fn ($state): string => (FrecuenciaAnual::desde($state)?->value ?? '?').'x / año')
                     ->placeholder('Sin plan')
                     ->toggleable(),
-                TextColumn::make('tipo_critico_norma')
-                    ->label('Tipo norma MINSAL')
-                    ->placeholder('Sin clasificar')
-                    ->toggleable(),
                 IconColumn::make('en_garantia')
                     ->label('En garantía')
                     ->boolean()
                     ->toggleable(),
+                TextColumn::make('recinto.nombre')
+                    ->label('Recinto')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('clase.nombre')
+                    ->label('Clase')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('subclase.nombre')
+                    ->label('Subclase')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('marca')
+                    ->label('Marca')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('modelo')
+                    ->label('Modelo')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('serie')
+                    ->label('N° de serie')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('tipo_critico_norma')
+                    ->label('Tipo norma MINSAL')
+                    ->placeholder('Sin clasificar')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('anio_adquisicion')
+                    ->label('Año adquisición')
+                    ->numeric()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('vida_util_anios')
+                    ->label('Vida útil (años)')
+                    ->numeric()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('propiedad')
+                    ->label('Propiedad')
+                    ->badge()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('garantia_anio_vencimiento')
                     ->label('Vence garantía')
                     ->numeric()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 IconColumn::make('bajo_plan_mp')
                     ->label('Bajo plan MP')
                     ->boolean()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('anio_ingreso_plan')
                     ->label('Año ingreso al plan')
                     ->numeric()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 IconColumn::make('activo')
                     ->label('Activo')
                     ->boolean()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -171,9 +177,11 @@ class EquiposTable
                     ->query(fn (Builder $query): Builder => $query->criticosSinPlan()),
                 TrashedFilter::make(),
             ])
+            // SPEC-ME-010: acciones como íconos (con su etiqueta en el tooltip) para que el listado
+            // quepa sin desplazamiento horizontal.
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
+                ViewAction::make()->iconButton(),
+                EditAction::make()->iconButton(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

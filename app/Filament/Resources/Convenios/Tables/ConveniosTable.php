@@ -58,7 +58,8 @@ class ConveniosTable
                 TextColumn::make('fecha_resolucion')
                     ->label('Fecha resolución')
                     ->date('d-m-Y')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('fecha_expiracion')
                     ->label('Fecha expiración')
                     ->date('d-m-Y')
@@ -76,10 +77,12 @@ class ConveniosTable
                 TextColumn::make('subasignacion_sigfe')
                     ->label('SIGFE')
                     ->searchable()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
+                // SPEC-ME-010: la vigencia ya indica si el convenio sigue en uso.
                 IconColumn::make('activo')
                     ->label('Activo')
-                    ->boolean(),
+                    ->boolean()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('ejecucion_convenio')
                     ->label('Ejecución '.now()->year)
                     ->state(function (Convenio $record) use ($ejecucionDe): string {

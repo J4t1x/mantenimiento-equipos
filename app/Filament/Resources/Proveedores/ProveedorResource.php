@@ -7,6 +7,7 @@ use App\Filament\Resources\Proveedores\Pages\EditProveedor;
 use App\Filament\Resources\Proveedores\Pages\ListProveedores;
 use App\Filament\Resources\Proveedores\Schemas\ProveedorForm;
 use App\Filament\Resources\Proveedores\Tables\ProveedoresTable;
+use App\Filament\Support\EtiquetasEnEspanol;
 use App\Models\Proveedor;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -16,6 +17,8 @@ use Filament\Tables\Table;
 
 class ProveedorResource extends Resource
 {
+    use EtiquetasEnEspanol;
+
     protected static ?string $model = Proveedor::class;
 
     protected static ?string $slug = 'proveedores';

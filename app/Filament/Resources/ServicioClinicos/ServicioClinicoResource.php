@@ -7,6 +7,7 @@ use App\Filament\Resources\ServicioClinicos\Pages\EditServicioClinico;
 use App\Filament\Resources\ServicioClinicos\Pages\ListServicioClinicos;
 use App\Filament\Resources\ServicioClinicos\Schemas\ServicioClinicoForm;
 use App\Filament\Resources\ServicioClinicos\Tables\ServicioClinicosTable;
+use App\Filament\Support\EtiquetasEnEspanol;
 use App\Models\ServicioClinico;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -16,6 +17,8 @@ use Filament\Tables\Table;
 
 class ServicioClinicoResource extends Resource
 {
+    use EtiquetasEnEspanol;
+
     protected static ?string $model = ServicioClinico::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHeart;

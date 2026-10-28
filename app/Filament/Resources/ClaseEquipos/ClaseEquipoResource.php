@@ -7,6 +7,7 @@ use App\Filament\Resources\ClaseEquipos\Pages\EditClaseEquipo;
 use App\Filament\Resources\ClaseEquipos\Pages\ListClaseEquipos;
 use App\Filament\Resources\ClaseEquipos\Schemas\ClaseEquipoForm;
 use App\Filament\Resources\ClaseEquipos\Tables\ClaseEquiposTable;
+use App\Filament\Support\EtiquetasEnEspanol;
 use App\Models\ClaseEquipo;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -16,6 +17,8 @@ use Filament\Tables\Table;
 
 class ClaseEquipoResource extends Resource
 {
+    use EtiquetasEnEspanol;
+
     protected static ?string $model = ClaseEquipo::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquares2x2;

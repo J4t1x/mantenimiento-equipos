@@ -7,6 +7,7 @@ use App\Filament\Resources\ConvenioEjecucionesMensuales\Pages\EditConvenioEjecuc
 use App\Filament\Resources\ConvenioEjecucionesMensuales\Pages\ListConvenioEjecucionesMensuales;
 use App\Filament\Resources\ConvenioEjecucionesMensuales\Schemas\ConvenioEjecucionMensualForm;
 use App\Filament\Resources\ConvenioEjecucionesMensuales\Tables\ConvenioEjecucionesMensualesTable;
+use App\Filament\Support\EtiquetasEnEspanol;
 use App\Models\ConvenioEjecucionMensual;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -16,6 +17,8 @@ use Filament\Tables\Table;
 
 class ConvenioEjecucionMensualResource extends Resource
 {
+    use EtiquetasEnEspanol;
+
     protected static ?string $model = ConvenioEjecucionMensual::class;
 
     protected static ?string $slug = 'convenio-ejecuciones-mensuales';

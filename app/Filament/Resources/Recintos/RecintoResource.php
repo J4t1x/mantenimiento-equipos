@@ -9,6 +9,7 @@ use App\Filament\Resources\Recintos\RelationManagers\PresupuestosMantenimientoRe
 use App\Filament\Resources\Recintos\RelationManagers\ProgramasAnualesMantenimientoRelationManager;
 use App\Filament\Resources\Recintos\Schemas\RecintoForm;
 use App\Filament\Resources\Recintos\Tables\RecintosTable;
+use App\Filament\Support\EtiquetasEnEspanol;
 use App\Models\Recinto;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -18,6 +19,8 @@ use Filament\Tables\Table;
 
 class RecintoResource extends Resource
 {
+    use EtiquetasEnEspanol;
+
     protected static ?string $model = Recinto::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;

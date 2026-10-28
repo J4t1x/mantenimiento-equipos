@@ -12,6 +12,7 @@ use App\Filament\Resources\Equipos\RelationManagers\RetirosUsoRelationManager;
 use App\Filament\Resources\Equipos\Schemas\EquipoForm;
 use App\Filament\Resources\Equipos\Schemas\EquipoInfolist;
 use App\Filament\Resources\Equipos\Tables\EquiposTable;
+use App\Filament\Support\EtiquetasEnEspanol;
 use App\Models\Equipo;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -23,6 +24,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class EquipoResource extends Resource
 {
+    use EtiquetasEnEspanol;
+
     protected static ?string $model = Equipo::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCpuChip;

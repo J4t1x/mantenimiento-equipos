@@ -6,6 +6,7 @@ use App\Filament\Resources\EjecucionesMensuales\Pages\EditEjecucionMensual;
 use App\Filament\Resources\EjecucionesMensuales\Pages\ListEjecucionesMensuales;
 use App\Filament\Resources\EjecucionesMensuales\Schemas\EjecucionMensualForm;
 use App\Filament\Resources\EjecucionesMensuales\Tables\EjecucionesMensualesTable;
+use App\Filament\Support\EtiquetasEnEspanol;
 use App\Models\EjecucionMensual;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -15,6 +16,8 @@ use Filament\Tables\Table;
 
 class EjecucionMensualResource extends Resource
 {
+    use EtiquetasEnEspanol;
+
     protected static ?string $model = EjecucionMensual::class;
 
     protected static ?string $slug = 'ejecuciones-mensuales';

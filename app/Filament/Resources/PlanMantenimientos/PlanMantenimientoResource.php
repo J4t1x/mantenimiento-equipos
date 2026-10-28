@@ -10,6 +10,7 @@ use App\Filament\Resources\PlanMantenimientos\RelationManagers\EjecucionesMensua
 use App\Filament\Resources\PlanMantenimientos\Schemas\PlanMantenimientoForm;
 use App\Filament\Resources\PlanMantenimientos\Schemas\PlanMantenimientoInfolist;
 use App\Filament\Resources\PlanMantenimientos\Tables\PlanMantenimientosTable;
+use App\Filament\Support\EtiquetasEnEspanol;
 use App\Models\PlanMantenimiento;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -22,6 +23,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PlanMantenimientoResource extends Resource
 {
+    use EtiquetasEnEspanol;
+
     protected static ?string $model = PlanMantenimiento::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
