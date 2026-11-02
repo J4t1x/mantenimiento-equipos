@@ -54,9 +54,16 @@ composer install
 
 Panel: <http://localhost:8010/admin>
 
-El seeder crea los roles con sus permisos y dos usuarios `super_admin` de desarrollo
-(`admin@saludaysen.cl` y `test@example.com`, contraseña `password`). Deben reemplazarse antes de
-cualquier despliegue.
+El seeder crea los roles con sus permisos y, **solo con `APP_ENV=local`**, dos usuarios
+`super_admin` de desarrollo (`admin@saludaysen.cl` y `test@example.com`, contraseña `password`). En
+cualquier otro entorno no crea usuarios: el primer administrador se crea con
+`php artisan app:crear-usuario --rol=super_admin`.
+
+Para instalar en producción, ver [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md).
+
+Después de actualizar dependencias, ejecutar `./vendor/bin/sail artisan filament:upgrade`. Los assets
+de Filament en `public/` no se versionan y, si quedan desfasados, el inicio de sesión deja de
+funcionar en el navegador.
 
 ### Carga de datos reales
 
@@ -94,6 +101,7 @@ planilla.
 | [`docs/SAD.md`](docs/SAD.md) | Arquitectura y decisiones (ADR). |
 | [`docs/MODELO-DATOS.md`](docs/MODELO-DATOS.md) | Modelo de datos. |
 | [`docs/DESCRIPCION-SISTEMA.md`](docs/DESCRIPCION-SISTEMA.md) | Descripción funcional del sistema. |
+| [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md) | Guía de instalación, operación, actualización y respaldos para el Sysadmin. |
 | [`docs/MOCKUP-SISTEMA.html`](docs/MOCKUP-SISTEMA.html) | Mockup de pantallas (referencia visual, no diseño final). |
 | [`docs/normativa/NORMA-MP-EQUIPAMIENTO-CRITICO.md`](docs/normativa/NORMA-MP-EQUIPAMIENTO-CRITICO.md) ([PDF](docs/normativa/Resolucion-Exenta-1341-2017-MINSAL-Norma-MP-Equipamiento-Medico-Critico.pdf)) | Síntesis de la Res. Ex. 1341/2017 del MINSAL (MP de equipamiento médico crítico) y su aplicación al sistema. |
 
