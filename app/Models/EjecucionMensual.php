@@ -160,6 +160,14 @@ class EjecucionMensual extends Model implements AcotadoPorRecinto, AuditableCont
             }
         });
 
+        // SPEC-ME-013: la fecha real solo tiene sentido en un mes Realizado. En los demás estados se
+        // limpia, para no dejar un mes "Programado" con fecha de ejecución.
+        static::saving(function (self $ejecucion): void {
+            if ($ejecucion->estado !== EstadoEjecucion::Realizado) {
+                $ejecucion->fecha_real = null;
+            }
+        });
+
         static::saving(function (self $ejecucion): void {
             if ($ejecucion->isDirty('plan_mantenimiento_id')) {
                 AlcanceRecinto::verificarEquipo(

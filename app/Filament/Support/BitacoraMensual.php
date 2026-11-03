@@ -56,7 +56,12 @@ class BitacoraMensual
                 ->live()
                 ->rule(fn (Get $get) => new TransicionBitacoraValida($ejecucionActual($get))),
             DatePicker::make('fecha_real')
-                ->label('Fecha real de ejecución'),
+                ->label('Fecha real de ejecución')
+                // SPEC-ME-013: obligatoria y no futura al marcar Realizado; en los demás estados no
+                // aplica (el modelo la limpia).
+                ->visible(fn (Get $get): bool => EstadoEjecucion::desde($get('estado')) === EstadoEjecucion::Realizado)
+                ->required(fn (Get $get): bool => EstadoEjecucion::desde($get('estado')) === EstadoEjecucion::Realizado)
+                ->maxDate(now()),
             // RF-66 (RN-09): la reprogramación exige su causa; mismo criterio que la guarda de
             // `EjecucionMensual`.
             Textarea::make('observaciones')

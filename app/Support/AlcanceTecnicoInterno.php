@@ -41,6 +41,17 @@ class AlcanceTecnicoInterno
     }
 
     /**
+     * SPEC-ME-013: true si el usuario actual puede registrar la bitácora del plan dado. Exige el
+     * permiso de edición de la bitácora (Jefatura y Encargado de Convenios solo la ven) y, para el
+     * técnico interno, que sea el responsable del plan (RF-20). Lo usan la grilla del plan y la
+     * Bitácora anual.
+     */
+    public static function puedeRegistrarEnPlan(?PlanMantenimiento $plan): bool
+    {
+        return (bool) auth()->user()?->can('update.ejecucion_mensual') && self::puedeGestionarPlan($plan);
+    }
+
+    /**
      * Restringe el Select de "Plan de mantenimiento" del formulario de Bitácora a los planes
      * asignados al técnico interno actual — sin efecto para el resto de los roles.
      */

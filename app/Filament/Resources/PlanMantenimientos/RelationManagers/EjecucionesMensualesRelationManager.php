@@ -22,6 +22,10 @@ use Illuminate\Support\Collection;
  * para el panel y la grilla se veía como texto corrido. Suma un resumen (programadas, realizadas,
  * reprogramadas y cumplimiento), la fecha realizada en cada celda y el mes en curso destacado.
  *
+ * SPEC-ME-013: registrar exige el permiso de edición de la bitácora además del alcance del técnico
+ * (`AlcanceTecnicoInterno::puedeRegistrarEnPlan()`). Antes, Jefatura y Encargado de Convenios, que
+ * solo tienen lectura, podían registrar desde esta grilla.
+ *
  * RN-01 garantiza que un plan siempre tiene exactamente 12 `EjecucionMensual` (una por mes), así
  * que la grilla edita meses existentes — no crea ni elimina filas, a diferencia del CRUD genérico
  * que tenía antes este relation manager.
@@ -52,7 +56,7 @@ class EjecucionesMensualesRelationManager extends RelationManager
             'ejecucionesPorMes' => $ejecucionesPorMes,
             'mesesAbreviados' => BitacoraMensual::MESES_ABREVIADOS,
             'mesesCompletos' => BitacoraMensual::MESES,
-            'puedeGestionar' => AlcanceTecnicoInterno::puedeGestionarPlan($plan),
+            'puedeGestionar' => AlcanceTecnicoInterno::puedeRegistrarEnPlan($plan),
             // Mismo criterio que el indicador de cumplimiento (RN-03): programadas son los meses con
             // marca (programado, realizado o reprogramado).
             'resumen' => [
@@ -82,7 +86,8 @@ class EjecucionesMensualesRelationManager extends RelationManager
                 ...BitacoraMensual::datos($this->buscarEjecucion($arguments['mes'])),
             ])
             ->action(fn (array $arguments, array $data) => BitacoraMensual::guardar($this->getOwnerRecord(), $arguments['mes'], $data))
-            ->visible(fn (): bool => AlcanceTecnicoInterno::puedeGestionarPlan($this->getOwnerRecord()));
+            ->visible(fn (): bool => AlcanceTecnicoInterno::puedeRegistrarEnPlan($this->getOwnerRecord()))
+            ->authorize(fn (): bool => AlcanceTecnicoInterno::puedeRegistrarEnPlan($this->getOwnerRecord()));
     }
 
     private function buscarEjecucion(int $mes): ?EjecucionMensual

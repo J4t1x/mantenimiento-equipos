@@ -167,6 +167,8 @@ class BitacoraAnual extends Page implements HasTable
             ->extraHeaderAttributes($resaltado)
             ->extraCellAttributes($resaltado)
             ->action($this->accionEditarMes($mes))
+            // SPEC-ME-013: sin permiso sobre el plan, la celda no es clicable (antes parecía serlo).
+            ->disabledClick(fn (PlanMantenimiento $record): bool => ! AlcanceTecnicoInterno::puedeRegistrarEnPlan($record))
             // Solo la cifra: una etiqueta por columna ensanchaba los 12 meses (SPEC-ME-010).
             ->summarize(Summarizer::make()
                 ->using(fn (QueryBuilder $query): string => $this->resumenDelMes($query, $mes)));
@@ -188,8 +190,8 @@ class BitacoraAnual extends Page implements HasTable
             ->fillForm(fn (PlanMantenimiento $record): array => BitacoraMensual::datos($ejecucionDe($record)))
             ->action(fn (PlanMantenimiento $record, array $data) => BitacoraMensual::guardar($record, $mes, $data))
             ->successNotificationTitle('Bitácora actualizada')
-            ->visible(fn (PlanMantenimiento $record): bool => (bool) auth()->user()?->can('update.ejecucion_mensual')
-                && AlcanceTecnicoInterno::puedeGestionarPlan($record));
+            ->visible(fn (PlanMantenimiento $record): bool => AlcanceTecnicoInterno::puedeRegistrarEnPlan($record))
+            ->authorize(fn (PlanMantenimiento $record): bool => AlcanceTecnicoInterno::puedeRegistrarEnPlan($record));
     }
 
     /**

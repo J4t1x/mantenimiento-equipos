@@ -218,7 +218,8 @@ plan. El mes en curso aparece con borde azul.
 ![Registrar un mes](manual/img/08-registrar-mes.png)
 
 1. **Estado**: *Realizado* o *Reprogramado*.
-2. **Fecha real de ejecución** (si se realizó).
+2. **Fecha real de ejecución**: aparece al elegir *Realizado* y es obligatoria. No puede ser una
+   fecha futura.
 3. **Observaciones**: obligatorias al **reprogramar**; hay que indicar la causa.
 4. Al reprogramar aparece además **N° de documento de justificación** (memo, oficio).
 5. **Guardar**.
@@ -343,6 +344,7 @@ Menú **Administración → Usuarios** (solo administradores).
 
 | Regla | Qué significa en la práctica |
 |---|---|
+| **Realizado con fecha** | Al marcar un mes como *Realizado* hay que indicar la fecha real de ejecución, que no puede ser futura. En los demás estados no se guarda fecha. |
 | **Solo se registra lo programado** | Un mes se puede marcar *Realizado* o *Reprogramado* solo si estaba *Programado*. Si se intenta en un mes sin programar, el sistema lo rechaza con un mensaje. |
 | **Reprogramar exige la causa** | Al reprogramar hay que escribir la causa en Observaciones. Se puede agregar el n° del documento de justificación. |
 | **Plazo de 30 días** | Una mantención reprogramada de un equipo crítico debe realizarse dentro de 30 días desde el fin del mes programado. Si no, aparece la alerta "Críticos a retirar de uso". |
