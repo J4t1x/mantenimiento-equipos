@@ -6,6 +6,7 @@ use App\Filament\Support\AccionesEliminarProtegidas;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -56,6 +57,7 @@ class RecintosTable
                     ->query(fn (Builder $query): Builder => $query->sinProgramaValidado()),
             ])
             ->recordActions([
+                ViewAction::make(),
                 EditAction::make(),
             ])
             ->toolbarActions([

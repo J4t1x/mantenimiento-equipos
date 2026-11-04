@@ -13,6 +13,10 @@ use Illuminate\Foundation\Auth\User as AuthUser;
  * Generada por Shield. RF-63: además del permiso, las acciones que modifican el catálogo exigen que
  * el usuario no tenga recintos asignados (personal del subdepartamento): un encargado de un
  * establecimiento no puede crear recintos que no vería ni editar el suyo.
+ *
+ * SPEC-ME-014: los datos de mantenimiento preventivo del recinto (responsable de MP, programa anual y
+ * gasto programado) son otra cosa. Los gestiona el encargado de cada establecimiento en **su** recinto
+ * ({@see self::gestionarDatosMp()}). Los global scopes ya impiden resolver un recinto ajeno (404).
  */
 class RecintoPolicy
 {
@@ -76,6 +80,16 @@ class RecintoPolicy
     public function reorder(AuthUser $authUser): bool
     {
         return $authUser->can('reorder.recinto') && $this->administraElCatalogo($authUser);
+    }
+
+    /**
+     * SPEC-ME-014: registrar el responsable de MP, el programa anual y el gasto programado del
+     * recinto. Requiere el permiso de edición de recintos (Encargado de Mantención), pero no
+     * administrar el catálogo: el encargado acotado lo hace en su propio recinto.
+     */
+    public function gestionarDatosMp(AuthUser $authUser, Recinto $recinto): bool
+    {
+        return $authUser->can('update.recinto');
     }
 
     private function administraElCatalogo(AuthUser $authUser): bool

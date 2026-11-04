@@ -5,9 +5,11 @@ namespace App\Filament\Resources\Recintos;
 use App\Filament\Resources\Recintos\Pages\CreateRecinto;
 use App\Filament\Resources\Recintos\Pages\EditRecinto;
 use App\Filament\Resources\Recintos\Pages\ListRecintos;
+use App\Filament\Resources\Recintos\Pages\ViewRecinto;
 use App\Filament\Resources\Recintos\RelationManagers\PresupuestosMantenimientoRelationManager;
 use App\Filament\Resources\Recintos\RelationManagers\ProgramasAnualesMantenimientoRelationManager;
 use App\Filament\Resources\Recintos\Schemas\RecintoForm;
+use App\Filament\Resources\Recintos\Schemas\RecintoInfolist;
 use App\Filament\Resources\Recintos\Tables\RecintosTable;
 use App\Filament\Support\EtiquetasEnEspanol;
 use App\Models\Recinto;
@@ -33,9 +35,20 @@ class RecintoResource extends Resource
 
     protected static ?string $pluralModelLabel = 'recintos';
 
+    protected static ?string $recordTitleAttribute = 'nombre';
+
     public static function form(Schema $schema): Schema
     {
         return RecintoForm::configure($schema);
+    }
+
+    /**
+     * SPEC-ME-014: ficha del recinto, para quienes no administran el catálogo (encargado del
+     * establecimiento, Jefatura).
+     */
+    public static function infolist(Schema $schema): Schema
+    {
+        return RecintoInfolist::configure($schema);
     }
 
     public static function table(Table $table): Table
@@ -56,6 +69,7 @@ class RecintoResource extends Resource
         return [
             'index' => ListRecintos::route('/'),
             'create' => CreateRecinto::route('/create'),
+            'view' => ViewRecinto::route('/{record}'),
             'edit' => EditRecinto::route('/{record}/edit'),
         ];
     }

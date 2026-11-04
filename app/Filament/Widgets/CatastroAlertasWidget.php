@@ -16,6 +16,7 @@ use App\Filament\Support\SoloAlertasPendientes;
 use App\Models\EjecucionMensual;
 use App\Models\Equipo;
 use App\Models\Recinto;
+use App\Support\AlcanceRecinto;
 use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -167,9 +168,7 @@ class CatastroAlertasWidget extends StatsOverviewWidget
                 ->description('Recintos sin programa anual validado por la Dirección (plazo: marzo)')
                 ->icon(Heroicon::OutlinedDocumentCheck)
                 ->color($sinProgramaValidado > 0 ? 'danger' : 'success')
-                ->url(RecintoResource::canViewAny() && $this->esAnioEnCurso()
-                    ? RecintoResource::getUrl('index', ['filters' => [RecintosTable::FILTRO_PROGRAMA_SIN_VALIDAR => ['isActive' => true]]])
-                    : null);
+                ->url($this->urlProgramaSinValidar());
         }
 
         return SoloAlertasPendientes::filtrar($stats);
@@ -186,6 +185,25 @@ class CatastroAlertasWidget extends StatsOverviewWidget
         }
 
         return $anio < now()->year;
+    }
+
+    /**
+     * SPEC-ME-014: el encargado de un solo establecimiento va directo a la ficha de su recinto, donde
+     * registra el programa anual. Quien ve varios recintos va al listado filtrado.
+     */
+    private function urlProgramaSinValidar(): ?string
+    {
+        if (! RecintoResource::canViewAny() || ! $this->esAnioEnCurso()) {
+            return null;
+        }
+
+        $recintoIds = AlcanceRecinto::recintoIds();
+
+        if ($recintoIds !== null && count($recintoIds) === 1) {
+            return RecintoResource::getUrl('view', ['record' => $recintoIds[0]]);
+        }
+
+        return RecintoResource::getUrl('index', ['filters' => [RecintosTable::FILTRO_PROGRAMA_SIN_VALIDAR => ['isActive' => true]]]);
     }
 
     private function urlBitacoraAtrasadas(int $anio): ?string

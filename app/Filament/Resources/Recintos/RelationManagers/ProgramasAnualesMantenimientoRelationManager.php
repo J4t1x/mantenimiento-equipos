@@ -13,6 +13,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rules\Unique;
 
 /**
@@ -24,6 +25,18 @@ class ProgramasAnualesMantenimientoRelationManager extends RelationManager
     protected static string $relationship = 'programasAnualesMantenimiento';
 
     protected static ?string $title = 'Programa anual de MP';
+
+    protected static ?string $modelLabel = 'programa anual de MP';
+
+    /**
+     * SPEC-ME-014: en la ficha del recinto (página Ver) Filament deja los relation managers en solo
+     * lectura. El encargado del establecimiento sí registra aquí los datos de su recinto
+     * (`RecintoPolicy::gestionarDatosMp()`); la Jefatura queda en solo lectura.
+     */
+    public function isReadOnly(): bool
+    {
+        return ! Gate::allows('gestionarDatosMp', $this->getOwnerRecord());
+    }
 
     public function form(Schema $schema): Schema
     {

@@ -314,7 +314,7 @@ mismo dato de distintas formas.
 
 | Catálogo | Uso |
 |---|---|
-| **Recintos** | Establecimientos. En la ficha de cada recinto se registran además el **responsable de mantenimiento preventivo** designado, el **programa anual de MP** (fechas de definición y de validación por la Dirección) y el **gasto programado anual** de MP y MC. |
+| **Recintos** | Establecimientos. En la ficha de cada recinto (**Ver**) se registran el **responsable de mantenimiento preventivo** designado (botón *Editar responsable de MP*), el **programa anual de MP** (fechas de definición y de validación por la Dirección) y el **gasto programado anual** de MP y MC. El Encargado de Mantención de cada establecimiento registra estos datos en su propio recinto; crear, renombrar o eliminar recintos queda reservado al Subdepartamento. |
 | **Servicios clínicos** | Lista normalizada de servicios. Muestra cuántos equipos tiene cada uno. |
 | **Clases y subclases** | Clasificación de los equipos. |
 | **Proveedores** | Empresas de mantenimiento externo y de convenios. |

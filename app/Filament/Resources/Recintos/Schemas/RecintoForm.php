@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Recintos\Schemas;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -31,20 +32,32 @@ class RecintoForm
                     ->icon(Heroicon::OutlinedUserCircle)
                     ->columns(2)
                     ->columnSpanFull()
-                    ->schema([
-                        TextInput::make('responsable_mp_nombre')
-                            ->label('Nombre')
-                            ->maxLength(150),
-                        TextInput::make('responsable_mp_cargo')
-                            ->label('Cargo')
-                            ->maxLength(150),
-                        TextInput::make('responsable_mp_documento')
-                            ->label('N° de documento de designación')
-                            ->placeholder('Ej.: Res. Ex. N° 1234')
-                            ->maxLength(100),
-                        DatePicker::make('responsable_mp_fecha_designacion')
-                            ->label('Fecha de designación'),
-                    ]),
+                    ->schema(self::camposResponsableMp()),
             ]);
+    }
+
+    /**
+     * Campos del responsable de MP (RF-70). Los comparten el formulario del recinto y la acción
+     * "Editar responsable de MP" de la ficha, que usa el encargado del establecimiento
+     * (SPEC-ME-014).
+     *
+     * @return array<int, Component>
+     */
+    public static function camposResponsableMp(): array
+    {
+        return [
+            TextInput::make('responsable_mp_nombre')
+                ->label('Nombre')
+                ->maxLength(150),
+            TextInput::make('responsable_mp_cargo')
+                ->label('Cargo')
+                ->maxLength(150),
+            TextInput::make('responsable_mp_documento')
+                ->label('N° de documento de designación')
+                ->placeholder('Ej.: Res. Ex. N° 1234')
+                ->maxLength(100),
+            DatePicker::make('responsable_mp_fecha_designacion')
+                ->label('Fecha de designación'),
+        ];
     }
 }
