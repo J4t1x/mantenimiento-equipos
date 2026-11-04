@@ -182,6 +182,12 @@ El importador no vuelve a cargar un recinto que ya tiene equipos, salvo con `--f
 **Sugerencia de tipos críticos de la norma**: `php artisan app:clasificar-tipos-criticos` solo
 muestra las sugerencias. Con `--aplicar` las asigna. No cambia la criticidad de ningún equipo.
 
+**Planes cargados con una versión anterior del importador**: `php artisan app:completar-meses-planes`
+muestra los planes con menos de 12 meses. Con `--aplicar` agrega los meses faltantes como "Sin
+programar", sin cambiar los meses ya registrados. Se puede ejecutar más de una vez sin efecto
+adicional. También lista los planes cuyos meses programados no coinciden con la frecuencia, que
+se corrigen a mano (alerta "Planes con meses inconsistentes" del Escritorio).
+
 ## 6. Optimización
 
 En producción, después de instalar o actualizar:
