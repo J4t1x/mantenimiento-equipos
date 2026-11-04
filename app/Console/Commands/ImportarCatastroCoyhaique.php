@@ -216,7 +216,7 @@ class ImportarCatastroCoyhaique extends Command
             $this->info("Gasto programado {$presupuesto['anio']} (cabecera de la planilla): MP \${$presupuesto['mp']} · MC \${$presupuesto['mc']}");
         }
         $this->info('Recintos: '.Recinto::count().' · Servicios clínicos: '.ServicioClinico::count().' · Clases/subclases: '.ClaseEquipo::count().' · Proveedores: '.Proveedor::count());
-        $this->info("Equipos: {$filasImportadas} · Planes de mantenimiento: {$this->planesCreados} · Ejecuciones mensuales: {$this->ejecucionesCreadas}");
+        $this->info("Equipos: {$filasImportadas} · Planes de mantenimiento: {$this->planesCreados} · Meses marcados: {$this->ejecucionesCreadas}");
 
         if ($this->inventariosSustituidos !== []) {
             $this->newLine();
@@ -301,18 +301,19 @@ class ImportarCatastroCoyhaique extends Command
         ]);
         $this->planesCreados++;
 
+        // RN-01 (SPEC-ME-016): el plan queda con sus 12 meses. Los marcados en la planilla con su
+        // estado y el resto "Sin programar". Antes solo se creaban los marcados.
         foreach (self::MESES as $columna => $mes) {
             $estado = $this->estadoEjecucion($this->valor($hoja, $columna, $fila));
 
-            if ($estado === null) {
-                continue;
-            }
-
             $plan->ejecucionesMensuales()->create([
                 'mes' => $mes,
-                'estado' => $estado->value,
+                'estado' => ($estado ?? EstadoEjecucion::SinProgramar)->value,
             ]);
-            $this->ejecucionesCreadas++;
+
+            if ($estado !== null) {
+                $this->ejecucionesCreadas++;
+            }
         }
     }
 

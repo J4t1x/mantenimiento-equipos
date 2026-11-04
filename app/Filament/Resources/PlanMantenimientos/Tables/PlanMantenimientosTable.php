@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\PlanMantenimientos\Tables;
 
+use App\Enums\EstadoEjecucion;
 use App\Enums\TipoMantenimiento;
 use App\Models\PlanMantenimiento;
 use Filament\Actions\BulkActionGroup;
@@ -11,12 +12,16 @@ use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class PlanMantenimientosTable
 {
+    public const FILTRO_MESES_INCONSISTENTES = 'meses_inconsistentes';
+
     public static function configure(Table $table): Table
     {
         return $table
@@ -31,6 +36,12 @@ class PlanMantenimientosTable
                 TextColumn::make('frecuencia_anual')
                     ->label('Frecuencia anual')
                     ->badge(),
+                // SPEC-ME-016: meses con marca, para comparar con la frecuencia.
+                TextColumn::make('ejecuciones_mensuales_count')
+                    ->label('Meses programados')
+                    ->counts(['ejecucionesMensuales' => fn (Builder $query): Builder => $query->where('estado', '!=', EstadoEjecucion::SinProgramar)])
+                    ->numeric()
+                    ->toggleable(),
                 TextColumn::make('tipo_mantenimiento')
                     ->label('Tipo')
                     ->badge(),
@@ -69,6 +80,10 @@ class PlanMantenimientosTable
                     ->label('Tipo de mantenimiento')
                     ->options(TipoMantenimiento::class),
                 // RF-50 (Módulo 12): soft-delete, mismo criterio que Equipo/Convenio/Correctivo.
+                // SPEC-ME-016: planes sin meses programados o con una cantidad distinta de la frecuencia.
+                Filter::make(self::FILTRO_MESES_INCONSISTENTES)
+                    ->label('Meses programados distintos de la frecuencia')
+                    ->query(fn (Builder $query): Builder => $query->conMesesInconsistentes()),
                 TrashedFilter::make(),
             ])
             ->recordActions([

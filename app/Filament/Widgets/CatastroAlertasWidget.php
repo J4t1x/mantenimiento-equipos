@@ -9,12 +9,15 @@ use App\Filament\Resources\EjecucionesMensuales\EjecucionMensualResource;
 use App\Filament\Resources\EjecucionesMensuales\Tables\EjecucionesMensualesTable;
 use App\Filament\Resources\Equipos\EquipoResource;
 use App\Filament\Resources\Equipos\Tables\EquiposTable;
+use App\Filament\Resources\PlanMantenimientos\PlanMantenimientoResource;
+use App\Filament\Resources\PlanMantenimientos\Tables\PlanMantenimientosTable;
 use App\Filament\Resources\Recintos\RecintoResource;
 use App\Filament\Resources\Recintos\Tables\RecintosTable;
 use App\Filament\Support\RecibePeriodoDelEscritorio;
 use App\Filament\Support\SoloAlertasPendientes;
 use App\Models\EjecucionMensual;
 use App\Models\Equipo;
+use App\Models\PlanMantenimiento;
 use App\Models\Recinto;
 use App\Support\AlcanceRecinto;
 use Filament\Support\Icons\Heroicon;
@@ -102,6 +105,9 @@ class CatastroAlertasWidget extends StatsOverviewWidget
 
         $criticosSinPlan = Equipo::query()->criticosSinPlan($anio)->count();
 
+        $planesInconsistentes = PlanMantenimiento::query()->where('anio', $anio)->conMesesInconsistentes()->count();
+        $planesSinMeses = PlanMantenimiento::query()->where('anio', $anio)->sinMesesProgramados()->count();
+
         $atrasadas = fn () => EjecucionMensual::query()
             ->atrasadas($anio)
             ->join('planes_mantenimiento', 'planes_mantenimiento.id', '=', 'ejecuciones_mensuales.plan_mantenimiento_id');
@@ -145,6 +151,20 @@ class CatastroAlertasWidget extends StatsOverviewWidget
                 ->icon(Heroicon::OutlinedExclamationCircle)
                 ->color($vidaUtilNegativa > 0 ? 'danger' : 'success')
                 ->url($urlEquipos),
+
+            // SPEC-ME-016: planes cuyos meses programados no calzan con su frecuencia.
+            Stat::make('Planes con meses inconsistentes', $planesInconsistentes)
+                ->description($planesSinMeses > 0
+                    ? "Meses programados distintos de la frecuencia ({$planesSinMeses} sin ningún mes)"
+                    : 'Meses programados distintos de la frecuencia')
+                ->icon(Heroicon::OutlinedCalendar)
+                ->color('warning')
+                ->url(PlanMantenimientoResource::canViewAny()
+                    ? PlanMantenimientoResource::getUrl('index', ['filters' => [
+                        'anio' => ['value' => $anio],
+                        PlanMantenimientosTable::FILTRO_MESES_INCONSISTENTES => ['isActive' => true],
+                    ]])
+                    : null),
 
             Stat::make("Críticos sin plan {$anio}", $criticosSinPlan)
                 ->description('El programa anual debe incluir todo crítico')

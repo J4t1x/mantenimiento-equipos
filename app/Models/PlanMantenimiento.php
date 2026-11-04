@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\EstadoEjecucion;
 use App\Enums\FrecuenciaAnual;
 use App\Enums\TipoMantenimiento;
 use App\Exceptions\FrecuenciaInsuficienteException;
@@ -12,6 +13,7 @@ use App\Support\AlcanceRecinto;
 use Database\Factories\PlanMantenimientoFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -100,6 +102,32 @@ class PlanMantenimiento extends Model implements AcotadoPorRecinto, AuditableCon
     {
         return $this->belongsTo(Convenio::class);
     }
+
+    /**
+     * SPEC-ME-016: planes de equipos activos cuyos meses programados (Programado, Realizado o
+     * Reprogramado) no coinciden con la frecuencia anual, incluidos los que no tienen ninguno. Pasa
+     * con planes cargados desde la planilla, que traen las marcas reales de cada mes.
+     */
+    #[Scope]
+    protected function conMesesInconsistentes(Builder $query): void
+    {
+        $query
+            ->whereHas('equipo', fn (Builder $equipo) => $equipo->where('activo', true))
+            ->whereRaw(self::SQL_MESES_PROGRAMADOS.' <> CAST('.$this->qualifyColumn('frecuencia_anual').' AS INTEGER)', [EstadoEjecucion::SinProgramar->value]);
+    }
+
+    /**
+     * SPEC-ME-016: planes de equipos activos sin ningún mes programado.
+     */
+    #[Scope]
+    protected function sinMesesProgramados(Builder $query): void
+    {
+        $query
+            ->whereHas('equipo', fn (Builder $equipo) => $equipo->where('activo', true))
+            ->whereRaw(self::SQL_MESES_PROGRAMADOS.' = 0', [EstadoEjecucion::SinProgramar->value]);
+    }
+
+    private const SQL_MESES_PROGRAMADOS = '(select count(*) from ejecuciones_mensuales where ejecuciones_mensuales.plan_mantenimiento_id = planes_mantenimiento.id and ejecuciones_mensuales.estado <> ?)';
 
     public function ejecucionesMensuales(): HasMany
     {
