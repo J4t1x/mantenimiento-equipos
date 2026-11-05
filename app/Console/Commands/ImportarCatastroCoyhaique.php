@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 /**
@@ -616,6 +617,12 @@ class ImportarCatastroCoyhaique extends Command
     {
         if ($valor instanceof DateTimeInterface) {
             return (int) $valor->format('Y');
+        }
+
+        // SPEC-ME-015: algunas celdas traen la fecha como número de serie de Excel (p. ej. 45870 =
+        // 01-08-2025). Antes se tomaban sus primeros 4 dígitos como año (4587).
+        if (is_numeric($valor) && (float) $valor > 9999) {
+            return (int) ExcelDate::excelToDateTimeObject((float) $valor)->format('Y');
         }
 
         $texto = trim((string) ($valor ?? ''));

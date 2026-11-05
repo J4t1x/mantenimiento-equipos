@@ -6,6 +6,7 @@ use App\Enums\EstadoEjecucion;
 use App\Enums\FrecuenciaAnual;
 use App\Enums\TipoMantenimiento;
 use App\Exceptions\FrecuenciaInsuficienteException;
+use App\Models\Concerns\ProtegeRangosDeValores;
 use App\Models\Contracts\AcotadoPorRecinto;
 use App\Models\Scopes\AlcanceRecintoScope;
 use App\Observers\PlanMantenimientoObserver;
@@ -39,9 +40,21 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 class PlanMantenimiento extends Model implements AcotadoPorRecinto, AuditableContract
 {
     /** @use HasFactory<PlanMantenimientoFactory> */
-    use Auditable, HasFactory, SoftDeletes;
+    use Auditable, HasFactory, ProtegeRangosDeValores, SoftDeletes;
 
     protected $table = 'planes_mantenimiento';
+
+    /**
+     * SPEC-ME-015 (FR-2): montos que no pueden ser negativos.
+     *
+     * @return array<string, string>
+     */
+    protected function montosNoNegativos(): array
+    {
+        return [
+            'costo_anual_referencia' => 'Costo anual de referencia',
+        ];
+    }
 
     protected function casts(): array
     {

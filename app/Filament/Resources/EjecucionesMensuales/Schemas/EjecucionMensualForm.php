@@ -7,6 +7,7 @@ use App\Exceptions\ReprogramacionSinCausaException;
 use App\Models\EjecucionMensual;
 use App\Rules\TransicionBitacoraValida;
 use App\Support\AlcanceTecnicoInterno;
+use App\Support\RangosDeValores;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -54,7 +55,8 @@ class EjecucionMensualForm
                     // aplica (el modelo la limpia).
                     ->visible(fn (Get $get): bool => EstadoEjecucion::desde($get('estado')) === EstadoEjecucion::Realizado)
                     ->required(fn (Get $get): bool => EstadoEjecucion::desde($get('estado')) === EstadoEjecucion::Realizado)
-                    ->maxDate(now()),
+                    ->maxDate(now())
+                    ->validationMessages(['before_or_equal' => RangosDeValores::MENSAJE_FECHA_FUTURA]),
                 // RF-66 (RN-09): la reprogramación exige su causa; mismo criterio que la guarda de
                 // `EjecucionMensual`.
                 Textarea::make('observaciones')

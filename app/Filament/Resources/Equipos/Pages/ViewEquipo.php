@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Equipos\Pages;
 use App\Actions\RegistrarRetiroUsoAction;
 use App\Filament\Resources\Equipos\EquipoResource;
 use App\Models\Equipo;
+use App\Support\RangosDeValores;
 use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
@@ -40,11 +41,14 @@ class ViewEquipo extends ViewRecord
             ->icon(Heroicon::OutlinedNoSymbol)
             ->color('danger')
             ->modalDescription('Deja el equipo inactivo y registra la evidencia escrita del retiro (Res. Ex. 1341/2017).')
+            // SPEC-ME-015 (hallazgo B-02): el botón del modal decía "Enviar".
+            ->modalSubmitActionLabel('Retirar de uso')
             ->schema([
                 DatePicker::make('fecha')
                     ->label('Fecha de retiro')
                     ->default(now())
                     ->maxDate(now())
+                    ->validationMessages(['before_or_equal' => RangosDeValores::MENSAJE_FECHA_FUTURA])
                     ->required(),
                 Textarea::make('motivo')
                     ->label('Motivo')
@@ -72,11 +76,13 @@ class ViewEquipo extends ViewRecord
             ->icon(Heroicon::OutlinedArrowUturnLeft)
             ->color('success')
             ->modalDescription('Cierra el retiro de uso abierto y vuelve a dejar el equipo activo.')
+            ->modalSubmitActionLabel('Registrar reingreso')
             ->schema([
                 DatePicker::make('fecha')
                     ->label('Fecha de reingreso')
                     ->default(now())
                     ->maxDate(now())
+                    ->validationMessages(['before_or_equal' => RangosDeValores::MENSAJE_FECHA_FUTURA])
                     ->required(),
                 TextInput::make('documento')
                     ->label('N° de documento de reingreso')

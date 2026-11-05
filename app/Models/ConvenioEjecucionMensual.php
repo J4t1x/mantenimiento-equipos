@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ProtegeRangosDeValores;
 use App\Observers\ConvenioEjecucionMensualObserver;
 use Database\Factories\ConvenioEjecucionMensualFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -17,9 +18,21 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 class ConvenioEjecucionMensual extends Model implements AuditableContract
 {
     /** @use HasFactory<ConvenioEjecucionMensualFactory> */
-    use Auditable, HasFactory;
+    use Auditable, HasFactory, ProtegeRangosDeValores;
 
     protected $table = 'convenio_ejecuciones_mensuales';
+
+    /**
+     * SPEC-ME-015 (FR-2): montos que no pueden ser negativos.
+     *
+     * @return array<string, string>
+     */
+    protected function montosNoNegativos(): array
+    {
+        return [
+            'monto' => 'Monto',
+        ];
+    }
 
     protected function casts(): array
     {

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\MantenimientoCorrectivos\Schemas;
 
+use App\Support\RangosDeValores;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -22,6 +23,8 @@ class MantenimientoCorrectivoForm
                     ->required(),
                 DatePicker::make('fecha')
                     ->label('Fecha de la falla')
+                    ->maxDate(now())
+                    ->validationMessages(['before_or_equal' => RangosDeValores::MENSAJE_FECHA_FUTURA])
                     ->required(),
                 Textarea::make('falla_descripcion')
                     ->label('Descripción de la falla')
@@ -30,6 +33,7 @@ class MantenimientoCorrectivoForm
                 TextInput::make('costo')
                     ->label('Costo')
                     ->numeric()
+                    ->minValue(0)
                     ->prefix('$')
                     ->required(),
                 TextInput::make('tipo_gasto')

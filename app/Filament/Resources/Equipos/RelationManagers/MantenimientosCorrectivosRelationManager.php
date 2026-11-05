@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Equipos\RelationManagers;
 
+use App\Support\RangosDeValores;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -27,6 +28,8 @@ class MantenimientosCorrectivosRelationManager extends RelationManager
             ->components([
                 DatePicker::make('fecha')
                     ->label('Fecha de la falla')
+                    ->maxDate(now())
+                    ->validationMessages(['before_or_equal' => RangosDeValores::MENSAJE_FECHA_FUTURA])
                     ->required(),
                 Textarea::make('falla_descripcion')
                     ->label('Descripción de la falla')
@@ -35,6 +38,7 @@ class MantenimientosCorrectivosRelationManager extends RelationManager
                 TextInput::make('costo')
                     ->label('Costo')
                     ->numeric()
+                    ->minValue(0)
                     ->prefix('$')
                     ->required(),
                 TextInput::make('tipo_gasto')

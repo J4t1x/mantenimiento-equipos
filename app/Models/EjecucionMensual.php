@@ -7,6 +7,7 @@ use App\Enums\EstadoEjecucion;
 use App\Exceptions\EquipoNoAsignadoException;
 use App\Exceptions\ReprogramacionSinCausaException;
 use App\Exceptions\TransicionBitacoraInvalidaException;
+use App\Models\Concerns\ProtegeRangosDeValores;
 use App\Models\Contracts\AcotadoPorRecinto;
 use App\Models\Scopes\AlcanceRecintoScope;
 use App\Support\AlcanceRecinto;
@@ -27,7 +28,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 #[ScopedBy([AlcanceRecintoScope::class])]
 class EjecucionMensual extends Model implements AcotadoPorRecinto, AuditableContract
 {
-    use Auditable;
+    use Auditable, ProtegeRangosDeValores;
 
     /**
      * RN-09 (Res. Ex. 1341/2017 §7.4): plazo máximo de una reprogramación.
@@ -35,6 +36,18 @@ class EjecucionMensual extends Model implements AcotadoPorRecinto, AuditableCont
     public const DIAS_PLAZO_REPROGRAMACION = 30;
 
     protected $table = 'ejecuciones_mensuales';
+
+    /**
+     * SPEC-ME-015 (FR-2): fechas de hechos ocurridos, que no pueden ser futuras.
+     *
+     * @return array<string, string>
+     */
+    protected function fechasNoFuturas(): array
+    {
+        return [
+            'fecha_real' => 'Fecha real de ejecución',
+        ];
+    }
 
     protected function casts(): array
     {

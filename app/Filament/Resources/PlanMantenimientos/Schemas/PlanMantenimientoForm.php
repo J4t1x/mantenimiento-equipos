@@ -7,6 +7,7 @@ use App\Enums\TipoMantenimiento;
 use App\Filament\Support\VistaPreviaPlanAnual;
 use App\Models\Equipo;
 use App\Rules\FrecuenciaMinimaSegunCriticidad;
+use App\Support\RangosDeValores;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
@@ -46,6 +47,8 @@ class PlanMantenimientoForm
                         TextInput::make('anio')
                             ->label('Año')
                             ->numeric()
+                            ->minValue(RangosDeValores::ANIO_MINIMO)
+                            ->maxValue(fn (): int => RangosDeValores::anioMaximo())
                             ->required(),
                         Select::make('frecuencia_anual')
                             ->label('Frecuencia anual')
@@ -94,6 +97,7 @@ class PlanMantenimientoForm
                         TextInput::make('costo_anual_referencia')
                             ->label('Costo anual de referencia')
                             ->numeric()
+                            ->minValue(0)
                             ->prefix('$'),
                     ]),
             ]);

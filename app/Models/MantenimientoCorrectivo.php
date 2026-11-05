@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ProtegeRangosDeValores;
 use App\Models\Contracts\AcotadoPorRecinto;
 use App\Models\Scopes\AlcanceRecintoScope;
 use App\Support\AlcanceRecinto;
@@ -21,9 +22,33 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 class MantenimientoCorrectivo extends Model implements AcotadoPorRecinto, AuditableContract
 {
     /** @use HasFactory<MantenimientoCorrectivoFactory> */
-    use Auditable, HasFactory, SoftDeletes;
+    use Auditable, HasFactory, ProtegeRangosDeValores, SoftDeletes;
 
     protected $table = 'mantenimientos_correctivos';
+
+    /**
+     * SPEC-ME-015 (FR-2): montos que no pueden ser negativos.
+     *
+     * @return array<string, string>
+     */
+    protected function montosNoNegativos(): array
+    {
+        return [
+            'costo' => 'Costo',
+        ];
+    }
+
+    /**
+     * SPEC-ME-015 (FR-2): fechas de hechos ocurridos, que no pueden ser futuras.
+     *
+     * @return array<string, string>
+     */
+    protected function fechasNoFuturas(): array
+    {
+        return [
+            'fecha' => 'Fecha de la falla',
+        ];
+    }
 
     protected function casts(): array
     {

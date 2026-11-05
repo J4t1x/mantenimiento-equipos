@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ProtegeRangosDeValores;
 use Carbon\CarbonInterface;
 use Database\Factories\ConvenioFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -26,7 +27,19 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 class Convenio extends Model implements AuditableContract
 {
     /** @use HasFactory<ConvenioFactory> */
-    use Auditable, HasFactory, SoftDeletes;
+    use Auditable, HasFactory, ProtegeRangosDeValores, SoftDeletes;
+
+    /**
+     * SPEC-ME-015 (FR-2): montos que no pueden ser negativos.
+     *
+     * @return array<string, string>
+     */
+    protected function montosNoNegativos(): array
+    {
+        return [
+            'monto_anual' => 'Monto anual',
+        ];
+    }
 
     protected function casts(): array
     {

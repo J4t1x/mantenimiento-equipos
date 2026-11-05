@@ -9,6 +9,7 @@ use App\Enums\TipoEquipoCritico;
 use App\Exceptions\FrecuenciaInsuficienteException;
 use App\Exceptions\TipoCriticoSinCriticidadException;
 use App\Models\Equipo;
+use App\Support\RangosDeValores;
 use Closure;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -88,10 +89,14 @@ class EquipoForm
                     ->schema([
                         TextInput::make('anio_adquisicion')
                             ->label('Año de adquisición')
-                            ->numeric(),
+                            ->numeric()
+                            ->minValue(RangosDeValores::ANIO_MINIMO)
+                            ->maxValue(fn (): int => RangosDeValores::anioMaximo()),
                         TextInput::make('vida_util_anios')
                             ->label('Vida útil (años)')
-                            ->numeric(),
+                            ->numeric()
+                            ->minValue(RangosDeValores::VIDA_UTIL_MINIMA)
+                            ->maxValue(RangosDeValores::VIDA_UTIL_MAXIMA),
                         Select::make('propiedad')
                             ->label('Propiedad')
                             ->options(Propiedad::class)
@@ -157,6 +162,8 @@ class EquipoForm
                         TextInput::make('garantia_anio_vencimiento')
                             ->label('Año de vencimiento de garantía')
                             ->numeric()
+                            ->minValue(RangosDeValores::ANIO_MINIMO)
+                            ->maxValue(fn (): int => RangosDeValores::anioMaximoGarantia())
                             ->visible(fn ($get) => (bool) $get('en_garantia')),
                         Toggle::make('activo')
                             ->label('Activo')
@@ -179,6 +186,8 @@ class EquipoForm
                         TextInput::make('anio_ingreso_plan')
                             ->label('Año de ingreso al plan')
                             ->numeric()
+                            ->minValue(RangosDeValores::ANIO_MINIMO)
+                            ->maxValue(fn (): int => RangosDeValores::anioMaximo())
                             ->visible(fn ($get) => (bool) $get('bajo_plan_mp')),
                     ]),
             ]);

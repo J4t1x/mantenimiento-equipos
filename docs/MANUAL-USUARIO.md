@@ -155,7 +155,7 @@ abajo, sus **planes de mantenimiento**, su **mantenimiento correctivo** y sus **
 La norma exige retirar de uso un equipo crítico cuya mantención reprogramada no se realiza.
 
 1. En la ficha del equipo, **Retirar de uso**.
-2. Indicar **fecha de retiro**, **motivo** y **n° de documento de evidencia**.
+2. Indicar **fecha de retiro**, **motivo** y **n° de documento de evidencia**, y confirmar con **Retirar de uso**.
 3. Cuando vuelve a estar operativo: **Registrar reingreso**, con fecha y n° de documento.
 
 El historial queda en la sección **Retiros de uso** de la ficha.
@@ -249,7 +249,7 @@ Menú **Mantenimiento → Correctivo**. Registra las fallas y reparaciones fuera
 ![Mantenimiento correctivo](manual/img/10-correctivos.png)
 
 1. **Crear mantenimiento correctivo**.
-2. **Equipo**, **fecha de la falla**, **descripción de la falla**, **costo** y **tipo de gasto**.
+2. **Equipo**, **fecha de la falla** (no puede ser futura), **descripción de la falla**, **costo** (no negativo) y **tipo de gasto**.
 3. **Crear**.
 
 El costo se suma automáticamente al gasto correctivo del período (Escritorio y Reportes). El
@@ -274,8 +274,9 @@ días o menos, *Vencido*) y el **% de ejecución** del año, en rojo si supera e
 
 ### Registrar la ejecución mensual
 
-En la ficha del convenio (**Ver**), sección **Ejecución mensual del gasto** → **Crear**: **año**,
-**mes**, **n° orden de compra / factura** y **monto**.
+En la ficha del convenio (**Ver** o **Editar**), sección **Ejecución mensual del gasto** →
+**Registrar ejecución mensual**: **año**, **mes**, **n° orden de compra / factura** y **monto**. El
+botón aparece solo para los perfiles con permiso para registrarla. El monto no puede ser negativo.
 
 Si la suma del año supera el monto anual, el sistema **avisa pero no impide el registro**, y deja
 la alerta en la campana de notificaciones.

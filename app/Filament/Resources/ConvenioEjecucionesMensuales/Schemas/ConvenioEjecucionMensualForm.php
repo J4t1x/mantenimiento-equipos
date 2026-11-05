@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ConvenioEjecucionesMensuales\Schemas;
 
+use App\Support\RangosDeValores;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
@@ -34,6 +35,8 @@ class ConvenioEjecucionMensualForm
                         TextInput::make('anio')
                             ->label('Año')
                             ->numeric()
+                            ->minValue(RangosDeValores::ANIO_MINIMO)
+                            ->maxValue(fn (): int => RangosDeValores::anioMaximo())
                             ->required(),
                         Select::make('mes')
                             ->label('Mes')
@@ -56,6 +59,7 @@ class ConvenioEjecucionMensualForm
                         TextInput::make('monto')
                             ->label('Monto')
                             ->numeric()
+                            ->minValue(0)
                             ->prefix('$')
                             ->required(),
                     ]),

@@ -6,6 +6,7 @@ use App\Enums\FrecuenciaAnual;
 use App\Enums\TipoMantenimiento;
 use App\Filament\Support\VistaPreviaPlanAnual;
 use App\Rules\FrecuenciaMinimaSegunCriticidad;
+use App\Support\RangosDeValores;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -31,6 +32,8 @@ class PlanesMantenimientoRelationManager extends RelationManager
                 TextInput::make('anio')
                     ->label('Año')
                     ->numeric()
+                    ->minValue(RangosDeValores::ANIO_MINIMO)
+                    ->maxValue(fn (): int => RangosDeValores::anioMaximo())
                     ->required(),
                 Select::make('frecuencia_anual')
                     ->label('Frecuencia anual')
@@ -68,6 +71,7 @@ class PlanesMantenimientoRelationManager extends RelationManager
                 TextInput::make('costo_anual_referencia')
                     ->label('Costo anual de referencia')
                     ->numeric()
+                    ->minValue(0)
                     ->prefix('$'),
             ]);
     }

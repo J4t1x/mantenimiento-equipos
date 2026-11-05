@@ -54,11 +54,13 @@ class ConvenioForm
                             ->required(),
                         DatePicker::make('fecha_expiracion')
                             ->label('Fecha de expiración')
+                            ->afterOrEqual('fecha_resolucion')
                             ->required(),
                         TextInput::make('monto_anual')
                             ->label('Monto anual')
                             ->required()
                             ->numeric()
+                            ->minValue(0)
                             ->prefix('$'),
                         TextInput::make('subasignacion_sigfe')
                             ->label('Subasignación SIGFE')

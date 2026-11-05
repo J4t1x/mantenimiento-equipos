@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ProtegeRangosDeValores;
 use App\Models\Contracts\AcotadoPorRecinto;
 use App\Models\Scopes\AlcanceRecintoScope;
 use Database\Factories\PresupuestoMantenimientoFactory;
@@ -23,9 +24,22 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 class PresupuestoMantenimiento extends Model implements AcotadoPorRecinto, AuditableContract
 {
     /** @use HasFactory<PresupuestoMantenimientoFactory> */
-    use Auditable, HasFactory;
+    use Auditable, HasFactory, ProtegeRangosDeValores;
 
     protected $table = 'presupuestos_mantenimiento';
+
+    /**
+     * SPEC-ME-015 (FR-2): montos que no pueden ser negativos.
+     *
+     * @return array<string, string>
+     */
+    protected function montosNoNegativos(): array
+    {
+        return [
+            'gasto_programado_mp' => 'Gasto programado MP',
+            'gasto_programado_mc' => 'Gasto programado MC',
+        ];
+    }
 
     protected function casts(): array
     {
