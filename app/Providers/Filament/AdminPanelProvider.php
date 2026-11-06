@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Escritorio;
+use App\Filament\Pages\GuiaDeUsuario;
 use App\Filament\Widgets\AlertasConveniosWidget;
 use App\Filament\Widgets\CatastroAlertasWidget;
 use App\Filament\Widgets\ConveniosEncargadoWidget;
@@ -14,10 +15,13 @@ use App\Filament\Widgets\GastoMensualWidget;
 use App\Filament\Widgets\GastoMpWidget;
 use App\Filament\Widgets\IndicadoresGeneralesWidget;
 use App\Filament\Widgets\MisPlanesDelMesWidget;
+use App\Http\Controllers\ImagenGuiaUsuarioController;
 use App\Http\Controllers\ImprimirInformeCriticosController;
 use App\Http\Controllers\ImprimirInformeCumplimientoController;
+use App\Support\GuiaDeUsuario as GuiaDeUsuarioContenido;
 use App\Support\PaletaInstitucional;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Http\Middleware\Authenticate;
@@ -27,6 +31,7 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Icons\Heroicon;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Contracts\View\View;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -79,6 +84,13 @@ class AdminPanelProvider extends PanelProvider
                 'warning' => Color::Amber,
             ])
             ->databaseNotifications()
+            // SPEC-ME-017: la guía de usuario también se abre desde el menú de usuario.
+            ->userMenuItems([
+                'guia' => Action::make('guia')
+                    ->label('Guía de usuario')
+                    ->icon(Heroicon::OutlinedBookOpen)
+                    ->url(fn (): string => GuiaDeUsuario::getUrl()),
+            ])
             // SPEC-ME-010: menú lateral con los colores institucionales del mockup (CSS inyectado,
             // sin tema compilado).
             ->renderHook(PanelsRenderHook::HEAD_END, fn (): View => view('filament.estilos-panel'))
@@ -94,6 +106,10 @@ class AdminPanelProvider extends PanelProvider
                 // RF-78: informe trimestral / anual de cumplimiento y gasto, imprimible.
                 Route::get('/reportes/informe-cumplimiento/imprimir', ImprimirInformeCumplimientoController::class)
                     ->name('informe-cumplimiento.imprimir');
+                // SPEC-ME-017: imágenes de la guía de usuario, solo con sesión iniciada.
+                Route::get('/guia-de-usuario/imagenes/{archivo}', ImagenGuiaUsuarioController::class)
+                    ->where('archivo', GuiaDeUsuarioContenido::PATRON_IMAGEN)
+                    ->name('guia.imagen');
             })
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([

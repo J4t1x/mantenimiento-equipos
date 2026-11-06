@@ -14,6 +14,7 @@ use App\Filament\Widgets\GastoMensualWidget;
 use App\Filament\Widgets\GastoMpWidget;
 use App\Filament\Widgets\IndicadoresGeneralesWidget;
 use App\Filament\Widgets\MisPlanesDelMesWidget;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Pages\Dashboard;
@@ -112,6 +113,20 @@ class Escritorio extends Dashboard
      * @var array{anio?: int|string|null, periodo?: string|null}|null
      */
     public ?array $periodoEscritorio = [];
+
+    /**
+     * SPEC-ME-017: acceso a la guía de usuario desde el Escritorio.
+     */
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('guiaDeUsuario')
+                ->label('Guía de usuario')
+                ->icon(Heroicon::OutlinedBookOpen)
+                ->color('gray')
+                ->url(GuiaDeUsuario::getUrl()),
+        ];
+    }
 
     public function mount(): void
     {
