@@ -297,6 +297,3 @@ php artisan up
 - Servidor y dominio de producción.
 - Ubicación y retención de los respaldos.
 - Correo saliente: hoy no se envían correos; las notificaciones se muestran en el panel.
-- `laravel/boost` (herramienta de desarrollo) figura en las dependencias de producción de
-  `composer.json`. Se recomienda moverlo a `require-dev` antes del primer despliegue; está pendiente
-  de aprobación.
