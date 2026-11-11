@@ -151,10 +151,17 @@ pueda ejecutar contenedores equivalentes a los de Sail (PHP 8.4, PostgreSQL 16+)
 
 ## §6 Seguridad y permisos
 
-- **Autenticación**: por defecto, autenticación local de Laravel (Fortify/Breeze) con contraseña.
-  Si el requirente confirma una política de SSO/LDAP institucional (pregunta abierta 12 del
-  BRIEF), se sustituye por un *guard* de autenticación adicional — el modelo de `usuarios`
-  (`MODELO-DATOS.md` §3.11) ya contempla esta extensión sin romper el esquema.
+- **Autenticación**: correo y contraseña propios del sistema, con el inicio de sesión de Filament.
+  Es la solución definitiva: el Servicio no cuenta con directorio institucional (pregunta abierta
+  12 del BRIEF, cerrada el 10-11-2026). Controles (SRS Módulo 20, ASVS 5.0 V6):
+  - contraseñas de al menos 12 caracteres, con bcrypt;
+  - bloqueo por intentos fallidos por cuenta y por IP (`App\Support\BloqueoInicioSesion`, sobre
+    el caché de la aplicación, valores en `config/seguridad.php`);
+  - recuperación por correo con enlace de un solo uso y vencimiento de 60 minutos, sin revelar si
+    la cuenta existe; el correo se envía después de responder, para que el tiempo de respuesta
+    tampoco lo revele;
+  - registro de eventos de autenticación en `eventos_autenticacion` (solo inserción), consultable
+    por el administrador.
 - **Autorización**: basada en roles y permisos (`modulo.recurso.accion`, definidos en `BRIEF.md`
   §5), implementada con el plugin de permisos de Filament 5 sobre el paquete estándar de Laravel
   para este fin — no un motor de permisos a medida (RNF-06, RNF-08 del SRS).
@@ -252,7 +259,7 @@ de excepción (`BRIEF.md` §4 ya lo señalaba).
 |---|---|---|---|
 | El criterio real de criticidad (PA-2) implica una regla más compleja de lo modelado | Media | Media | `criticidad` es campo capturado, no calculado (§7 MODELO-DATOS) — cambiar a fórmula no rompe el esquema |
 | La cardinalidad real de servicio clínico es M:N (PA-3) | Media | Baja | Modelo preparado para agregar tabla pivote sin rediseño (§7 MODELO-DATOS) |
-| Requisito tardío de SSO/LDAP (PA-12) | Baja | Media | Esquema de `usuarios` ya deja espacio para *guard* adicional (§6) |
+| Requisito tardío de SSO/LDAP (PA-12) | Cerrado (10-11-2026) | — | El Servicio no tiene directorio institucional; la autenticación local es definitiva, con los controles de §6 |
 | Volumen de datos crece más allá de lo esperado (nuevos recintos, PA-1) | Baja | Media | Catálogo `recintos` ya existe desde el inicio; no requiere migración estructural |
 
 ## §11 Fuera de alcance de este documento

@@ -32,9 +32,15 @@ use Spatie\Permission\Models\Role;
 #[Description('Crea un usuario del panel con su rol y sus recintos asignados.')]
 class CrearUsuario extends Command
 {
-    private const LARGO_MINIMO_CONTRASENA = 12;
-
     private const LARGO_CONTRASENA_GENERADA = 20;
+
+    /**
+     * SPEC-ME-019: el largo mínimo es el de la política común (`config/seguridad.php`).
+     */
+    private static function largoMinimo(): int
+    {
+        return (int) config('seguridad.contrasena.largo_minimo');
+    }
 
     public function handle(): int
     {
@@ -164,7 +170,7 @@ class CrearUsuario extends Command
         }
 
         if (blank($contrasena)) {
-            $contrasena = (string) $this->secret('Contraseña (mínimo '.self::LARGO_MINIMO_CONTRASENA.' caracteres)');
+            $contrasena = (string) $this->secret('Contraseña (mínimo '.self::largoMinimo().' caracteres)');
 
             if ($contrasena !== (string) $this->secret('Repite la contraseña')) {
                 $this->error('Las contraseñas no coinciden.');
@@ -173,8 +179,8 @@ class CrearUsuario extends Command
             }
         }
 
-        if (mb_strlen($contrasena) < self::LARGO_MINIMO_CONTRASENA) {
-            $this->error('La contraseña debe tener al menos '.self::LARGO_MINIMO_CONTRASENA.' caracteres.');
+        if (mb_strlen($contrasena) < self::largoMinimo()) {
+            $this->error('La contraseña debe tener al menos '.self::largoMinimo().' caracteres.');
 
             return [null, false];
         }

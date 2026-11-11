@@ -481,13 +481,39 @@ SPEC-ME-006 (RF-84 a RF-86).
 - RNF-04: las excepciones de dominio que protegen las reglas en el backend no se muestran como mensajes en el panel cuando la validación del formulario no las ataja antes.
 - Las descripciones de algunas tarjetas y mensajes muestran referencias internas (RF-NN, RN-NN), el mismo problema que RF-62 corrigió en Reportes.
 
+#### Módulo 20 — Seguridad del inicio de sesión (10-11-2026)
+
+Origen: con la PA-12 cerrada, el sistema administra sus propias contraseñas. Cristian revisó el
+inicio de sesión contra el marco de ingeniería (TEST §11, ASVS 5.0 V6, TRA §7, UIR §3.1 y
+AUDIT §3.1) y pidió estos controles antes de la QA.
+
+| ID | Descripción | Prioridad |
+|---|---|---|
+| RF-87 | El inicio de sesión debe **bloquearse tras una cantidad definida de intentos fallidos**, por cuenta (5 en 15 minutos) y por dirección IP (20 en 15 minutos), durante un tiempo definido (15 minutos), con un mensaje que indique los minutos restantes. Durante el bloqueo se rechaza incluso la contraseña correcta, y el bloqueo por cuenta aplica a cualquier correo escrito, para no revelar qué cuentas existen. | Alta |
+| RF-88 | La pantalla de ingreso debe ofrecer **"¿Ha olvidado su contraseña?"**: envío por correo de un enlace de un solo uso que vence en 60 minutos, con la misma respuesta exista o no el correo, y una contraseña nueva de al menos 12 caracteres. Recuperar la contraseña levanta el bloqueo de la cuenta. | Alta |
+| RF-89 | El sistema debe **registrar los eventos de autenticación**: ingresos exitosos y fallidos, bloqueos, cierres de sesión, solicitudes de recuperación, recuperaciones y cambios de contraseña, con fecha, usuario, correo escrito, IP y navegador. El registro es de solo inserción y lo consulta el administrador (Administración → Registro de accesos). | Alta |
+
+**Estado (11-11-2026)**: RF-87 a RF-89 implementados (SPEC-ME-019).
+
+**Criterios de implementación**:
+- RF-87: `App\Filament\Pages\Auth\Login` (extiende el login de Filament) y
+  `App\Support\BloqueoInicioSesion`. Valores en `config/seguridad.php`, ajustables por `.env`. Se
+  conserva además el límite de Filament (5 intentos por minuto por IP).
+- RF-88: `App\Filament\Pages\Auth\RequestPasswordReset` y `App\Notifications\RecuperarContrasena`.
+  El correo se envía con `defer`, después de responder. La contraseña nueva usa
+  `Password::defaults()` (12 caracteres), la misma política del formulario de Usuarios y de
+  `app:crear-usuario`.
+- RF-89: tabla `eventos_autenticacion` (`MODELO-DATOS.md` §3.17), suscriptor
+  `App\Listeners\RegistrarEventosAutenticacion` y `App\Observers\UserObserver` para los cambios de
+  contraseña con sesión iniciada. Permiso `view_any.evento_autenticacion` (solo `super_admin`).
+
 ### 3.2 Requisitos no funcionales
 
 | ID | Categoría | Descripción |
 |---|---|---|
 | RNF-01 | Disponibilidad | El sistema debe operar en horario hábil del Hospital sin degradación perceptible; no se requiere alta disponibilidad 24/7 (uso interno, no asistencial crítico). |
 | RNF-02 | Rendimiento | Los listados con filtros (Equipos, Bitácora) deben responder en menos de 2 segundos con el volumen actual (≈469 equipos, hasta 5.704 filas históricas). |
-| RNF-03 | Seguridad | Autenticación obligatoria para todo el sistema; sin acceso anónimo. Mecanismo exacto sujeto a PA-12 (SSO/LDAP institucional vs. autenticación local). |
+| RNF-03 | Seguridad | Autenticación obligatoria para todo el sistema; sin acceso anónimo. Correo y contraseña propios del sistema, con bloqueo por intentos fallidos, recuperación por correo y registro de accesos (Módulo 20). PA-12 cerrada el 10-11-2026: el Servicio no tiene directorio institucional. |
 | RNF-04 | Integridad de datos | Toda regla de negocio (RN-01 a RN-05) debe validarse en el backend, no solo en la interfaz, para que no pueda vulnerarse vía API o edición directa. |
 | RNF-05 | Auditabilidad | Cambios sobre catastro, bitácora, correctivos y convenios deben quedar trazables (usuario, fecha, valor anterior/nuevo) — ver RF-36. |
 | RNF-06 | Usabilidad | Las pantallas deben seguir los patrones estándar de Filament 5 (sin componentes de UI a medida), para minimizar curva de aprendizaje del equipo de mantención. |
@@ -507,7 +533,8 @@ duplican, para evitar que este documento y el BRIEF diverjan con el tiempo.
 |---|---|---|
 | SIGFE | Referencia manual del código de subasignación (campo de texto) | Confirmado como no-integración (PA-5 resuelta el 25-09-2026: basta la referencia manual) |
 | Exportación a Excel/PDF | Generación de archivo, sin API externa | RF-31 a RF-33 |
-| Autenticación institucional (SSO/LDAP) | Posible integración futura | Sujeto a PA-12; por defecto se asume autenticación local Laravel (Fortify/Breeze) |
+| Autenticación institucional (SSO/LDAP) | No aplica | PA-12 cerrada (10-11-2026): el Servicio no cuenta con directorio institucional; la autenticación es local |
+| Servidor de correo (SMTP) del Servicio | Salida | Envío del enlace de recuperación de contraseña (RF-88). Datos a cargo del Sysadmin |
 
 ### 3.5 Restricciones de diseño
 
@@ -579,6 +606,7 @@ Stack TRA §5 sin excepciones (ver `BRIEF.md` §4 y `SAD.md` §8). Cualquier exc
 | — (cierre de RF-21 y mejoras, 30-09-2026) | — | RF-76 y RF-77 |
 | 5 — Indicadores y reportes (respuesta 8 del requirente, 01-10-2026) | HU-08 | RF-78 |
 | — (alineación con el mockup, 19-10-2026) | HU-04, HU-05, HU-07, HU-08 | RF-79 a RF-86 |
+| — (seguridad del inicio de sesión, PA-12 cerrada, 10-11-2026) | — | RF-87 a RF-89 |
 
 Para la verificación esperada de cada requisito, ver `BRIEF.md` §6 "Trazabilidad mínima" (se
 mantiene vigente; este SRS no la reemplaza, solo aporta el detalle de RF que la sustentan).
@@ -588,6 +616,6 @@ mantiene vigente; este SRS no la reemplaza, solo aporta el detalle de RF que la 
 Este SRS hereda las 12 preguntas abiertas del `BRIEF.md`. Las que condicionan directamente algún
 requisito quedan marcadas en línea (PA-N). Estado al 25-09-2026: ver BRIEF "Respuestas del
 requirente". Las PA 4, 5, 6, 7, 9 y 11 están resueltas. Las PA 1, 2, 3, 8 y 10 quedaron cerradas
-con las decisiones del Módulo 15, a la espera de la confirmación de Cristian. La PA 12 sigue
-abierta; mientras tanto se usa autenticación local. No se resuelven aquí — se resuelven con el requirente,
+con las decisiones del Módulo 15, a la espera de la confirmación de Cristian. La PA 12 quedó
+cerrada el 10-11-2026: la autenticación local es definitiva (Módulo 20). No se resuelven aquí — se resuelven con el requirente,
 vía Cristian, según lo acordado en el correo del 19-08-2026.

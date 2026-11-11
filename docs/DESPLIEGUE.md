@@ -54,10 +54,31 @@ SESSION_SECURE_COOKIE=true
 
 CACHE_STORE=database
 QUEUE_CONNECTION=sync
+
+# Correo saliente (recuperación de contraseña). Datos que entrega el Sysadmin.
+MAIL_MAILER=smtp
+MAIL_SCHEME=null                # null: STARTTLS si el servidor lo ofrece (puerto 587); smtps: TLS directo (465)
+MAIL_HOST=<servidor-smtp>
+MAIL_PORT=587
+MAIL_USERNAME=<usuario-smtp>    # null si el servidor autoriza el envío por IP (relay)
+MAIL_PASSWORD=<contraseña-smtp>
+MAIL_FROM_ADDRESS=<no-responder@dominio-institucional>
+MAIL_FROM_NAME="Bitácora de Mantenimiento de Equipos"
+
+# Seguridad del inicio de sesión (opcional; estos son los valores por defecto)
+# SEGURIDAD_BLOQUEO_CUENTA_INTENTOS=5   SEGURIDAD_BLOQUEO_CUENTA_VENTANA=15   SEGURIDAD_BLOQUEO_CUENTA_MINUTOS=15
+# SEGURIDAD_BLOQUEO_IP_INTENTOS=20      SEGURIDAD_BLOQUEO_IP_VENTANA=15       SEGURIDAD_BLOQUEO_IP_MINUTOS=15
+# SEGURIDAD_CONTRASENA_LARGO_MINIMO=12
 ```
 
 - `APP_DEBUG=false` es obligatorio. Con `true`, un error muestra detalles internos y credenciales.
 - `APP_ENV=production` hace que el seeder **no** cree los usuarios de desarrollo (sección 4).
+- `CACHE_STORE=database` es necesario para el bloqueo por intentos fallidos: con un caché por
+  proceso (`array`) los contadores no se compartirían entre solicitudes.
+- `APP_URL` debe ser la dirección pública con HTTPS: con ella se arma el enlace del correo de
+  recuperación de contraseña.
+- Sin correo configurado, la recuperación de contraseña no llega a los usuarios (con
+  `MAIL_MAILER=log` el correo queda solo en `storage/logs/`). El ingreso funciona igual.
 - El archivo `.env` no se versiona. Sus permisos deben ser `600` y su dueño, el usuario del
   servicio web.
 
@@ -161,7 +182,29 @@ php artisan app:crear-usuario --nombre="Raúl Aravena Turra" --email=raul.araven
 los establecimientos; con recintos, solo los suyos.
 
 **Desactivar un usuario**: en el panel, desmarcar "Activo" en su ficha. Un usuario inactivo no
-puede iniciar sesión.
+puede iniciar sesión ni recibe enlaces de recuperación de contraseña.
+
+**Autenticación**: el ingreso es con el correo y una contraseña propios del sistema. El Servicio
+no cuenta con un directorio institucional (Active Directory o LDAP), por lo que esta es la
+solución definitiva (pregunta abierta 12, cerrada el 10-11-2026). Controles:
+
+| Control | Detalle |
+|---|---|
+| Contraseñas | Mínimo 12 caracteres (formulario de Usuarios, recuperación y `app:crear-usuario`). Se guardan con bcrypt. |
+| Bloqueo por cuenta | 5 intentos fallidos en 15 minutos bloquean ese correo por 15 minutos, exista o no la cuenta. |
+| Bloqueo por IP | 20 intentos fallidos en 15 minutos bloquean la dirección IP por 15 minutos. |
+| Freno de ráfagas | Además, 5 intentos por minuto por IP (Filament). |
+| Recuperación | Enlace por correo de un solo uso que vence en 60 minutos; la respuesta no revela si el correo existe. Recuperar la contraseña levanta el bloqueo de la cuenta. |
+| Registro de accesos | Ingresos exitosos y fallidos, bloqueos, cierres de sesión, solicitudes de recuperación, recuperaciones y cambios de contraseña, con fecha, IP y navegador (tabla `eventos_autenticacion`, solo inserción). Se consulta en Administración → Registro de accesos. |
+
+**Desbloquear antes de tiempo** (por ejemplo, si un usuario no tiene acceso a su correo): los
+bloqueos viven en el caché, así que `php artisan cache:clear` levanta todos los bloqueos vigentes.
+Lo recomendado es que el usuario recupere su contraseña.
+
+**Detrás de un proxy o balanceador**: el bloqueo por IP y el registro de accesos usan la IP del
+cliente. Si Nginx no recibe la conexión directamente, configurar los proxies de confianza
+(`trustProxies` en `bootstrap/app.php`); si no, todos los usuarios aparecerían con la IP del proxy
+y un bloqueo por IP los afectaría a todos.
 
 ## 5. Carga de datos
 
@@ -260,7 +303,12 @@ en desarrollo el 02-11-2026: se restauraron los 469 equipos en una base aparte.
    mostrar "El campo Equipo es obligatorio.".
 4. Reportes → "Descargar Excel" descarga el archivo.
 5. Bitácora anual muestra los 12 meses.
-6. `storage/logs/` no registra errores nuevos.
+6. Recuperación de contraseña: en el ingreso, **¿Ha olvidado su contraseña?** con el correo del
+   administrador. Debe llegar el correo **Recuperación de contraseña** con un enlace a
+   `https://<dominio>/admin/password-reset/reset…`. Esto confirma la configuración de correo.
+7. Administración → **Registro de accesos** muestra el ingreso del paso 2 y la solicitud del
+   paso 6 con la IP real del cliente (no la del proxy).
+8. `storage/logs/` no registra errores nuevos.
 
 ## 10. Reversa
 
@@ -288,12 +336,21 @@ php artisan up
 - [ ] Usuario de base de datos dedicado, con permisos solo sobre la base del sistema.
 - [ ] Respaldo diario programado y una restauración probada.
 - [ ] `composer audit` sin vulnerabilidades al instalar y en cada actualización.
-- [ ] Autenticación: hoy es local (correo y contraseña). Si el Servicio exige SSO/LDAP (pregunta
-      abierta 12 del BRIEF), se debe incorporar antes de abrir el sistema a todos los
-      establecimientos.
+- [ ] Autenticación con correo y contraseña propios del sistema: es la solución definitiva, ya
+      que el Servicio no cuenta con directorio institucional (pregunta abierta 12, cerrada el
+      10-11-2026). Los controles están en la sección 4.
+- [ ] Bloqueo por intentos fallidos verificado: 5 intentos con una contraseña incorrecta muestran
+      el mensaje de bloqueo (`CACHE_STORE=database`).
+- [ ] Correo saliente configurado y probado con la recuperación de contraseña (sección 9, paso 6),
+      con remitente institucional autorizado (SPF/DKIM) para que no llegue como no deseado.
+- [ ] El Registro de accesos muestra la IP real de los clientes (proxies de confianza, si hay).
+- [ ] Retención del registro de accesos definida según AUDIT §4 (la aplicación no lo borra).
 
 ## Pendiente de definir con el Sysadmin
 
 - Servidor y dominio de producción.
 - Ubicación y retención de los respaldos.
-- Correo saliente: hoy no se envían correos; las notificaciones se muestran en el panel.
+- Correo saliente para la recuperación de contraseña (sección 2): servidor SMTP, puerto y cifrado,
+  credenciales o autorización por IP, y remitente institucional. Las notificaciones del sistema
+  siguen mostrándose solo en el panel.
+- Retención del registro de accesos.

@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\Login;
+use App\Filament\Pages\Auth\RequestPasswordReset;
 use App\Filament\Pages\Escritorio;
 use App\Filament\Pages\GuiaDeUsuario;
 use App\Filament\Widgets\AlertasConveniosWidget;
@@ -65,7 +67,10 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            // SPEC-ME-019: bloqueo por intentos fallidos (RF-87) y recuperación de contraseña por
+            // correo sin revelar si la cuenta existe (RF-88).
+            ->login(Login::class)
+            ->passwordReset(RequestPasswordReset::class)
             ->brandName('Bitácora de Mantenimiento de Equipos')
             ->brandLogo(asset('images/logo-ssa.png'))
             ->brandLogoHeight('2.5rem')

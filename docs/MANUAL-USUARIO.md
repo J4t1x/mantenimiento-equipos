@@ -150,7 +150,7 @@ ver todo, pero no modifica datos.
 ### Ruta: Administrador
 
 **Qué hace en el sistema**: todo lo anterior, más crear usuarios, asignarles perfil y
-establecimientos, y desactivar cuentas.
+establecimientos, desactivar cuentas y revisar el registro de accesos.
 
 **Lea**: la ruta del Encargado de Mantención y luego [Usuarios](#12-usuarios) y
 [Perfiles](#3-perfiles-qué-puede-hacer-cada-usuario).
@@ -159,6 +159,7 @@ establecimientos, y desactivar cuentas.
 - [ ] Cree un usuario con el perfil **Técnico Interno** y un establecimiento asignado.
 - [ ] Asígnelo como **Responsable interno** en el plan de un equipo.
 - [ ] Desmarque **Activo** en su cuenta y compruebe que ya no puede ingresar.
+- [ ] Abra **Registro de accesos** y encuentre el intento de ingreso de la cuenta desactivada.
 
 ---
 
@@ -171,9 +172,29 @@ establecimientos, y desactivar cuentas.
 ![Pantalla de ingreso](manual/img/01-ingreso.png)
 
 - El ícono del ojo en el campo contraseña muestra lo que escribió.
-- Si la contraseña no funciona o la cuenta está desactivada, pida ayuda al administrador del
-  sistema. No hay recuperación automática de contraseña.
+- Si olvidó su contraseña, use **¿Ha olvidado su contraseña?** bajo el formulario (ver
+  "Recuperar la contraseña", más abajo).
+- Si la cuenta está desactivada, pida ayuda al administrador del sistema.
+- **Bloqueo por intentos fallidos**: después de **5 intentos fallidos** con el mismo correo, el
+  ingreso queda bloqueado por **15 minutos**, aunque luego escriba la contraseña correcta. También
+  se bloquea por 15 minutos un computador o red desde donde se acumulan 20 intentos fallidos. El
+  mensaje indica cuántos minutos faltan. Puede esperar o recuperar la contraseña, que también
+  levanta el bloqueo de su cuenta.
 - Para salir: clic en el círculo con sus iniciales (arriba a la derecha) → **Salir**.
+
+### Recuperar la contraseña
+
+1. En la pantalla de ingreso, presione **¿Ha olvidado su contraseña?**.
+2. Escriba su correo electrónico y presione **Enviar email**.
+3. Aparece el mensaje **Revise su correo**. Por seguridad, el mensaje es el mismo aunque el correo
+   no esté registrado o la cuenta esté desactivada; en esos casos no llega ningún correo.
+4. Abra el correo **Recuperación de contraseña** y presione **Crear contraseña nueva**. El enlace
+   **vence en 60 minutos y sirve una sola vez**; si venció, pida uno nuevo.
+5. Escriba la contraseña nueva dos veces (mínimo **12 caracteres**) y confirme. Luego ingrese con
+   ella.
+
+Si no recibió el correo, revise la carpeta de correo no deseado y espere un minuto antes de pedir
+otro enlace. Si sigue sin llegar, avise al administrador del sistema.
 
 ---
 
@@ -527,8 +548,8 @@ modificarla.
 
 Menú **Administración → Usuarios** (solo administradores).
 
-**Crear usuario**: **Nombre**, **Correo electrónico**, **Contraseña**, **Roles**, **Recintos**
-(vacío = todos) y **Activo**.
+**Crear usuario**: **Nombre**, **Correo electrónico**, **Contraseña** (mínimo 12 caracteres),
+**Roles**, **Recintos** (vacío = todos) y **Activo**.
 
 - Para que un técnico registre la bitácora de un equipo, debe ser el **Responsable interno** del
   plan de ese equipo (sección 6).
@@ -536,6 +557,21 @@ Menú **Administración → Usuarios** (solo administradores).
   cuenta, y su historial se conserva.
 - **Roles** (en el mismo grupo del menú) define qué pantallas ve cada perfil. Solo debe
   modificarlo el administrador del sistema.
+- Si un usuario olvidó su contraseña, indíquele que use **¿Ha olvidado su contraseña?** en la
+  pantalla de ingreso. El administrador también puede escribirle una nueva al editar su cuenta.
+
+### Registro de accesos
+
+Menú **Administración → Registro de accesos** (solo administradores). Muestra, del más reciente al
+más antiguo, cada evento de autenticación: **Ingreso exitoso**, **Ingreso fallido**, **Bloqueo**,
+**Cierre de sesión**, **Solicitud de recuperación**, **Recuperación de contraseña** y **Cambio de
+contraseña**. Para cada uno indica la fecha y hora, el correo escrito, el usuario (si la cuenta
+existe), la dirección IP y un detalle, por ejemplo "Contraseña incorrecta" o "Por cuenta, 15 min".
+
+- Se filtra por **Evento** y por rango de **Fecha**, y se busca por correo o dirección IP.
+- Es de solo lectura: nadie puede modificar ni eliminar sus registros.
+- Varios **Ingresos fallidos** seguidos de un **Bloqueo** con correos distintos desde una misma IP
+  pueden indicar un intento de acceso indebido: avise al Sysadmin.
 
 ---
 
@@ -575,11 +611,17 @@ Menú **Administración → Usuarios** (solo administradores).
 | "No puedes registrar datos de un equipo de un recinto que no tienes asignado." | El equipo es de otro establecimiento. | Pida al administrador que le asigne ese recinto, si corresponde. |
 | "El equipo ya está retirado de uso. Registra primero su reingreso." | Se intentó retirar un equipo ya retirado. | Registre el reingreso antes de un nuevo retiro. |
 | "No se puede eliminar" | El registro está en uso, por ejemplo un servicio clínico con equipos. | Desactívelo en vez de eliminarlo. |
+| "Por seguridad, el acceso quedó bloqueado temporalmente por demasiados intentos fallidos. …" | Se acumularon 5 intentos fallidos con ese correo (o 20 desde el mismo computador o red). | Espere los minutos indicados o use **¿Ha olvidado su contraseña?**. |
+| "El enlace no es válido o ya venció. …" | El enlace de recuperación ya se usó, venció (60 minutos) o se pidió otro más reciente. | Pida un enlace nuevo y use el último correo recibido. |
 | Notificación "Convenio sobregirado" | El gasto del año superó el monto anual del convenio. | Revise la ejecución. El registro sí se guardó. |
 
 ---
 
 ## 15. Preguntas frecuentes
+
+**Olvidé mi contraseña o mi cuenta quedó bloqueada.**
+Use **¿Ha olvidado su contraseña?** en la pantalla de ingreso: recibirá un enlace por correo para
+crear una nueva, y el bloqueo de su cuenta se levanta. También puede esperar 15 minutos.
 
 **No puedo marcar un mes como realizado.**
 Solo se registran los meses *Programados* (X). Si una mantención programada se hizo antes o

@@ -7,6 +7,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
+use Illuminate\Validation\Rules\Password;
 
 class UserForm
 {
@@ -28,7 +29,10 @@ class UserForm
                     ->password()
                     ->required(fn (string $operation): bool => $operation === 'create')
                     ->dehydrated(fn (?string $state): bool => filled($state))
-                    ->helperText('Al editar, deja este campo vacío para mantener la contraseña actual.'),
+                    // SPEC-ME-019: misma política que la recuperación y app:crear-usuario.
+                    ->rule(Password::default())
+                    ->autocomplete('new-password')
+                    ->helperText('Mínimo '.config('seguridad.contrasena.largo_minimo').' caracteres. Al editar, deja este campo vacío para mantener la contraseña actual.'),
                 Select::make('roles')
                     ->relationship('roles', 'name')
                     ->multiple()

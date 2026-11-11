@@ -334,7 +334,7 @@ Subdirección Gestión Asistencial, SSA. Adjuntó la Resolución Exenta 1341/201
 | 9 | Solo el año vigente, una vez funcionando la aplicación. | Coincide con el importador actual (año 2026). | Resuelta |
 | 10 | Se realiza manualmente: cada equipo tiene una vida útil distinta. | RN-06 actualizada. Sin cambios: la fórmula de la planilla coincide con RF-09. | Resuelta con decisión, a confirmar |
 | 11 | Se puede registrar como "Sin evaluar". | Ya implementado (`EstadoEquipo::SinEvaluar`). | Resuelta |
-| 12 | No se incluyó en el correo del 23-09-2026. | Se mantiene la autenticación local. | Abierta |
+| 12 | Cristian Santander (10-11-2026): el Servicio no cuenta con un directorio institucional (Active Directory o LDAP) contra el cual autenticar. | El ingreso con correo y contraseña propios del sistema es la solución definitiva. Se agregan el bloqueo por intentos fallidos, la recuperación de contraseña por correo y el registro de accesos (SRS Módulo 20). | Resuelta |
 
 Las consultas de seguimiento (IM≥12 / No aplica, relación con los servicios clínicos,
 interpretación de la vida útil, listado de establecimientos, planilla de Puerto Aysén y formato del

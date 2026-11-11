@@ -408,6 +408,26 @@ seeders o comandos artisan) — así que no se ve nada auditado al probar por `t
 salvo que se fuerce `config(['audit.console' => true])`. En el panel real (petición HTTP normal)
 audita sin necesitar ese ajuste.
 
+### 3.17 `eventos_autenticacion` (RF-89, implementado 2026-11-11)
+
+Registro de eventos de autenticación (AUDIT §3.1). Solo inserción: el modelo
+`EventoAutenticacion` impide modificar o eliminar filas.
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| id | bigint PK | |
+| user_id | bigint FK → usuarios.id, nulo | Nulo si el correo escrito no corresponde a una cuenta. `nullOnDelete` |
+| email | varchar, nulo | Correo escrito (en minúsculas), exista o no la cuenta |
+| evento | varchar(40) | `ingreso_exitoso` · `ingreso_fallido` · `bloqueo` · `cierre_sesion` · `solicitud_recuperacion` · `recuperacion_contrasena` · `cambio_contrasena` (enum `EventoAutenticacion`) |
+| ip_address | varchar(45), nulo | IPv4 o IPv6 del cliente |
+| user_agent | varchar(512), nulo | Navegador |
+| detalle | json, nulo | Motivo del fallo, tipo y duración del bloqueo, resultado de la solicitud o quién cambió la contraseña |
+| created_at | timestamp | Sin `updated_at` |
+
+Índices: (`evento`, `created_at`), `created_at` y `email`. Los contadores y bloqueos por intentos
+fallidos no se guardan aquí, sino en el caché (`CACHE_STORE=database`), con un hash del correo o
+de la IP.
+
 ## §4 Catálogos de valores fijos (enums)
 
 Idénticos a los verificados en la planilla (`BRIEF.md` §2), con su equivalente de columna:
@@ -456,7 +476,7 @@ Idénticos a los verificados en la planilla (`BRIEF.md` §2), con su equivalente
 | PA-6 Detalle de mantenimiento correctivo | Si se confirman categorías fijas, `mantenimientos_correctivos.tipo_gasto` pasa de texto libre a catálogo (`tipos_gasto_correctivo`) |
 | PA-9 Migración de histórico | Define si se cargan años 2023–2025 en `planes_mantenimiento`/`ejecuciones_mensuales` o solo 2026 |
 | PA-10 Vida útil residual | **Resuelta sin cambio de esquema (25-09-2026)**: la vida útil se ingresa por equipo y el residual se sigue calculando (ver §3.5) |
-| PA-12 Autenticación institucional | Si hay SSO/LDAP, `usuarios.password` puede quedar en desuso y se agrega `usuarios.sso_id` |
+| PA-12 Autenticación institucional | **Cerrada (10-11-2026)**: el Servicio no tiene directorio institucional; `usuarios.password` es definitivo. Se agregó `eventos_autenticacion` (§3.17) |
 
 Estas decisiones no bloquean el inicio de la Etapa 2: el modelo está diseñado para que cada
 respuesta del requirente se incorpore como una migración adicional, no como un rediseño.
