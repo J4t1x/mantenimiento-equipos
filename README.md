@@ -97,12 +97,13 @@ planilla.
 | Documento | Contenido |
 |---|---|
 | [`docs/BRIEF.md`](docs/BRIEF.md) ([PDF](docs/BRIEF.pdf)) | Análisis: problema, reglas de negocio, historias de usuario y preguntas abiertas. |
-| [`docs/SRS.md`](docs/SRS.md) | Requisitos funcionales (RF-01 a RF-86) y no funcionales, con trazabilidad. |
+| [`docs/SRS.md`](docs/SRS.md) | Requisitos funcionales (RF-01 a RF-89) y no funcionales, con trazabilidad. |
 | [`docs/SAD.md`](docs/SAD.md) | Arquitectura y decisiones (ADR). |
 | [`docs/MODELO-DATOS.md`](docs/MODELO-DATOS.md) | Modelo de datos. |
 | [`docs/DESCRIPCION-SISTEMA.md`](docs/DESCRIPCION-SISTEMA.md) | Descripción funcional del sistema. |
 | [`docs/MANUAL-USUARIO.md`](docs/MANUAL-USUARIO.md) | Manual de uso del sistema, por perfil y con capturas. |
 | [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md) | Guía de instalación, operación, actualización y respaldos para el Sysadmin. |
+| [`docs/PAUTA-PRUEBA-ACEPTACION.md`](docs/PAUTA-PRUEBA-ACEPTACION.md) | Pauta de la capacitación y la prueba de aceptación con el requirente: casos por perfil, criterio de aceptación y acta. |
 | [`docs/MOCKUP-SISTEMA.html`](docs/MOCKUP-SISTEMA.html) | Mockup de pantallas (referencia visual, no diseño final). |
 | [`docs/normativa/NORMA-MP-EQUIPAMIENTO-CRITICO.md`](docs/normativa/NORMA-MP-EQUIPAMIENTO-CRITICO.md) ([PDF](docs/normativa/Resolucion-Exenta-1341-2017-MINSAL-Norma-MP-Equipamiento-Medico-Critico.pdf)) | Síntesis de la Res. Ex. 1341/2017 del MINSAL (MP de equipamiento médico crítico) y su aplicación al sistema. |
 
