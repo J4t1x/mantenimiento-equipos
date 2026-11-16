@@ -36,8 +36,8 @@ indica los requisitos del SRS que comprueba (columna **RF**).
 Regional Coyhaique y cuentas de prueba. **Nada de lo que se registre en la sesión pasa a
 producción**: producción parte con la carga de los datos reales.
 
-**Fuera de alcance**: el rendimiento, los respaldos y la instalación, que se verifican con el
-Sysadmin según `docs/DESPLIEGUE.md` (sección 9). Las reglas que el sistema ya comprueba con sus
+**Fuera de alcance**: el rendimiento, los respaldos y la instalación, que se verifican antes de la
+sesión según [INSTALACION-QA.md](INSTALACION-QA.md). Las reglas que el sistema ya comprueba con sus
 pruebas automatizadas (por ejemplo, el bloqueo por dirección IP) no se repiten en la sesión.
 
 ---
@@ -58,46 +58,56 @@ ese perfil.
 
 ## 3. Preparación del ambiente de pruebas
 
-Antes de la sesión, el desarrollador y la Sección de Desarrollo revisan juntos el sistema
-instalado en QA (verificación de la sección 9 de `docs/DESPLIEGUE.md`) y dejan listo lo siguiente.
+La instalación en QA, la preparación de los datos y la revisión conjunta del sistema instalado
+(desarrollador y Sección de Desarrollo) se describen en
+[INSTALACION-QA.md](INSTALACION-QA.md). La sesión con el requirente se hace solo con la decisión
+**Listo para presentar** de esa revisión y con QA en su estado inicial (sección 8 de esa guía).
 
-**Datos**:
+**Datos**: el comando `php artisan app:preparar-qa`, después de importar el catastro, deja listo:
 - [ ] Catastro y plan 2026 del Hospital Regional Coyhaique importados
       (`php artisan app:importar-catastro-coyhaique`).
-- [ ] Un segundo recinto, **Recinto de prueba**, con al menos un equipo, para comprobar que cada
-      usuario ve solo su establecimiento (caso EM-12).
-- [ ] Un proveedor registrado para los casos de convenios.
+- [ ] El **Recinto de prueba**, con el equipo `QA-0001`, para comprobar que cada usuario ve solo su
+      establecimiento (caso EM-12).
+- [ ] El **Proveedor de prueba (QA)**, para los casos de convenios.
+- [ ] Las cuentas de prueba y los equipos de referencia de las tablas siguientes. El Técnico
+      Interno de prueba queda como **Responsable interno** de los Equipos A y B.
 
-**Cuentas de prueba** (una por perfil, con `php artisan app:crear-usuario`, recinto Hospital
-Regional Coyhaique salvo el administrador):
+**Cuentas de prueba** (las crea `app:preparar-qa`; copiar los correos de su salida):
 
 | Perfil | Correo | Recinto |
 |---|---|---|
-| Administrador (`super_admin`) | | Todos |
-| Encargado de Mantención | | Hospital Regional Coyhaique |
-| Técnico Interno | | Hospital Regional Coyhaique |
-| Encargado de Convenios | | Todos |
-| Jefatura | | Todos |
+| Administrador (`super_admin`) | qa.admin@prueba.invalid | Todos |
+| Encargado de Mantención | qa.mantencion@prueba.invalid | Hospital Regional Coyhaique |
+| Técnico Interno | qa.tecnico@prueba.invalid | Hospital Regional Coyhaique |
+| Encargado de Convenios | qa.convenios@prueba.invalid | Todos |
+| Jefatura | qa.jefatura@prueba.invalid | Todos |
+| Cuenta de seguridad (Jefatura), solo para S-03 a S-05 | | Todos |
 
-- [ ] El Técnico Interno de prueba es **Responsable interno** de al menos dos planes 2026 con un
-      mes **Programado** ya pasado.
-- [ ] La cuenta usada en los casos S-03 a S-05 tiene un correo cuya bandeja se puede abrir durante
-      la sesión.
-- [ ] El correo saliente está configurado y probado (paso 6 de la verificación). Si aún no lo
-      está, los casos S-04 y S-05 se marcan **No aplica** y quedan pendientes para producción.
+- [ ] La cuenta de seguridad tiene un correo cuya bandeja se puede abrir durante la sesión
+      (`--correo-seguridad`). Los casos de bloqueo se hacen con ella para no bloquear la cuenta de
+      un participante.
+- [ ] El correo saliente está configurado y probado (paso 6 de la verificación de
+      `DESPLIEGUE.md` §9). Si aún no lo está, los casos S-04 y S-05 se marcan **No aplica** y
+      quedan pendientes para producción.
 
-**Equipos de referencia** (completar con datos reales de QA para no buscarlos durante la sesión):
+**Equipos de referencia** (copiar la tabla que imprime `app:preparar-qa`, para no buscarlos durante
+la sesión):
 
 | Referencia | Uso | N° de inventario |
 |---|---|---|
 | Equipo A | Equipo crítico **sin garantía vigente**, con plan 2026 asignado al técnico | |
-| Equipo B | Otro equipo con plan 2026 asignado al técnico | |
+| Equipo B | Otro equipo con plan 2026 asignado al técnico, con meses programados ya pasados | |
 | Equipo C | Equipo con plan 2026 **no** asignado al técnico | |
-| Equipo D | Equipo del **Recinto de prueba** | |
-| Servicio clínico en uso | Servicio con equipos asociados (caso EM-11) | |
+| Equipo D | Equipo del **Recinto de prueba** | QA-0001 |
+| Servicio clínico en uso | Servicio del Equipo A (caso EM-11) | |
 
-Las contraseñas de las cuentas de prueba se entregan a cada participante por un canal distinto
-del Zoom (no se muestran en pantalla).
+Las contraseñas de las cuentas de prueba se muestran una sola vez al ejecutar el comando. Se
+entregan a cada participante por un canal distinto del Zoom (no se muestran en pantalla) y no se
+copian en esta pauta.
+
+**Alerta esperada**: mientras el requirente no responda las preguntas 4 a) y 4 b) de la solicitud
+del 10-11-2026, el Escritorio muestra **Planes con meses inconsistentes** con 14 planes de la
+planilla. No es un error del sistema: se explica al mostrar el Escritorio.
 
 ---
 
@@ -144,14 +154,44 @@ Cada observación se clasifica:
 
 ## 6. Casos de prueba
 
+Los casos parten de las prácticas guiadas de la
+[Ruta de capacitación por perfil](MANUAL-USUARIO.md#ruta-de-capacitación-por-perfil) (también en la
+Guía de usuario del panel): cada práctica tiene al menos un caso, y los demás casos agregan las
+reglas que el sistema debe hacer cumplir. Así, lo que el participante practica en la capacitación es
+lo mismo que luego valida.
+
+| Ruta del manual | Práctica guiada | Caso |
+|---|---|---|
+| Técnico Interno | Revisar las mantenciones **Pendientes** del mes | TI-01 |
+| | Buscar un equipo en **Bitácora anual** y registrarlo como **Realizado**; comprobar **√** | TI-02 |
+| | Registrar una falla y buscarla en la ficha del equipo | TI-05 |
+| Encargado de Mantención | Abrir una alerta de **Requiere atención** | EM-01 |
+| | Revisar la ficha de un equipo crítico | EM-03 |
+| | Asignar un **Responsable interno** y observar la vista previa de los meses | EM-06 |
+| | Revisar la ficha del recinto | EM-11 |
+| | Abrir la **Versión imprimible** del informe de cumplimiento | EM-12 |
+| Encargado de Convenios | Revisar **Vigencia** y **% de ejecución** | EC-01, EC-02 |
+| | Registrar una ejecución mensual y ver el cambio del % | EC-02 |
+| | Descargar el Excel de **Convenios y ejecución** | EC-05 |
+| Jefatura | Cambiar el **Período** del Escritorio | J-01 |
+| | Abrir la alerta **MP atrasada** | J-02 |
+| | Guardar como PDF el informe de equipos críticos | J-03 |
+| Administrador | Crear un usuario Técnico Interno | A-01 |
+| | Asignarlo como **Responsable interno** | A-02 |
+| | Desactivar su cuenta y comprobar que no ingresa | A-03 |
+| | Encontrar el intento en **Registro de accesos** | A-04 |
+
+Casos que agregan reglas del sistema, sin práctica en el manual: S-01 a S-05 (inicio de sesión),
+EM-02, EM-04, EM-05, EM-07 a EM-10, TI-03, TI-04, EC-03, EC-04 y J-04.
+
 ### 6.1 Ingreso y seguridad (todos los perfiles)
 
 | ID | Caso | Pasos | Resultado esperado | RF | Resultado |
 |---|---|---|---|---|---|
 | S-01 | Ingreso y salida | Ingresar con la cuenta de prueba de su perfil. Luego, círculo con las iniciales → **Salir**. | Muestra el Escritorio con las secciones de su perfil. Al salir vuelve a la pantalla de ingreso. | RF-34, RF-35 | |
 | S-02 | Contraseña incorrecta | Ingresar con una contraseña equivocada. | Muestra un mensaje de credenciales incorrectas y no ingresa. | RF-87 | |
-| S-03 | Bloqueo por intentos fallidos | Con la cuenta indicada, equivocar la contraseña 5 veces. Luego escribir la contraseña correcta. | Al quinto fallo aparece "Por seguridad, el acceso quedó bloqueado temporalmente…" con los minutos restantes. La contraseña correcta también se rechaza. | RF-87 | |
-| S-04 | Recuperación de contraseña | **¿Ha olvidado su contraseña?** → correo de la cuenta bloqueada → **Enviar email**. Abrir el correo **Recuperación de contraseña** → **Crear contraseña nueva**. Probar primero una de menos de 12 caracteres y luego una válida. Ingresar con ella. | Aparece **Revise su correo**. Llega el correo con el enlace. La contraseña corta se rechaza. Con la válida ingresa, aunque la cuenta estaba bloqueada. | RF-88 | |
+| S-03 | Bloqueo por intentos fallidos | Con la **cuenta de seguridad**, equivocar la contraseña 5 veces. Luego escribir la contraseña correcta. | Al quinto fallo aparece "Por seguridad, el acceso quedó bloqueado temporalmente…" con los minutos restantes. La contraseña correcta también se rechaza. | RF-87 | |
+| S-04 | Recuperación de contraseña | **¿Ha olvidado su contraseña?** → correo de la cuenta de seguridad (bloqueada en S-03) → **Enviar email**. Abrir el correo **Recuperación de contraseña** → **Crear contraseña nueva**. Probar primero una de menos de 12 caracteres y luego una válida. Ingresar con ella. | Aparece **Revise su correo**. Llega el correo con el enlace. La contraseña corta se rechaza. Con la válida ingresa, aunque la cuenta estaba bloqueada. | RF-88 | |
 | S-05 | Enlace de un solo uso y correo inexistente | Abrir otra vez el enlace del correo de S-04. Luego pedir recuperación con un correo que no exista en el sistema. | El enlace usado muestra que no es válido o ya venció. Con el correo inexistente aparece el mismo mensaje **Revise su correo** y no llega ningún correo. | RF-88 | |
 
 ### 6.2 Encargado de Mantención
@@ -258,7 +298,7 @@ verificación posterior a la instalación.
 ## 9. Acta de aceptación
 
 **Sistema**: Bitácora de Mantenimiento de Equipos
-**Ambiente**: pruebas (QA), versión publicada en el repositorio al ______________
+**Ambiente**: pruebas (QA), commit ______________ (el anotado en la revisión de `INSTALACION-QA.md`)
 **Fecha de la sesión**: ______________
 
 **Resumen de resultados**:

@@ -2,7 +2,9 @@
 
 **Sistema de Bitácora de Mantenimiento de Equipos** · Servicio de Salud Aysén
 Dirigida al Sysadmin que instala y opera el ambiente de producción. El entorno de desarrollo
-(Laravel Sail) se describe en el [README](../README.md) y **no** debe usarse en producción.
+(Laravel Sail) se describe en el [README](../README.md) y **no** debe usarse en producción. Para
+el ambiente de pruebas (QA) y la revisión previa a la prueba de aceptación, ver además
+[INSTALACION-QA.md](INSTALACION-QA.md).
 
 El hosting final (servidor propio, máquina virtual, contenedores) queda a criterio del Sysadmin
 ([SAD §5.2](SAD.md)). Esta guía asume un servidor Linux con Nginx y PHP-FPM, y es equivalente en
