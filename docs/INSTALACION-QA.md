@@ -52,7 +52,7 @@ Datos que se piden al Sysadmin, o que él define, antes de instalar:
 | Código | Acceso de salida a GitHub para clonar `https://github.com/J4t1x/mantenimiento-equipos`, o el repositorio del GitLab del Servicio. |
 | Correo saliente | Los datos SMTP de `DESPLIEGUE.md` §2. En QA es opcional: sin correo, los casos S-04 y S-05 de la pauta quedan **No aplica** y se prueban en producción. |
 | Proxy | Si el sitio queda detrás de un proxy o balanceador, su dirección, para configurar los proxies de confianza (`DESPLIEGUE.md` §4). |
-| Apoyo del desarrollador | Una sesión compartida (Zoom o similar) durante la instalación, y acceso de lectura a `storage/logs/` o, si lo permite la política del Servicio, a una consola del servidor para la sección 5. |
+| Apoyo del desarrollador | Una sesión compartida (Google Meet o similar) durante la instalación, y acceso de lectura a `storage/logs/` o, si lo permite la política del Servicio, a una consola del servidor para la sección 5. |
 | Fecha | Fecha y hora de la instalación, y de la revisión conjunta. |
 
 ---
@@ -129,7 +129,7 @@ php artisan optimize
   responsable, de otro tipo de equipo.
 - Imprime la tabla de cuentas, con sus contraseñas, y la de equipos de referencia. **Las
   contraseñas se muestran una sola vez**: se copian a la sección 3 de la pauta (sin las
-  contraseñas) y se entregan a cada participante por un canal distinto del Zoom.
+  contraseñas) y se entregan a cada participante por un canal distinto de la videollamada.
 
 Se puede volver a ejecutar sin duplicar datos: reutiliza las cuentas y las asignaciones, y no
 cambia las contraseñas salvo con `--nuevas-contrasenas` (por ejemplo, si se perdió la tabla).
@@ -205,11 +205,11 @@ QA en su estado inicial (sección 8).
 
 - [ ] Pauta de la prueba de aceptación con las secciones 3 (referencias) y 9 (versión del sistema)
       completas, compartida con el Encargado de la Sección para que registre los resultados.
-- [ ] Contraseñas de las cuentas de prueba listas para entregar por un canal distinto del Zoom.
+- [ ] Contraseñas de las cuentas de prueba listas para entregar por un canal distinto de la videollamada.
 - [ ] Bandeja del correo de seguridad abierta, si se harán S-04 y S-05.
 - [ ] Respuestas del requirente a la solicitud del 10-11-2026 revisadas: el caso TI-05 y la
       alerta de meses inconsistentes dependen de ellas.
-- [ ] Enlace del Zoom enviado y participantes por perfil confirmados.
+- [ ] Enlace de Google Meet enviado y participantes por perfil confirmados.
 
 ### 7.5 Decisión
 

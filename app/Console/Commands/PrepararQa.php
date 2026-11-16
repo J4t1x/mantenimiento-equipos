@@ -159,7 +159,7 @@ class PrepararQa extends Command
             ->all());
 
         if ($contrasenas !== []) {
-            $this->warn('Las contraseñas se muestran una sola vez. Entrégalas a cada participante por un canal distinto del Zoom.');
+            $this->warn('Las contraseñas se muestran una sola vez. Entrégalas a cada participante por un canal distinto de la videollamada.');
         }
 
         if (blank($this->option('correo-seguridad'))) {

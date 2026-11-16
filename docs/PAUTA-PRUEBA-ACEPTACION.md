@@ -3,7 +3,7 @@
 **Sistema de Bitácora de Mantenimiento de Equipos** · Servicio de Salud Aysén
 
 Esta pauta guía la capacitación y la prueba de aceptación del sistema con el requirente, en una
-sesión por Zoom sobre el ambiente de pruebas (QA). Se apoya en las prácticas guiadas de la
+sesión por Google Meet sobre el ambiente de pruebas (QA). Se apoya en las prácticas guiadas de la
 [Ruta de capacitación por perfil](MANUAL-USUARIO.md#ruta-de-capacitación-por-perfil) del manual de
 usuario, y agrega los casos que comprueban las reglas del sistema.
 
@@ -102,7 +102,7 @@ la sesión):
 | Servicio clínico en uso | Servicio del Equipo A (caso EM-11) | |
 
 Las contraseñas de las cuentas de prueba se muestran una sola vez al ejecutar el comando. Se
-entregan a cada participante por un canal distinto del Zoom (no se muestran en pantalla) y no se
+entregan a cada participante por un canal distinto de la videollamada (no se muestran en pantalla) y no se
 copian en esta pauta.
 
 **Alerta esperada**: mientras el requirente no responda las preguntas 4 a) y 4 b) de la solicitud
