@@ -101,7 +101,7 @@ planilla.
 | [`docs/SAD.md`](docs/SAD.md) | Arquitectura y decisiones (ADR). |
 | [`docs/MODELO-DATOS.md`](docs/MODELO-DATOS.md) | Modelo de datos. |
 | [`docs/DESCRIPCION-SISTEMA.md`](docs/DESCRIPCION-SISTEMA.md) | Descripción funcional del sistema. |
-| [`docs/MANUAL-USUARIO.md`](docs/MANUAL-USUARIO.md) | Manual de uso del sistema, por perfil y con capturas. |
+| [`docs/MANUAL-USUARIO.md`](docs/MANUAL-USUARIO.md) ([PDF](docs/MANUAL-USUARIO.pdf)) | Manual de uso del sistema, por perfil y con capturas. |
 | [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md) | Guía de instalación, operación, actualización y respaldos para el Sysadmin. |
 | [`docs/INSTALACION-QA.md`](docs/INSTALACION-QA.md) | Instalación en el ambiente de pruebas con el Sysadmin, datos de prueba (`app:preparar-qa`) y revisión conjunta antes de la sesión con el requirente. |
 | [`docs/PRESENTACION-CAPACITACION.html`](docs/PRESENTACION-CAPACITACION.html) | Presentación de la sesión de capacitación y prueba de aceptación, por perfil y con notas del presentador (abrir desde `docs/`). |
