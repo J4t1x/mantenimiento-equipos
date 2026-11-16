@@ -96,6 +96,13 @@
   .slide.portada .seccion-tag, .slide.separador .seccion-tag { color: var(--azul-claro); }
   .slide.separador .perfil-resumen { margin-top: 24px; font-size: 24px; color: #fff; max-width: 900px; line-height: 1.45; }
   .linea-roja { width: 120px; height: 6px; background: var(--rojo); margin: 8px 0 28px; }
+  /* Logo institucional: grande en portada y cierre, marca pequeña en el resto (la clona el script). */
+  .logo-grande { position: absolute; right: 80px; top: 50%; translate: 0 -50%; width: 250px; border-radius: 10px; box-shadow: 0 12px 36px rgba(0,0,0,.35); }
+  .slide.activa .logo-grande { animation: logo-entrar .8s .2s cubic-bezier(.22,.8,.24,1) both; }
+  @keyframes logo-entrar { from { opacity: 0; scale: .9; } to { opacity: 1; scale: 1; } }
+  .logo-marca { position: absolute; right: 22px; top: 12px; height: 42px; border-radius: 4px; }
+  .slide.separador .logo-marca { box-shadow: 0 0 0 2px rgba(255,255,255,.85); }
+  .slide.portada h1, .slide.portada p { max-width: 820px; }
   /* Notas */
   aside.notas { display: none; }
   #panel-notas {
@@ -105,7 +112,7 @@
   #panel-notas.visible { display: block; animation: subir .3s ease both; }
   #panel-notas h4 { margin: 0 0 6px; color: var(--azul-medio); font-size: 14px; text-transform: uppercase; letter-spacing: .08em; }
   #progreso { position: fixed; left: 0; top: 0; height: 4px; background: linear-gradient(90deg, var(--rojo), #FF5A6B); box-shadow: 0 0 10px rgba(226,0,26,.6); transition: width .5s cubic-bezier(.22,.8,.24,1); z-index: 11; }
-  #ayuda { position: fixed; right: 14px; top: 10px; color: var(--azul-medio); font-size: 13px; z-index: 9; opacity: .85; transition: opacity 1s; }
+  #ayuda { position: fixed; left: 50%; translate: -50% 0; bottom: 8px; color: var(--azul-medio); font-size: 13px; z-index: 9; opacity: .85; transition: opacity 1s; }
   #ayuda.oculta { opacity: 0; }
   /* Índice */
   #indice { position: fixed; inset: 0; background: rgba(10,36,64,.96); display: none; overflow: auto; padding: 40px 60px; z-index: 12; }
@@ -134,6 +141,7 @@
 
 <!-- 1 -->
 <section class="slide portada" data-titulo="Portada">
+  <img class="logo-grande" src="manual/img/logo-ssaysen.jpg" alt="Servicio de Salud Aysén">
   <div class="seccion-tag">Servicio de Salud Aysén</div>
   <h1>Sistema de Bitácora de<br>Mantenimiento de Equipos</h1>
   <div class="linea-roja"></div>
@@ -637,6 +645,7 @@
 
 <!-- 28 -->
 <section class="slide portada" data-titulo="Cierre">
+  <img class="logo-grande" src="manual/img/logo-ssaysen.jpg" alt="Servicio de Salud Aysén">
   <h1>Gracias</h1>
   <div class="linea-roja"></div>
   <p>Consultas y dudas: <b style="color:#fff">Guía de usuario</b>, disponible en el menú del sistema.</p>
@@ -683,7 +692,7 @@
    */
   function marcarAnimables(contenedor, contador) {
     Array.from(contenedor.children).forEach(el => {
-      if (el.matches('aside, .pie')) return;
+      if (el.matches('aside, .pie, .logo-grande, .logo-marca')) return;
       if (el.matches('.cols')) { Array.from(el.children).forEach(col => col.matches('.figura') ? asignar(col, contador) : marcarAnimables(col, contador)); return; }
       if (el.matches('ul, ol')) { Array.from(el.children).forEach(li => asignar(li, contador)); return; }
       if (el.matches('table')) { el.querySelectorAll('tr').forEach(tr => asignar(tr, contador)); return; }
@@ -699,6 +708,18 @@
   }
 
   slides.forEach(slide => marcarAnimables(slide, { n: 0 }));
+
+  // Marca institucional en las láminas sin logo grande (usa la misma imagen de la portada).
+  const logoPortada = document.querySelector('.logo-grande');
+  if (logoPortada) {
+    slides.filter(s => !s.querySelector('.logo-grande')).forEach(s => {
+      const marca = document.createElement('img');
+      marca.className = 'logo-marca';
+      marca.src = logoPortada.src;
+      marca.alt = '';
+      s.appendChild(marca);
+    });
+  }
 
   let temporizadorSalida = null;
 
