@@ -19,4 +19,16 @@ class EquipoNoAsignadoException extends RuntimeException implements ExcepcionDeD
             .'responsable interno.'
         );
     }
+
+    /**
+     * SPEC-ME-022: el técnico interno registra correctivos solo de los equipos que tiene
+     * asignados (respuesta a la pregunta 5 del correo al requirente del 10-11-2026).
+     */
+    public static function paraCorrectivo(): self
+    {
+        return new self(
+            'No puedes registrar un correctivo de un equipo que no tienes asignado como '
+            .'responsable interno.'
+        );
+    }
 }

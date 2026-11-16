@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Exceptions\EquipoNoAsignadoException;
 use App\Models\Concerns\ProtegeRangosDeValores;
 use App\Models\Contracts\AcotadoPorRecinto;
 use App\Models\Scopes\AlcanceRecintoScope;
 use App\Support\AlcanceRecinto;
+use App\Support\AlcanceTecnicoInterno;
 use Database\Factories\MantenimientoCorrectivoFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
@@ -66,6 +68,12 @@ class MantenimientoCorrectivo extends Model implements AcotadoPorRecinto, Audita
         static::saving(function (self $correctivo): void {
             if ($correctivo->isDirty('equipo_id')) {
                 AlcanceRecinto::verificarEquipo($correctivo->equipo_id);
+            }
+        });
+
+        static::saving(function (self $correctivo): void {
+            if (! AlcanceTecnicoInterno::puedeGestionarEquipo($correctivo->equipo_id)) {
+                throw EquipoNoAsignadoException::paraCorrectivo();
             }
         });
     }

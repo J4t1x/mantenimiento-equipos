@@ -52,6 +52,38 @@ class AlcanceTecnicoInterno
     }
 
     /**
+     * SPEC-ME-022: true si el usuario puede registrar o editar correctivos del equipo dado. Para
+     * el técnico interno exige ser responsable interno de algún plan del equipo (misma regla que
+     * RF-20 para la bitácora); siempre true para el resto de los roles.
+     */
+    public static function puedeGestionarEquipo(?int $equipoId, ?User $usuario = null): bool
+    {
+        $usuario ??= auth()->user();
+
+        if (! $usuario instanceof User || ! $usuario->hasRole(self::ROL)) {
+            return true;
+        }
+
+        return $equipoId !== null && PlanMantenimiento::withoutGlobalScopes()
+            ->where('equipo_id', $equipoId)
+            ->where('responsable_interno_id', $usuario->getKey())
+            ->exists();
+    }
+
+    /**
+     * SPEC-ME-022: restringe el Select de "Equipo" del formulario de correctivos a los equipos
+     * asignados al técnico interno actual — sin efecto para el resto de los roles.
+     */
+    public static function limitarEquipos(Builder $query): Builder
+    {
+        if (self::usuarioActualEsTecnicoInterno()) {
+            $query->whereHas('planesMantenimiento', fn (Builder $planes): Builder => $planes->where('responsable_interno_id', auth()->id()));
+        }
+
+        return $query;
+    }
+
+    /**
      * Restringe el Select de "Plan de mantenimiento" del formulario de Bitácora a los planes
      * asignados al técnico interno actual — sin efecto para el resto de los roles.
      */

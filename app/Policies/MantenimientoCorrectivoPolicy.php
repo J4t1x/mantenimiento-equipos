@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Models\MantenimientoCorrectivo;
+use App\Models\User;
+use App\Support\AlcanceTecnicoInterno;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Foundation\Auth\User as AuthUser;
 
@@ -29,7 +31,8 @@ class MantenimientoCorrectivoPolicy
 
     public function update(AuthUser $authUser, MantenimientoCorrectivo $mantenimientoCorrectivo): bool
     {
-        return $authUser->can('update.mantenimiento_correctivo');
+        return $authUser->can('update.mantenimiento_correctivo')
+            && AlcanceTecnicoInterno::puedeGestionarEquipo($mantenimientoCorrectivo->equipo_id, $authUser instanceof User ? $authUser : null);
     }
 
     public function delete(AuthUser $authUser, MantenimientoCorrectivo $mantenimientoCorrectivo): bool

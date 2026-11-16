@@ -2,12 +2,14 @@
 
 namespace App\Filament\Resources\MantenimientoCorrectivos\Schemas;
 
+use App\Support\AlcanceTecnicoInterno;
 use App\Support\RangosDeValores;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Builder;
 
 class MantenimientoCorrectivoForm
 {
@@ -16,7 +18,7 @@ class MantenimientoCorrectivoForm
         return $schema
             ->components([
                 Select::make('equipo_id')
-                    ->relationship('equipo', 'nombre')
+                    ->relationship('equipo', 'nombre', modifyQueryUsing: fn (Builder $query): Builder => AlcanceTecnicoInterno::limitarEquipos($query))
                     ->searchable()
                     ->preload()
                     ->label('Equipo')

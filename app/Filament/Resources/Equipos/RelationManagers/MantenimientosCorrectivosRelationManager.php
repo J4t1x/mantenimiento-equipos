@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Equipos\RelationManagers;
 
+use App\Support\AlcanceTecnicoInterno;
 use App\Support\RangosDeValores;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -67,7 +68,8 @@ class MantenimientosCorrectivosRelationManager extends RelationManager
                     ->placeholder('—'),
             ])
             ->headerActions([
-                CreateAction::make(),
+                CreateAction::make()
+                    ->visible(fn (): bool => AlcanceTecnicoInterno::puedeGestionarEquipo($this->getOwnerRecord()->getKey())),
             ])
             ->recordActions([
                 EditAction::make(),
