@@ -8,6 +8,7 @@
   Presentación de la capacitación y prueba de aceptación (docs/PAUTA-PRUEBA-ACEPTACION.md).
   Abrir este archivo desde la carpeta docs/ del repositorio: las capturas se cargan desde manual/img/.
   Teclas: → / Espacio avanza · ← retrocede · Inicio / Fin · N notas del presentador · F pantalla completa · O índice.
+  En las láminas "Ahora ustedes", clic en cada práctica para marcarla como hecha.
   Para PDF: Imprimir → Guardar como PDF, horizontal, sin márgenes (una diapositiva por página).
 -->
 <style>
@@ -29,7 +30,23 @@
     position: absolute; width: 1280px; height: 720px; background: #fff; overflow: hidden;
     display: none; flex-direction: column; padding: 56px 72px 64px 88px; transform-origin: center center;
   }
-  .slide.activa { display: flex; }
+  .slide.activa, .slide.saliendo { display: flex; }
+  /* Transiciones entre láminas: entra desde la dirección del avance; la anterior se desvanece debajo. */
+  .slide.activa { z-index: 2; animation: entrar .55s cubic-bezier(.22,.8,.24,1) both; }
+  .slide.activa.atras { animation-name: entrar-atras; }
+  .slide.saliendo { z-index: 1; pointer-events: none; animation: salir .35s ease both; }
+  @keyframes entrar { from { opacity: 0; translate: 36px 0; } to { opacity: 1; translate: 0 0; } }
+  @keyframes entrar-atras { from { opacity: 0; translate: -36px 0; } to { opacity: 1; translate: 0 0; } }
+  @keyframes salir { from { opacity: 1; } to { opacity: 0; } }
+  /* Aparición escalonada del contenido de la lámina activa (--i lo asigna el script). */
+  .slide.activa .anim { animation: subir .6s cubic-bezier(.22,.8,.24,1) both; animation-delay: calc(140ms + var(--i, 0) * 65ms); }
+  .slide.activa .figura.anim img { animation: enfocar .9s cubic-bezier(.22,.8,.24,1) both; animation-delay: calc(220ms + var(--i, 0) * 65ms); }
+  @keyframes subir { from { opacity: 0; translate: 0 16px; } to { opacity: 1; translate: 0 0; } }
+  @keyframes enfocar { from { opacity: 0; scale: .95; filter: blur(3px); } to { opacity: 1; scale: 1; filter: none; } }
+  .slide.activa .linea-roja { animation: trazar .8s .25s cubic-bezier(.22,.8,.24,1) both; transform-origin: left; }
+  @keyframes trazar { from { scale: 0 1; } to { scale: 1 1; } }
+  .slide.activa .caso { animation: marcar .45s cubic-bezier(.3,1.6,.5,1) both; animation-delay: calc(380ms + var(--i, 0) * 65ms); }
+  @keyframes marcar { from { opacity: 0; scale: .6; } to { opacity: 1; scale: 1; } }
   .slide::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 14px; background: var(--azul); }
   .slide::after { content: ""; position: absolute; left: 14px; top: 0; bottom: 0; width: 6px; background: var(--rojo); }
   .pie { position: absolute; left: 88px; right: 72px; bottom: 22px; display: flex; justify-content: space-between; font-size: 14px; color: var(--gris); }
@@ -42,21 +59,30 @@
   li { margin-bottom: 10px; }
   li::marker { color: var(--rojo); }
   b, strong { color: var(--azul-oscuro); }
-  .ui { display: inline-block; padding: 1px 8px; border-radius: 6px; background: #E8EFF7; border: 1px solid var(--azul-claro); font-weight: 600; color: var(--azul); font-size: .92em; }
+  .ui { transition: background-color .2s; display: inline-block; padding: 1px 8px; border-radius: 6px; background: #E8EFF7; border: 1px solid var(--azul-claro); font-weight: 600; color: var(--azul); font-size: .92em; }
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; flex: 1; min-height: 0; }
   .cols.img-der { grid-template-columns: 0.9fr 1.1fr; }
   .figura { display: flex; align-items: center; justify-content: center; min-height: 0; }
-  .figura img { max-width: 100%; max-height: 500px; border-radius: 10px; border: 1px solid #D5DEE8; box-shadow: 0 8px 24px rgba(10,36,64,.18); }
+  .figura img { max-width: 100%; max-height: 500px; border-radius: 10px; border: 1px solid #D5DEE8; box-shadow: 0 8px 24px rgba(10,36,64,.18); transition: scale .35s cubic-bezier(.22,.8,.24,1), box-shadow .35s; }
+  .figura img:hover { scale: 1.03; box-shadow: 0 16px 40px rgba(10,36,64,.28); }
   table { border-collapse: collapse; width: 100%; font-size: 19px; }
   th { background: var(--azul); color: #fff; text-align: left; padding: 9px 12px; font-weight: 600; }
-  td { padding: 8px 12px; border-bottom: 1px solid #DCE4EE; vertical-align: top; }
+  td { padding: 8px 12px; border-bottom: 1px solid #DCE4EE; vertical-align: top; transition: background-color .2s; }
+  tr:hover td { background: #E6EEF8; }
   tr:nth-child(even) td { background: var(--fondo); }
   .caja { background: var(--fondo); border-left: 5px solid var(--azul); border-radius: 6px; padding: 14px 18px; font-size: 20px; }
   .caja.alerta { border-left-color: var(--ambar); background: #FFF6E5; }
   .caja.clave { border-left-color: var(--rojo); background: #FDECEE; }
   .practica { list-style: none; padding-left: 0; }
-  .practica li { padding-left: 38px; position: relative; }
-  .practica li::before { content: ""; position: absolute; left: 0; top: 4px; width: 22px; height: 22px; border: 2px solid var(--azul); border-radius: 4px; }
+  .practica li { padding-left: 42px; position: relative; }
+  .practica li { cursor: pointer; border-radius: 6px; transition: background-color .2s, color .2s; }
+  .practica li:hover { background: #EEF3F9; }
+  .practica li::before { content: ""; position: absolute; left: 6px; top: 5px; width: 22px; height: 22px; border: 2px solid var(--azul); border-radius: 4px; transition: background-color .25s, border-color .25s, scale .25s cubic-bezier(.3,1.6,.5,1); }
+  .practica li::after { content: ""; position: absolute; left: 14px; top: 8px; width: 6px; height: 12px; border: solid #fff; border-width: 0 3px 3px 0; rotate: 45deg; scale: 0; transition: scale .25s cubic-bezier(.3,1.6,.5,1) .05s; }
+  .practica li.hecho { color: var(--gris); }
+  .practica li.hecho::before { background: var(--verde); border-color: var(--verde); scale: 1.08; }
+  .practica li.hecho::after { scale: 1; }
+  .practica li.hecho b { color: var(--gris); }
   .caso { display: inline-block; min-width: 64px; padding: 1px 8px; margin-left: 8px; border-radius: 12px; background: var(--azul); color: #fff; font-size: 15px; font-weight: 600; text-align: center; vertical-align: middle; }
   .simbolos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 8px; }
   .simbolo { text-align: center; padding: 14px 8px; border-radius: 10px; background: var(--fondo); font-size: 18px; }
@@ -76,19 +102,24 @@
     position: fixed; left: 0; right: 0; bottom: 0; max-height: 34vh; overflow: auto; background: #10233A; color: #E6EEF7;
     font-size: 17px; line-height: 1.5; padding: 14px 24px 18px; border-top: 4px solid var(--rojo); display: none; z-index: 10;
   }
-  #panel-notas.visible { display: block; }
+  #panel-notas.visible { display: block; animation: subir .3s ease both; }
   #panel-notas h4 { margin: 0 0 6px; color: var(--azul-medio); font-size: 14px; text-transform: uppercase; letter-spacing: .08em; }
-  #progreso { position: fixed; left: 0; top: 0; height: 4px; background: var(--rojo); transition: width .2s; z-index: 11; }
+  #progreso { position: fixed; left: 0; top: 0; height: 4px; background: linear-gradient(90deg, var(--rojo), #FF5A6B); box-shadow: 0 0 10px rgba(226,0,26,.6); transition: width .5s cubic-bezier(.22,.8,.24,1); z-index: 11; }
   #ayuda { position: fixed; right: 14px; top: 10px; color: var(--azul-medio); font-size: 13px; z-index: 9; opacity: .85; transition: opacity 1s; }
   #ayuda.oculta { opacity: 0; }
   /* Índice */
   #indice { position: fixed; inset: 0; background: rgba(10,36,64,.96); display: none; overflow: auto; padding: 40px 60px; z-index: 12; }
-  #indice.visible { display: block; }
+  #indice.visible { display: block; animation: salir .25s ease reverse both; }
   #indice h3 { color: #fff; }
   #indice ol { columns: 3; color: var(--azul-claro); font-size: 17px; }
   #indice li { font-size: 17px; margin-bottom: 6px; cursor: pointer; }
   #indice li:hover { color: #fff; text-decoration: underline; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
   @media print {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .slide.saliendo { display: flex !important; }
     @page { size: 1280px 720px; margin: 0; }
     html, body { background: #fff; }
     #escenario { position: static; display: block; }
@@ -646,9 +677,46 @@
     slides.forEach(s => { s.style.transform = 'scale(' + escala + ')'; });
   }
 
+  /**
+   * Marca los elementos que aparecen en forma escalonada: los ítems de listas y las filas de tablas
+   * uno a uno, el resto como bloque. Recorre también las columnas (.cols > div).
+   */
+  function marcarAnimables(contenedor, contador) {
+    Array.from(contenedor.children).forEach(el => {
+      if (el.matches('aside, .pie')) return;
+      if (el.matches('.cols')) { Array.from(el.children).forEach(col => col.matches('.figura') ? asignar(col, contador) : marcarAnimables(col, contador)); return; }
+      if (el.matches('ul, ol')) { Array.from(el.children).forEach(li => asignar(li, contador)); return; }
+      if (el.matches('table')) { el.querySelectorAll('tr').forEach(tr => asignar(tr, contador)); return; }
+      if (el.matches('.simbolos')) { Array.from(el.children).forEach(sim => asignar(sim, contador)); return; }
+      asignar(el, contador);
+    });
+  }
+
+  function asignar(el, contador) {
+    el.classList.add('anim');
+    el.style.setProperty('--i', Math.min(contador.n++, 14));
+    el.querySelectorAll('.caso').forEach(c => c.style.setProperty('--i', Math.min(contador.n - 1, 14)));
+  }
+
+  slides.forEach(slide => marcarAnimables(slide, { n: 0 }));
+
+  let temporizadorSalida = null;
+
   function mostrar(i) {
-    actual = Math.max(0, Math.min(slides.length - 1, i));
-    slides.forEach((s, j) => s.classList.toggle('activa', j === actual));
+    const destino = Math.max(0, Math.min(slides.length - 1, i));
+    const anterior = actual;
+    if (destino === anterior && slides[destino].classList.contains('activa')) return;
+    actual = destino;
+    clearTimeout(temporizadorSalida);
+    slides.forEach(s => s.classList.remove('saliendo'));
+    if (slides[anterior].classList.contains('activa') && anterior !== actual) {
+      slides[anterior].classList.add('saliendo');
+      temporizadorSalida = setTimeout(() => slides[anterior].classList.remove('saliendo'), 380);
+    }
+    slides.forEach((s, j) => {
+      s.classList.toggle('activa', j === actual);
+      s.classList.toggle('atras', j === actual && actual < anterior);
+    });
     progreso.style.width = ((actual + 1) / slides.length * 100) + '%';
     const notas = slides[actual].querySelector('aside.notas');
     textoNotas.textContent = notas ? notas.textContent : '';
@@ -668,8 +736,13 @@
     }
   });
 
+  document.querySelectorAll('.practica li').forEach(li => li.addEventListener('click', e => {
+    e.stopPropagation();
+    li.classList.toggle('hecho');
+  }));
+
   document.getElementById('escenario').addEventListener('click', e => {
-    if (e.target.closest('a')) return;
+    if (e.target.closest('a, .practica li')) return;
     mostrar(e.clientX > window.innerWidth / 3 ? actual + 1 : actual - 1);
   });
 
