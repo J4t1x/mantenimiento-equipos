@@ -174,9 +174,9 @@ Sección valida cada punto.
 - [ ] Con el administrador, **Equipos** muestra 470 equipos: los 469 del Hospital Regional
       Coyhaique y el `QA-0001` del Recinto de prueba. Con `qa.mantencion`, solo los 469.
 - [ ] **Bitácora anual** muestra los planes 2026 con sus 12 meses.
-- [ ] La alerta **Planes con meses inconsistentes** del Escritorio muestra 14 planes: los siete
-      equipos de laboratorio sin meses y los siete planes cuyos meses no coinciden con la
-      frecuencia. Es lo esperado mientras el requirente no responda las preguntas 4 a) y 4 b);
+- [ ] La alerta **Planes con meses inconsistentes** del Escritorio muestra 12 planes: los siete
+      equipos de laboratorio sin meses y los cinco equipos cuyos meses no coinciden con la
+      frecuencia (anexo de la solicitud al requirente del 10-11-2026). Es lo esperado mientras el requirente no responda las preguntas 4 a) y 4 b);
       conviene anticiparlo en la sesión.
 - [ ] La tabla de equipos de referencia de `app:preparar-qa` está copiada en la sección 3 de la
       pauta.

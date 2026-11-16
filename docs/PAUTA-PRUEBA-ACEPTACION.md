@@ -106,8 +106,8 @@ entregan a cada participante por un canal distinto del Zoom (no se muestran en p
 copian en esta pauta.
 
 **Alerta esperada**: mientras el requirente no responda las preguntas 4 a) y 4 b) de la solicitud
-del 10-11-2026, el Escritorio muestra **Planes con meses inconsistentes** con 14 planes de la
-planilla. No es un error del sistema: se explica al mostrar el Escritorio.
+del 10-11-2026, el Escritorio muestra **Planes con meses inconsistentes** con 12 planes de la
+planilla (7 sin meses y 5 con meses distintos a su frecuencia). No es un error del sistema: se explica al mostrar el Escritorio.
 
 ---
 
