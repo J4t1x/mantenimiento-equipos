@@ -184,7 +184,7 @@ Sección valida cada punto.
 ### 7.3 Ensayo de la sesión
 
 Con las cuentas de prueba, recorrer la pauta tal como se hará con el requirente. No es necesario
-ejecutar los 35 casos: basta con uno o dos por perfil que muestren el flujo completo.
+ejecutar los 36 casos: basta con uno o dos por perfil que muestren el flujo completo.
 
 - [ ] Ingreso con cada una de las seis cuentas de prueba: cada una ve el menú de su perfil.
 - [ ] S-03 con la cuenta de seguridad: el bloqueo aparece al quinto intento. Si hay correo, S-04

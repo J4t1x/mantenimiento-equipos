@@ -328,7 +328,7 @@ Subdirección Gestión Asistencial, SSA. Adjuntó la Resolución Exenta 1341/201
 | 3 | Adjunta la planilla del Hospital Coyhaique (con Puerto Aysén, los de más equipamiento). | Un servicio clínico por equipo (1:N). El segundo valor de las celdas con "/" es una ubicación ("Equipos Médicos", "Bodega", "Domicilio") (SRS Módulo 15). | Resuelta con decisión, a confirmar |
 | 4 | No existe un listado maestro, solo las empresas representantes de cada marca. | Se mantiene el catálogo de proveedores tomado de la planilla. | Resuelta |
 | 5 | Basta con registrar el código como referencia manual. | Sin cambios; ya implementado así. | Resuelta |
-| 6 | Registra el MC el encargado de mantención de cada establecimiento. | MC acotado al recinto del usuario (SRS RF-63). | Resuelta |
+| 6 | Registra el MC el encargado de mantención de cada establecimiento. | MC acotado al recinto del usuario (SRS RF-63). Desde el 16-11-2026 el técnico interno registra MC solo de sus equipos asignados (SRS RF-24, SPEC-ME-022), según la regla planteada al requirente el 10-11-2026, pendiente de su confirmación. | Resuelta |
 | 7 | Siempre a través de un usuario interno. | Sin rol de proveedor externo; RF-20 se cierra con el Técnico Interno. | Resuelta |
 | 8 | Informes trimestrales y, a fin de año, el informe completo. | Trimestral: reportes existentes filtrados por trimestre (SRS RF-67). Fin de año: reportes del año más el informe de críticos (SRS RF-68). | Resuelta con decisión, a confirmar |
 | 9 | Solo el año vigente, una vez funcionando la aplicación. | Coincide con el importador actual (año 2026). | Resuelta |

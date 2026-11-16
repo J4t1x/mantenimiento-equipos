@@ -446,6 +446,10 @@ Menú **Mantenimiento → Correctivo**. Registra las fallas y reparaciones fuera
    - **Tipo de gasto** (texto libre).
 3. **Crear**.
 
+El **Técnico Interno** solo puede elegir los equipos que tiene asignados (de los que es
+**Responsable interno** en un plan), y solo edita los correctivos de esos equipos. El Encargado de
+Mantención registra los correctivos de todos los equipos de su establecimiento.
+
 El costo se suma automáticamente al gasto correctivo del período (Escritorio y Reportes). El
 historial de fallas de un equipo también se ve en su ficha (**Ver**). Desde **Editar** del equipo
 se puede registrar un correctivo directamente.
@@ -608,6 +612,7 @@ existe), la dirección IP y un detalle, por ejemplo "Contraseña incorrecta" o "
 | "Un equipo crítico debe tener mantenimiento preventivo al menos 2 veces al año, …" | La frecuencia es menor que 2 en un equipo crítico sin garantía vigente. | Elija una frecuencia de 2 o más, o revise la garantía del equipo. |
 | "Este tipo de equipo es crítico según la Res. Ex. 1341/2017 del MINSAL: su criticidad debe ser "Crítico"." | Se eligió un tipo de equipo crítico de la norma con otra criticidad. | Cambie la criticidad a Crítico, o quite el tipo si no corresponde. |
 | "No puedes registrar la ejecución de un equipo que no tienes asignado como responsable interno." | El técnico no es responsable interno del plan. | Pida al Encargado de Mantención que lo asigne en el plan. |
+| "No puedes registrar un correctivo de un equipo que no tienes asignado como responsable interno." | El técnico intentó registrar o mover un correctivo a un equipo que no tiene asignado. | Pida al Encargado de Mantención que registre el correctivo, o que lo asigne como responsable interno en el plan del equipo. |
 | "No puedes registrar datos de un equipo de un recinto que no tienes asignado." | El equipo es de otro establecimiento. | Pida al administrador que le asigne ese recinto, si corresponde. |
 | "El equipo ya está retirado de uso. Registra primero su reingreso." | Se intentó retirar un equipo ya retirado. | Registre el reingreso antes de un nuevo retiro. |
 | "No se puede eliminar" | El registro está en uso, por ejemplo un servicio clínico con equipos. | Desactívelo en vez de eliminarlo. |

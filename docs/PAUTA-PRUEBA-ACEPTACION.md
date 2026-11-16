@@ -120,7 +120,7 @@ Duración estimada: **60 minutos**.
 | 5 min | Presentación | Objetivo de la sesión, organización de la pantalla y cómo abrir la Guía de usuario. |
 | 5 min | Ingreso y seguridad | Casos S-01 a S-05. |
 | 15 min | Encargado de Mantención | Demostración y casos EM-01 a EM-12. |
-| 10 min | Técnico Interno | Demostración y casos TI-01 a TI-05. |
+| 10 min | Técnico Interno | Demostración y casos TI-01 a TI-06. |
 | 8 min | Encargado de Convenios | Demostración y casos EC-01 a EC-05. |
 | 5 min | Jefatura | Casos J-01 a J-04. |
 | 5 min | Administrador | Casos A-01 a A-04. |
@@ -182,7 +182,7 @@ lo mismo que luego valida.
 | | Encontrar el intento en **Registro de accesos** | A-04 |
 
 Casos que agregan reglas del sistema, sin práctica en el manual: S-01 a S-05 (inicio de sesión),
-EM-02, EM-04, EM-05, EM-07 a EM-10, TI-03, TI-04, EC-03, EC-04 y J-04.
+EM-02, EM-04, EM-05, EM-07 a EM-10, TI-03, TI-04, TI-06, EC-03, EC-04 y J-04.
 
 ### 6.1 Ingreso y seguridad (todos los perfiles)
 
@@ -224,10 +224,7 @@ Basado en la práctica de la ruta **Técnico Interno** del manual.
 | TI-03 | Fecha futura y fecha obligatoria | En otro mes programado del Equipo A, elegir **Realizado** sin fecha y guardar. Luego indicar una fecha de mañana. | Primero exige la fecha real. Luego rechaza con "La fecha no puede ser posterior a hoy.". | RF-17 | |
 | TI-04 | Equipo no asignado | En **Bitácora anual**, buscar el Equipo C. | Ve el plan, pero sus meses no se pueden abrir para registrar. | RF-20 | |
 | TI-05 | Registrar una falla | **Correctivo** → **Crear mantenimiento correctivo** para el Equipo B. Luego buscarlo en la ficha del equipo. | El correctivo queda registrado y aparece en la ficha del equipo. | RF-24, RF-26 | |
-
-> TI-05 depende de la pregunta 5 al requirente (quién registra los correctivos). Hoy el técnico
-> puede registrar correctivos de cualquier equipo de su establecimiento. Si el requirente define
-> que debe limitarse a sus equipos asignados, se agrega ese caso a la pauta.
+| TI-06 | Correctivo de un equipo no asignado | **Correctivo** → **Crear mantenimiento correctivo** → buscar el Equipo C en **Equipo**. | El Equipo C no aparece en la lista: el técnico registra correctivos solo de los equipos que tiene asignados. El Encargado de Mantención los registra para todos los equipos de su establecimiento. | RF-24, RF-20 | |
 
 ### 6.4 Encargado de Convenios
 
@@ -305,7 +302,7 @@ verificación posterior a la instalación.
 
 | Conformes | No conformes | No aplica | Total |
 |---|---|---|---|
-| | | | 35 |
+| | | | 36 |
 
 **Resultado** (marcar uno):
 - [ ] Aceptado

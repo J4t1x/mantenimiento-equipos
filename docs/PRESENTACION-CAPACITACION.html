@@ -158,7 +158,7 @@
     <tr><td>5 min</td><td>Presentación</td><td>Objetivo, organización de la pantalla y Guía de usuario</td></tr>
     <tr><td>5 min</td><td>Ingreso y seguridad</td><td>Casos S-01 a S-05</td></tr>
     <tr><td>15 min</td><td>Encargado de Mantención</td><td>Demostración y casos EM-01 a EM-12</td></tr>
-    <tr><td>10 min</td><td>Técnico Interno</td><td>Demostración y casos TI-01 a TI-05</td></tr>
+    <tr><td>10 min</td><td>Técnico Interno</td><td>Demostración y casos TI-01 a TI-06</td></tr>
     <tr><td>8 min</td><td>Encargado de Convenios</td><td>Demostración y casos EC-01 a EC-05</td></tr>
     <tr><td>5 min</td><td>Jefatura</td><td>Casos J-01 a J-04</td></tr>
     <tr><td>5 min</td><td>Administrador</td><td>Casos A-01 a A-04</td></tr>
@@ -181,7 +181,7 @@
       <h3 style="margin-top:22px">2. Prueba de aceptación</h3>
       <ul>
         <li>El requirente confirma que el sistema responde a lo solicitado.</li>
-        <li>35 casos, cada uno con pasos y resultado esperado.</li>
+        <li>36 casos, cada uno con pasos y resultado esperado.</li>
       </ul>
     </div>
     <div>
@@ -226,13 +226,13 @@
   <table>
     <tr><th style="width:290px">Perfil</th><th>Puede</th></tr>
     <tr><td><b>Encargado de Mantención</b></td><td>Catastro, planificación, bitácora, correctivos, catálogos y reportes de su establecimiento. Ve los convenios.</td></tr>
-    <tr><td><b>Técnico Interno</b></td><td>Registra la bitácora de los equipos que tiene asignados y los mantenimientos correctivos. Ve el catastro y la planificación.</td></tr>
+    <tr><td><b>Técnico Interno</b></td><td>Registra la bitácora y los mantenimientos correctivos de los equipos que tiene asignados. Ve el catastro y la planificación.</td></tr>
     <tr><td><b>Encargado de Convenios</b></td><td>Convenios, su ejecución mensual y proveedores. Ve los reportes.</td></tr>
     <tr><td><b>Jefatura</b></td><td>Ve todo el sistema y descarga reportes, sin modificar datos.</td></tr>
     <tr><td><b>Administrador</b></td><td>Todo lo anterior, más usuarios, roles y registro de accesos.</td></tr>
   </table>
   <div class="caja" style="margin-top:20px"><b>Establecimientos asignados</b>: un usuario con establecimientos asignados solo ve y registra los datos de esos establecimientos. Sin establecimientos, ve todos.</div>
-  <aside class="notas">Regla pendiente (pregunta 5 al requirente): hoy el Técnico Interno puede registrar correctivos de cualquier equipo de su establecimiento, no solo de los asignados. Preguntar al requirente si está de acuerdo o si debe limitarse a sus equipos; anotar la respuesta en el registro de observaciones.</aside>
+  <aside class="notas">El Técnico Interno registra bitácora y correctivos solo de los equipos que tiene asignados (es responsable interno de su plan). Confirmar con el requirente que está de acuerdo con esta regla (pregunta 5); si pide otra, anotarla en el registro de observaciones.</aside>
 </section>
 
 <!-- 6 -->
@@ -386,11 +386,11 @@
         <li>Aparece en la <b>ficha del equipo</b>.</li>
         <li>Su costo <b>suma al gasto correctivo</b> del Escritorio.</li>
       </ul>
-      <div class="caja alerta" style="margin-top:18px"><b>Para definir con el requirente</b>: ¿quién registra los correctivos? Hoy el Técnico Interno puede registrarlos para cualquier equipo de su establecimiento.</div>
+      <div class="caja" style="margin-top:18px"><b>¿Quién registra?</b> El Encargado de Mantención, para todos los equipos de su establecimiento. El Técnico Interno, solo para los equipos que tiene asignados.</div>
     </div>
     <div class="figura"><img src="manual/img/10-correctivos.png" alt="Correctivos"></div>
   </div>
-  <aside class="notas">Caso EM-09. Plantear la pregunta 5 y anotar la decisión del requirente en el registro de observaciones (puede ser una Mejora si pide limitarlo a los equipos asignados).</aside>
+  <aside class="notas">Caso EM-09. Confirmar con el requirente la regla de quién registra los correctivos (pregunta 5); si pide otra, anotarla en el registro de observaciones.</aside>
 </section>
 
 <!-- 14 -->
@@ -448,7 +448,7 @@
 
 <!-- 17 -->
 <section class="slide separador" data-titulo="Técnico Interno">
-  <div class="seccion-tag">Perfil · 10 minutos · casos TI-01 a TI-05</div>
+  <div class="seccion-tag">Perfil · 10 minutos · casos TI-01 a TI-06</div>
   <h1>Técnico Interno</h1>
   <div class="linea-roja"></div>
   <div class="perfil-resumen">Registra en la bitácora las mantenciones preventivas de los equipos que tiene asignados y anota las fallas como mantenimiento correctivo.</div>
@@ -483,9 +483,10 @@
     <li>Abra de nuevo el mes y compruebe que muestra <b>√</b> con la fecha.<span class="caso">TI-02</span></li>
     <li>En el Equipo A, intente <b>Realizado</b> sin fecha y con fecha de mañana.<span class="caso">TI-03</span></li>
     <li>Busque el Equipo C: ¿puede registrar?<span class="caso">TI-04</span></li>
-    <li>Registre una falla en <b>Correctivo</b> y búsquela en la ficha del equipo.<span class="caso">TI-05</span></li>
+    <li>Registre una falla del Equipo B en <b>Correctivo</b> y búsquela en la ficha del equipo.<span class="caso">TI-05</span></li>
+    <li>Intente registrar un correctivo del Equipo C: ¿aparece en la lista?<span class="caso">TI-06</span></li>
   </ul>
-  <aside class="notas">TI-05 depende de la respuesta a la pregunta 5: no afirmar la restricción por equipos asignados.</aside>
+  <aside class="notas">TI-04 y TI-06 muestran la misma regla: el técnico registra bitácora y correctivos solo de los equipos que tiene asignados.</aside>
 </section>
 
 <!-- 20 -->

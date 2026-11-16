@@ -77,7 +77,7 @@ reportes · Gestión de usuarios y permisos.
 | Rol | Resumen de acceso |
 |---|---|
 | Encargado de Mantención | Catálogos, catastro, planificación, bitácora, MC y reportes. Con recintos asignados, solo esos recintos (encargado de un establecimiento). Sin recinto asignado, todos (subdepartamento del SSA). Ver RF-63 |
-| Técnico interno | Registro de ejecución en Bitácora de sus equipos asignados. Los proveedores externos no tienen usuario propio: su ejecución la registra un usuario interno (PA-7, resuelta el 25-09-2026) |
+| Técnico interno | Registro de ejecución en Bitácora y de mantenimiento correctivo de sus equipos asignados (MC: SPEC-ME-022, 16-11-2026). Los proveedores externos no tienen usuario propio: su ejecución la registra un usuario interno (PA-7, resuelta el 25-09-2026) |
 | Encargado de convenios | Convenios y Gasto |
 | Jefatura de servicio clínico | Lectura de Equipos y Dashboard de su servicio |
 
@@ -151,7 +151,7 @@ Agrupados por módulo, con prioridad (Alta/Media/Baja) según su cercanía al n�
 
 | ID | Descripción | Prioridad |
 |---|---|---|
-| RF-24 | El sistema debe permitir registrar un evento de mantenimiento correctivo asociado a un equipo: fecha, descripción de la falla, costo y tipo de gasto. *(PA-6 resuelta el 25-09-2026: lo registra el encargado de mantención de cada establecimiento; ver RF-63.)* | Media |
+| RF-24 | El sistema debe permitir registrar un evento de mantenimiento correctivo asociado a un equipo: fecha, descripción de la falla, costo y tipo de gasto. *(PA-6 resuelta el 25-09-2026: lo registra el encargado de mantención de cada establecimiento; ver RF-63. Actualizado el 16-11-2026 (SPEC-ME-022), según la regla planteada al requirente el 10-11-2026 (pregunta 5): el técnico interno también registra y edita el MC, pero solo de los equipos de los que es responsable interno en algún plan, con la misma guarda de modelo que RF-20. Pendiente la confirmación del requirente.)* | Media |
 | RF-25 | Cada evento correctivo registrado debe sumar automáticamente al gasto ejecutado de MC del período correspondiente (RN-04). | Media |
 | RF-26 | El sistema debe mostrar el historial completo de eventos correctivos de un equipo, ordenado cronológicamente. | Media |
 
