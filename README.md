@@ -104,6 +104,7 @@ planilla.
 | [`docs/MANUAL-USUARIO.md`](docs/MANUAL-USUARIO.md) | Manual de uso del sistema, por perfil y con capturas. |
 | [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md) | Guía de instalación, operación, actualización y respaldos para el Sysadmin. |
 | [`docs/INSTALACION-QA.md`](docs/INSTALACION-QA.md) | Instalación en el ambiente de pruebas con el Sysadmin, datos de prueba (`app:preparar-qa`) y revisión conjunta antes de la sesión con el requirente. |
+| [`docs/PRESENTACION-CAPACITACION.html`](docs/PRESENTACION-CAPACITACION.html) | Presentación de la sesión de capacitación y prueba de aceptación, por perfil y con notas del presentador (abrir desde `docs/`). |
 | [`docs/PAUTA-PRUEBA-ACEPTACION.md`](docs/PAUTA-PRUEBA-ACEPTACION.md) | Pauta de la capacitación y la prueba de aceptación con el requirente: casos por perfil, criterio de aceptación y acta. |
 | [`docs/MOCKUP-SISTEMA.html`](docs/MOCKUP-SISTEMA.html) | Mockup de pantallas (referencia visual, no diseño final). |
 | [`docs/normativa/NORMA-MP-EQUIPAMIENTO-CRITICO.md`](docs/normativa/NORMA-MP-EQUIPAMIENTO-CRITICO.md) ([PDF](docs/normativa/Resolucion-Exenta-1341-2017-MINSAL-Norma-MP-Equipamiento-Medico-Critico.pdf)) | Síntesis de la Res. Ex. 1341/2017 del MINSAL (MP de equipamiento médico crítico) y su aplicación al sistema. |

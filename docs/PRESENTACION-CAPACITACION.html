@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Capacitación · Bitácora de Mantenimiento de Equipos</title>
+<!--
+  Presentación de la capacitación y prueba de aceptación (docs/PAUTA-PRUEBA-ACEPTACION.md).
+  Abrir este archivo desde la carpeta docs/ del repositorio: las capturas se cargan desde manual/img/.
+  Teclas: → / Espacio avanza · ← retrocede · Inicio / Fin · N notas del presentador · F pantalla completa · O índice.
+  Para PDF: Imprimir → Guardar como PDF, horizontal, sin márgenes (una diapositiva por página).
+-->
+<style>
+  :root {
+    --azul: #003C71;
+    --azul-oscuro: #0A2440;
+    --azul-claro: #B9D0E8;
+    --azul-medio: #8FB3D9;
+    --rojo: #E2001A;
+    --gris: #5B6B7B;
+    --fondo: #F4F7FB;
+    --verde: #1E8E3E;
+    --ambar: #B26A00;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--azul-oscuro); font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; color: #1B2733; }
+  #escenario { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+  .slide {
+    position: absolute; width: 1280px; height: 720px; background: #fff; overflow: hidden;
+    display: none; flex-direction: column; padding: 56px 72px 64px 88px; transform-origin: center center;
+  }
+  .slide.activa { display: flex; }
+  .slide::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 14px; background: var(--azul); }
+  .slide::after { content: ""; position: absolute; left: 14px; top: 0; bottom: 0; width: 6px; background: var(--rojo); }
+  .pie { position: absolute; left: 88px; right: 72px; bottom: 22px; display: flex; justify-content: space-between; font-size: 14px; color: var(--gris); }
+  .seccion-tag { font-size: 15px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--rojo); margin-bottom: 8px; }
+  h1 { font-size: 46px; margin: 0 0 16px; color: var(--azul); line-height: 1.1; }
+  h2 { font-size: 36px; margin: 0 0 24px; color: var(--azul); line-height: 1.15; }
+  h3 { font-size: 22px; margin: 0 0 10px; color: var(--azul); }
+  p, li { font-size: 22px; line-height: 1.4; }
+  ul { margin: 0; padding-left: 26px; }
+  li { margin-bottom: 10px; }
+  li::marker { color: var(--rojo); }
+  b, strong { color: var(--azul-oscuro); }
+  .ui { display: inline-block; padding: 1px 8px; border-radius: 6px; background: #E8EFF7; border: 1px solid var(--azul-claro); font-weight: 600; color: var(--azul); font-size: .92em; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; flex: 1; min-height: 0; }
+  .cols.img-der { grid-template-columns: 0.9fr 1.1fr; }
+  .figura { display: flex; align-items: center; justify-content: center; min-height: 0; }
+  .figura img { max-width: 100%; max-height: 500px; border-radius: 10px; border: 1px solid #D5DEE8; box-shadow: 0 8px 24px rgba(10,36,64,.18); }
+  table { border-collapse: collapse; width: 100%; font-size: 19px; }
+  th { background: var(--azul); color: #fff; text-align: left; padding: 9px 12px; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #DCE4EE; vertical-align: top; }
+  tr:nth-child(even) td { background: var(--fondo); }
+  .caja { background: var(--fondo); border-left: 5px solid var(--azul); border-radius: 6px; padding: 14px 18px; font-size: 20px; }
+  .caja.alerta { border-left-color: var(--ambar); background: #FFF6E5; }
+  .caja.clave { border-left-color: var(--rojo); background: #FDECEE; }
+  .practica { list-style: none; padding-left: 0; }
+  .practica li { padding-left: 38px; position: relative; }
+  .practica li::before { content: ""; position: absolute; left: 0; top: 4px; width: 22px; height: 22px; border: 2px solid var(--azul); border-radius: 4px; }
+  .caso { display: inline-block; min-width: 64px; padding: 1px 8px; margin-left: 8px; border-radius: 12px; background: var(--azul); color: #fff; font-size: 15px; font-weight: 600; text-align: center; vertical-align: middle; }
+  .simbolos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 8px; }
+  .simbolo { text-align: center; padding: 14px 8px; border-radius: 10px; background: var(--fondo); font-size: 18px; }
+  .simbolo span { display: block; font-size: 40px; font-weight: 700; margin-bottom: 4px; }
+  /* Portadas */
+  .slide.portada, .slide.separador { background: var(--azul); color: #fff; justify-content: center; }
+  .slide.portada::before, .slide.separador::before { background: var(--azul-oscuro); }
+  .slide.portada h1, .slide.separador h1 { color: #fff; font-size: 58px; }
+  .slide.portada p, .slide.separador p { color: var(--azul-claro); font-size: 26px; }
+  .slide.portada .pie, .slide.separador .pie { color: var(--azul-medio); }
+  .slide.portada .seccion-tag, .slide.separador .seccion-tag { color: var(--azul-claro); }
+  .slide.separador .perfil-resumen { margin-top: 24px; font-size: 24px; color: #fff; max-width: 900px; line-height: 1.45; }
+  .linea-roja { width: 120px; height: 6px; background: var(--rojo); margin: 8px 0 28px; }
+  /* Notas */
+  aside.notas { display: none; }
+  #panel-notas {
+    position: fixed; left: 0; right: 0; bottom: 0; max-height: 34vh; overflow: auto; background: #10233A; color: #E6EEF7;
+    font-size: 17px; line-height: 1.5; padding: 14px 24px 18px; border-top: 4px solid var(--rojo); display: none; z-index: 10;
+  }
+  #panel-notas.visible { display: block; }
+  #panel-notas h4 { margin: 0 0 6px; color: var(--azul-medio); font-size: 14px; text-transform: uppercase; letter-spacing: .08em; }
+  #progreso { position: fixed; left: 0; top: 0; height: 4px; background: var(--rojo); transition: width .2s; z-index: 11; }
+  #ayuda { position: fixed; right: 14px; top: 10px; color: var(--azul-medio); font-size: 13px; z-index: 9; opacity: .85; transition: opacity 1s; }
+  #ayuda.oculta { opacity: 0; }
+  /* Índice */
+  #indice { position: fixed; inset: 0; background: rgba(10,36,64,.96); display: none; overflow: auto; padding: 40px 60px; z-index: 12; }
+  #indice.visible { display: block; }
+  #indice h3 { color: #fff; }
+  #indice ol { columns: 3; color: var(--azul-claro); font-size: 17px; }
+  #indice li { font-size: 17px; margin-bottom: 6px; cursor: pointer; }
+  #indice li:hover { color: #fff; text-decoration: underline; }
+  @media print {
+    @page { size: 1280px 720px; margin: 0; }
+    html, body { background: #fff; }
+    #escenario { position: static; display: block; }
+    .slide { display: flex !important; position: relative; transform: none !important; page-break-after: always; break-after: page; }
+    #panel-notas, #progreso, #ayuda, #indice { display: none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="progreso"></div>
+<div id="escenario">
+
+<!-- 1 -->
+<section class="slide portada" data-titulo="Portada">
+  <div class="seccion-tag">Servicio de Salud Aysén</div>
+  <h1>Sistema de Bitácora de<br>Mantenimiento de Equipos</h1>
+  <div class="linea-roja"></div>
+  <p>Capacitación por perfil y prueba de aceptación</p>
+  <p style="font-size:20px">Subdepartamento de Mantención y Operaciones · Sección Desarrollo de Sistemas de Información</p>
+  <aside class="notas">Bienvenida. Presentar a los participantes y el perfil de cada uno. Confirmar que todos recibieron su cuenta de prueba y su contraseña por un canal distinto del Zoom. Recordar que la sesión dura unas 2 horas.</aside>
+</section>
+
+<!-- 2 -->
+<section class="slide" data-titulo="Agenda">
+  <h2>Agenda de la sesión</h2>
+  <table>
+    <tr><th style="width:120px">Tiempo</th><th style="width:300px">Bloque</th><th>Contenido</th></tr>
+    <tr><td>10 min</td><td>Presentación</td><td>Objetivo, organización de la pantalla y Guía de usuario</td></tr>
+    <tr><td>10 min</td><td>Ingreso y seguridad</td><td>Casos S-01 a S-05</td></tr>
+    <tr><td>30 min</td><td>Encargado de Mantención</td><td>Demostración y casos EM-01 a EM-12</td></tr>
+    <tr><td>20 min</td><td>Técnico Interno</td><td>Demostración y casos TI-01 a TI-05</td></tr>
+    <tr><td>15 min</td><td>Encargado de Convenios</td><td>Demostración y casos EC-01 a EC-05</td></tr>
+    <tr><td>10 min</td><td>Jefatura</td><td>Casos J-01 a J-04</td></tr>
+    <tr><td>10 min</td><td>Administrador</td><td>Casos A-01 a A-04</td></tr>
+    <tr><td>15 min</td><td>Cierre</td><td>Observaciones, resultado y acta</td></tr>
+  </table>
+  <aside class="notas">En cada bloque: primero muestro el flujo (capacitación) y después cada participante ejecuta los casos en su propia sesión. Si no alcanza el tiempo, los casos pendientes se completan en una segunda sesión antes de firmar el acta.</aside>
+</section>
+
+<!-- 3 -->
+<section class="slide" data-titulo="Objetivo">
+  <h2>Objetivo de la sesión</h2>
+  <div class="cols">
+    <div>
+      <h3>1. Capacitación</h3>
+      <ul>
+        <li>Que cada perfil sepa hacer su trabajo diario en el sistema.</li>
+        <li>Basada en las <b>prácticas guiadas</b> de la Guía de usuario.</li>
+      </ul>
+      <h3 style="margin-top:22px">2. Prueba de aceptación</h3>
+      <ul>
+        <li>El requirente confirma que el sistema responde a lo solicitado.</li>
+        <li>35 casos, cada uno con pasos y resultado esperado.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="caja clave">
+        <b>Ambiente de pruebas (QA)</b><br>
+        Se trabaja con el catastro y el plan 2026 del Hospital Regional Coyhaique y cuentas de prueba.
+        <br><br><b>Nada de lo que se registre hoy pasa a producción.</b> Pueden probar con libertad.
+      </div>
+      <div class="caja" style="margin-top:20px">
+        Lo que practican en la capacitación es lo mismo que luego validan en la prueba.
+      </div>
+    </div>
+  </div>
+  <aside class="notas">Insistir en que pueden equivocarse sin consecuencias: producción parte con la carga de los datos reales, no con lo que se registre en QA.</aside>
+</section>
+
+<!-- 4 -->
+<section class="slide" data-titulo="Qué resuelve el sistema">
+  <h2>¿Qué resuelve el sistema?</h2>
+  <div class="cols">
+    <div>
+      <p>Reemplaza la planilla <b>Mantenimiento Equipos Médicos 2026</b> por una aplicación web con reglas y controles.</p>
+      <ul>
+        <li><b>Catastro</b> de equipos con su criticidad, garantía y vida útil.</li>
+        <li><b>Plan anual</b> de mantenimiento preventivo que se genera según la frecuencia.</li>
+        <li><b>Bitácora</b> mensual: realizado, reprogramado, pendiente.</li>
+        <li><b>Correctivos</b>, <b>convenios</b> y gasto.</li>
+        <li><b>Reportes</b> e informe de la Res. Ex. 1341/2017.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="caja"><b>Antes</b>: una planilla de miles de filas mantenida a mano, sin validaciones y con datos inconsistentes.</div>
+      <div class="caja" style="margin-top:18px"><b>Ahora</b>: cada usuario ve su información, el sistema aplica las reglas de la norma y avisa lo que requiere atención.</div>
+    </div>
+  </div>
+  <aside class="notas">Mantenerlo breve: el foco de la sesión es el uso. Mencionar que el catastro de QA es el de la planilla 2026 del HRC importada tal cual.</aside>
+</section>
+
+<!-- 5 -->
+<section class="slide" data-titulo="Perfiles">
+  <h2>Perfiles: qué puede hacer cada usuario</h2>
+  <table>
+    <tr><th style="width:290px">Perfil</th><th>Puede</th></tr>
+    <tr><td><b>Encargado de Mantención</b></td><td>Catastro, planificación, bitácora, correctivos, catálogos y reportes de su establecimiento. Ve los convenios.</td></tr>
+    <tr><td><b>Técnico Interno</b></td><td>Registra la bitácora de los equipos que tiene asignados y los mantenimientos correctivos. Ve el catastro y la planificación.</td></tr>
+    <tr><td><b>Encargado de Convenios</b></td><td>Convenios, su ejecución mensual y proveedores. Ve los reportes.</td></tr>
+    <tr><td><b>Jefatura</b></td><td>Ve todo el sistema y descarga reportes, sin modificar datos.</td></tr>
+    <tr><td><b>Administrador</b></td><td>Todo lo anterior, más usuarios, roles y registro de accesos.</td></tr>
+  </table>
+  <div class="caja" style="margin-top:20px"><b>Establecimientos asignados</b>: un usuario con establecimientos asignados solo ve y registra los datos de esos establecimientos. Sin establecimientos, ve todos.</div>
+  <aside class="notas">Regla pendiente (pregunta 5 al requirente): hoy el Técnico Interno puede registrar correctivos de cualquier equipo de su establecimiento, no solo de los asignados. Preguntar al requirente si está de acuerdo o si debe limitarse a sus equipos; anotar la respuesta en el registro de observaciones.</aside>
+</section>
+
+<!-- 6 -->
+<section class="slide" data-titulo="Ingreso al sistema">
+  <div class="seccion-tag">Todos los perfiles</div>
+  <h2>Ingreso al sistema</h2>
+  <div class="cols img-der">
+    <div>
+      <ul>
+        <li>Correo y contraseña → <span class="ui">Entrar</span>.</li>
+        <li>Para salir: círculo con sus iniciales → <span class="ui">Salir</span>.</li>
+        <li><b>5 intentos fallidos</b> bloquean la cuenta por <b>15 minutos</b>, incluso con la contraseña correcta.</li>
+        <li><span class="ui">¿Ha olvidado su contraseña?</span> envía un enlace por correo: sirve <b>una vez</b> y vence en <b>60 minutos</b>.</li>
+        <li>Contraseña de al menos <b>12 caracteres</b>.</li>
+      </ul>
+    </div>
+    <div class="figura"><img src="manual/img/01-ingreso.png" alt="Pantalla de ingreso"></div>
+  </div>
+  <aside class="notas">Casos S-01 a S-05. El bloqueo y la recuperación se prueban con la CUENTA DE SEGURIDAD, no con la cuenta de un participante. Si QA no tiene correo saliente, S-04 y S-05 se marcan No aplica y quedan para producción.</aside>
+</section>
+
+<!-- 7 -->
+<section class="slide" data-titulo="Organización de la pantalla">
+  <div class="seccion-tag">Todos los perfiles</div>
+  <h2>Cómo está organizada la pantalla</h2>
+  <div class="cols img-der">
+    <div>
+      <ul>
+        <li><b>Menú lateral</b>: las secciones de su perfil. La opción en uso se marca en rojo.</li>
+        <li><b>Buscador</b>: equipos por nombre, n° de inventario o serie.</li>
+        <li><b>Campana</b>: notificaciones, por ejemplo un convenio sobregirado.</li>
+        <li><b>Listados</b>: buscar, filtros, columnas y <span class="ui">Exportar a Excel</span> con los filtros aplicados.</li>
+        <li>Campos con <b>*</b> son obligatorios; los errores aparecen en rojo.</li>
+      </ul>
+      <div class="caja" style="margin-top:14px"><span class="ui">Guía de usuario</span> está siempre disponible en el menú.</div>
+    </div>
+    <div class="figura"><img src="manual/img/02-escritorio.png" alt="Escritorio"></div>
+  </div>
+  <aside class="notas">Abrir la Guía de usuario en vivo y mostrar la Ruta de capacitación de cada perfil: es el material de consulta después de la sesión.</aside>
+</section>
+
+<!-- 8 -->
+<section class="slide" data-titulo="Escritorio">
+  <div class="seccion-tag">Todos los perfiles</div>
+  <h2>Escritorio: lo que requiere atención</h2>
+  <div class="cols">
+    <div>
+      <ul>
+        <li>Elegir <b>Año</b> y <b>Período</b>: los indicadores se recalculan.</li>
+        <li><b>Requiere atención</b>: solo las alertas con casos, primero las urgentes.</li>
+        <li><b>Clic en una alerta</b> abre el listado con esos casos.</li>
+        <li>Cumplimiento = realizadas ÷ programadas del período.</li>
+      </ul>
+      <div class="caja alerta" style="margin-top:16px"><b>En QA verán la alerta “Planes con meses inconsistentes” con 12 planes</b>: 7 equipos de laboratorio sin meses y 5 con meses distintos a su frecuencia. Vienen así de la planilla y dependen de las definiciones solicitadas.</div>
+    </div>
+    <div>
+      <table>
+        <tr><th>Alerta</th><th>Qué hacer</th></tr>
+        <tr><td>MP atrasada</td><td>Registrar esos meses</td></tr>
+        <tr><td>Críticos a retirar de uso</td><td>Realizar o retirar</td></tr>
+        <tr><td>Críticos sin plan</td><td>Crear su plan</td></tr>
+        <tr><td>Programa sin validar</td><td>Ficha del recinto</td></tr>
+        <tr><td>Convenios sobregirados</td><td>Revisar ejecución</td></tr>
+        <tr><td>Convenios por vencer</td><td>Gestionar renovación</td></tr>
+      </table>
+    </div>
+  </div>
+  <aside class="notas">Explicar la alerta de meses inconsistentes antes de que la vean: no es un error del sistema, son datos de la planilla (preguntas 4 a y 4 b de la solicitud del 10-11). Si el requirente ya respondió, ajustar este mensaje.</aside>
+</section>
+
+<!-- 9 -->
+<section class="slide separador" data-titulo="Encargado de Mantención">
+  <div class="seccion-tag">Perfil · 30 minutos · casos EM-01 a EM-12</div>
+  <h1>Encargado de Mantención</h1>
+  <div class="linea-roja"></div>
+  <div class="perfil-resumen">Mantiene el catastro y los planes anuales, asigna a los técnicos, revisa las alertas, registra el mantenimiento de su establecimiento y prepara los informes.</div>
+  <aside class="notas">Ingresar con qa.mantencion. Tener a mano la tabla de equipos de referencia A, B, C y D de la pauta.</aside>
+</section>
+
+<!-- 10 -->
+<section class="slide" data-titulo="Equipos y ficha">
+  <div class="seccion-tag">Encargado de Mantención</div>
+  <h2>Equipos: catastro y ficha</h2>
+  <div class="cols img-der">
+    <div>
+      <ul>
+        <li><span class="ui">Equipos</span>: buscar por nombre o n° de inventario.</li>
+        <li><span class="ui">Ver</span>: datos, vida útil residual, cumplimiento del año, planes, correctivos y retiros de uso.</li>
+        <li><span class="ui">Crear equipo</span>: recinto, servicio clínico, nombre, inventario y criticidad.</li>
+        <li>Un tipo de equipo crítico de la norma <b>exige criticidad Crítico</b>.</li>
+        <li><span class="ui">Retirar de uso</span> y <span class="ui">Registrar reingreso</span> quedan en la ficha.</li>
+      </ul>
+    </div>
+    <div class="figura"><img src="manual/img/05-equipo-ficha.png" alt="Ficha del equipo"></div>
+  </div>
+  <aside class="notas">Casos EM-03, EM-04, EM-05 y EM-10. Mostrar la ficha del Equipo A (crítico sin garantía vigente).</aside>
+</section>
+
+<!-- 11 -->
+<section class="slide" data-titulo="Planificación">
+  <div class="seccion-tag">Encargado de Mantención</div>
+  <h2>Planificación del mantenimiento preventivo</h2>
+  <div class="cols img-der">
+    <div>
+      <ul>
+        <li><span class="ui">Planificación MP</span> → <span class="ui">Crear plan de mantenimiento</span>.</li>
+        <li>Al elegir la frecuencia, la vista previa muestra <b>los meses que se programarán</b>.</li>
+        <li><b>Responsable interno</b>: el técnico que registrará la bitácora del equipo.</li>
+        <li>Equipo crítico: <b>mínimo 2 mantenciones al año</b>, salvo con garantía vigente.</li>
+        <li>Cambiar la frecuencia no borra los meses ya realizados.</li>
+      </ul>
+    </div>
+    <div class="figura"><img src="manual/img/06-plan-editar.png" alt="Editar plan"></div>
+  </div>
+  <aside class="notas">Casos EM-06 y EM-07. Práctica: cambiar la frecuencia sin guardar y observar la vista previa; asignar un Responsable interno.</aside>
+</section>
+
+<!-- 12 -->
+<section class="slide" data-titulo="Bitácora mensual">
+  <div class="seccion-tag">Encargado de Mantención · Técnico Interno</div>
+  <h2>Bitácora: registrar las mantenciones</h2>
+  <div class="cols img-der">
+    <div>
+      <div class="simbolos">
+        <div class="simbolo"><span style="color:var(--gris)">–</span>Sin programar</div>
+        <div class="simbolo"><span style="color:var(--azul)">X</span>Programado</div>
+        <div class="simbolo"><span style="color:var(--verde)">√</span>Realizado</div>
+        <div class="simbolo"><span style="color:var(--ambar)">ꓣ</span>Reprogramado</div>
+      </div>
+      <ul style="margin-top:20px">
+        <li>Clic en un mes programado → <span class="ui">Realizado</span> o <span class="ui">Reprogramado</span>.</li>
+        <li><b>Realizado</b>: fecha real obligatoria, no futura.</li>
+        <li><b>Reprogramado</b>: la causa en observaciones es obligatoria.</li>
+        <li>Crítico reprogramado: <b>30 días</b> para realizarlo.</li>
+      </ul>
+    </div>
+    <div class="figura"><img src="manual/img/08-registrar-mes.png" alt="Registrar un mes"></div>
+  </div>
+  <aside class="notas">Caso EM-08 (reprogramar sin causa: el sistema lo rechaza con el mensaje de la Res. Ex. 1341/2017). Los mismos registros los hace el Técnico Interno en TI-02 y TI-03.</aside>
+</section>
+
+<!-- 13 -->
+<section class="slide" data-titulo="Correctivo">
+  <div class="seccion-tag">Encargado de Mantención · Técnico Interno</div>
+  <h2>Mantenimiento correctivo</h2>
+  <div class="cols img-der">
+    <div>
+      <ul>
+        <li><span class="ui">Correctivo</span> → <span class="ui">Crear mantenimiento correctivo</span>.</li>
+        <li>Equipo, fecha de la falla, descripción y costo.</li>
+        <li>Aparece en la <b>ficha del equipo</b>.</li>
+        <li>Su costo <b>suma al gasto correctivo</b> del Escritorio.</li>
+      </ul>
+      <div class="caja alerta" style="margin-top:18px"><b>Para definir con el requirente</b>: ¿quién registra los correctivos? Hoy el Técnico Interno puede registrarlos para cualquier equipo de su establecimiento.</div>
+    </div>
+    <div class="figura"><img src="manual/img/10-correctivos.png" alt="Correctivos"></div>
+  </div>
+  <aside class="notas">Caso EM-09. Plantear la pregunta 5 y anotar la decisión del requirente en el registro de observaciones (puede ser una Mejora si pide limitarlo a los equipos asignados).</aside>
+</section>
+
+<!-- 14 -->
+<section class="slide" data-titulo="Ficha del recinto">
+  <div class="seccion-tag">Encargado de Mantención</div>
+  <h2>Ficha del recinto y catálogos</h2>
+  <div class="cols img-der">
+    <div>
+      <ul>
+        <li><span class="ui">Catálogos → Recintos → Ver</span>.</li>
+        <li><b>Responsable de MP</b> designado por la Dirección.</li>
+        <li><b>Programa anual de MP</b> validado.</li>
+        <li><b>Gasto programado anual</b>: el Escritorio lo compara con lo ejecutado.</li>
+        <li>Un servicio clínico en uso no se elimina: <b>se desactiva</b>.</li>
+      </ul>
+    </div>
+    <div class="figura"><img src="manual/img/14-recinto-ficha.png" alt="Ficha del recinto"></div>
+  </div>
+  <aside class="notas">Caso EM-11. Usar el servicio clínico del Equipo A para mostrar que no se puede eliminar.</aside>
+</section>
+
+<!-- 15 -->
+<section class="slide" data-titulo="Reportes">
+  <div class="seccion-tag">Encargado de Mantención · Jefatura · Convenios</div>
+  <h2>Reportes e informes</h2>
+  <div class="cols img-der">
+    <div>
+      <ul>
+        <li>Elegir año y período (mes, trimestre, semestre o año).</li>
+        <li><span class="ui">Descargar Excel</span>: <b>Catastro + plan anual</b> con el formato de la planilla y los 12 meses.</li>
+        <li><span class="ui">Versión imprimible</span>: informe de <b>Cumplimiento de equipos críticos</b> de la norma, con encabezado y firmas.</li>
+        <li><b>Convenios y ejecución</b> con detalle por orden de compra.</li>
+      </ul>
+    </div>
+    <div class="figura"><img src="manual/img/12-reportes.png" alt="Reportes"></div>
+  </div>
+  <aside class="notas">Caso EM-12: después, buscar el Equipo D (QA-0001, Recinto de prueba) y comprobar que el Encargado de Mantención no lo ve.</aside>
+</section>
+
+<!-- 16 -->
+<section class="slide" data-titulo="Práctica EM">
+  <div class="seccion-tag">Encargado de Mantención · práctica</div>
+  <h2>Ahora ustedes</h2>
+  <ul class="practica">
+    <li>Haga clic en una alerta de <b>Requiere atención</b> y revise el listado.<span class="caso">EM-01</span></li>
+    <li>Abra la ficha de un equipo crítico y revise su plan y cumplimiento.<span class="caso">EM-03</span></li>
+    <li>Cree un plan, observe la vista previa y asigne un <b>Responsable interno</b>.<span class="caso">EM-06</span></li>
+    <li>Reprograme un mes sin causa y luego con causa.<span class="caso">EM-08</span></li>
+    <li>Revise la ficha de su recinto: responsable, programa y gasto.<span class="caso">EM-11</span></li>
+    <li>En <b>Reportes</b>, abra la <b>Versión imprimible</b> del primer semestre.<span class="caso">EM-12</span></li>
+  </ul>
+  <div class="caja" style="margin-top:14px">El resto de los casos (EM-02, 04, 05, 07, 09, 10) se ejecutan siguiendo la pauta.</div>
+  <aside class="notas">Registrar C / NC / NA en la pauta por cada caso. Las observaciones se clasifican como bloqueante, no bloqueante o mejora.</aside>
+</section>
+
+<!-- 17 -->
+<section class="slide separador" data-titulo="Técnico Interno">
+  <div class="seccion-tag">Perfil · 20 minutos · casos TI-01 a TI-05</div>
+  <h1>Técnico Interno</h1>
+  <div class="linea-roja"></div>
+  <div class="perfil-resumen">Registra en la bitácora las mantenciones preventivas de los equipos que tiene asignados y anota las fallas como mantenimiento correctivo.</div>
+  <aside class="notas">Ingresar con qa.tecnico. Es responsable interno de los Equipos A y B; el Equipo C no está asignado.</aside>
+</section>
+
+<!-- 18 -->
+<section class="slide" data-titulo="Mi trabajo del mes">
+  <div class="seccion-tag">Técnico Interno</div>
+  <h2>Mi trabajo del mes y Bitácora anual</h2>
+  <div class="cols img-der">
+    <div>
+      <ul>
+        <li><b>Mi trabajo del mes</b> (Escritorio): <b>Pendientes</b>, <b>Realizadas</b>, <b>Reprogramadas</b> y <b>MP atrasada</b>.</li>
+        <li><span class="ui">Bitácora anual</span>: todos los equipos con sus 12 meses.</li>
+        <li>Buscar el equipo por n° de inventario y hacer clic en el mes.</li>
+        <li>Solo se pueden abrir los meses de <b>sus equipos asignados</b>; los demás se ven sin enlace.</li>
+      </ul>
+    </div>
+    <div class="figura"><img src="manual/img/09-bitacora-anual.png" alt="Bitácora anual"></div>
+  </div>
+  <aside class="notas">Casos TI-01 y TI-04 (buscar el Equipo C: ve el plan pero no puede registrar).</aside>
+</section>
+
+<!-- 19 -->
+<section class="slide" data-titulo="Práctica TI">
+  <div class="seccion-tag">Técnico Interno · práctica</div>
+  <h2>Ahora ustedes</h2>
+  <ul class="practica">
+    <li>Revise cuántas mantenciones tiene <b>Pendientes</b> este mes.<span class="caso">TI-01</span></li>
+    <li>En <b>Bitácora anual</b>, busque el Equipo B y registre un mes programado como <b>Realizado</b> con su fecha real.<span class="caso">TI-02</span></li>
+    <li>Abra de nuevo el mes y compruebe que muestra <b>√</b> con la fecha.<span class="caso">TI-02</span></li>
+    <li>En el Equipo A, intente <b>Realizado</b> sin fecha y con fecha de mañana.<span class="caso">TI-03</span></li>
+    <li>Busque el Equipo C: ¿puede registrar?<span class="caso">TI-04</span></li>
+    <li>Registre una falla en <b>Correctivo</b> y búsquela en la ficha del equipo.<span class="caso">TI-05</span></li>
+  </ul>
+  <aside class="notas">TI-05 depende de la respuesta a la pregunta 5: no afirmar la restricción por equipos asignados.</aside>
+</section>
+
+<!-- 20 -->
+<section class="slide separador" data-titulo="Encargado de Convenios">
+  <div class="seccion-tag">Perfil · 15 minutos · casos EC-01 a EC-05</div>
+  <h1>Encargado de Convenios</h1>
+  <div class="linea-roja"></div>
+  <div class="perfil-resumen">Registra los convenios de mantenimiento, su gasto mensual (órdenes de compra o facturas) y los proveedores, y controla sobregiros y vencimientos.</div>
+  <aside class="notas">Ingresar con qa.convenios. Usar el Proveedor de prueba (QA).</aside>
+</section>
+
+<!-- 21 -->
+<section class="slide" data-titulo="Convenios">
+  <div class="seccion-tag">Encargado de Convenios</div>
+  <h2>Convenios y ejecución mensual</h2>
+  <div class="cols img-der">
+    <div>
+      <ul>
+        <li><span class="ui">Convenios</span>: columna <b>Vigencia</b> (“Vence en N días”) y <b>% de ejecución</b>.</li>
+        <li>En la ficha: <span class="ui">Registrar ejecución mensual</span> con mes, n° de orden de compra y monto.</li>
+        <li>Superar el monto anual: notificación <b>Convenio sobregirado</b> en la campana. <b>No bloquea</b> el registro.</li>
+        <li>Alertas: <b>Convenios sobregirados</b> y <b>por vencer</b> (60 días).</li>
+      </ul>
+    </div>
+    <div class="figura"><img src="manual/img/11-convenios.png" alt="Convenios"></div>
+  </div>
+  <aside class="notas">Casos EC-01 a EC-04. Convenio de prueba: monto anual $1.000.000; ejecución de $400.000 (40 %) y luego $700.000 para provocar el sobregiro.</aside>
+</section>
+
+<!-- 22 -->
+<section class="slide" data-titulo="Práctica EC">
+  <div class="seccion-tag">Encargado de Convenios · práctica</div>
+  <h2>Ahora ustedes</h2>
+  <ul class="practica">
+    <li>Cree un convenio con una fecha de expiración incorrecta y luego corríjala.<span class="caso">EC-01</span></li>
+    <li>Registre una ejecución mensual de $400.000 y revise el <b>% de ejecución</b>.<span class="caso">EC-02</span></li>
+    <li>Registre $700.000 más y observe la notificación de sobregiro.<span class="caso">EC-03</span></li>
+    <li>Revise las alertas de convenios en el Escritorio.<span class="caso">EC-04</span></li>
+    <li>Descargue el Excel de <b>Convenios y ejecución</b>.<span class="caso">EC-05</span></li>
+  </ul>
+  <aside class="notas">Registrar resultados en la pauta.</aside>
+</section>
+
+<!-- 23 -->
+<section class="slide" data-titulo="Jefatura">
+  <div class="seccion-tag">Jefatura · 10 minutos · casos J-01 a J-04</div>
+  <h2>Jefatura: seguimiento e informes</h2>
+  <div class="cols img-der">
+    <div>
+      <p>Consulta el avance, el gasto y los informes. <b>Ve todo, pero no modifica datos.</b></p>
+      <ul class="practica">
+        <li>Cambie el <b>Período</b> del Escritorio a un trimestre.<span class="caso">J-01</span></li>
+        <li>Abra la alerta <b>MP atrasada</b>.<span class="caso">J-02</span></li>
+        <li>Guarde como PDF el informe de equipos críticos.<span class="caso">J-03</span></li>
+        <li>Compruebe que no hay botones para crear o editar.<span class="caso">J-04</span></li>
+      </ul>
+    </div>
+    <div class="figura"><img src="manual/img/03-escritorio-preventivo.png" alt="Indicadores del Escritorio"></div>
+  </div>
+  <aside class="notas">Ingresar con qa.jefatura. El PDF se genera desde Versión imprimible → Imprimir → Guardar como PDF.</aside>
+</section>
+
+<!-- 24 -->
+<section class="slide" data-titulo="Administrador">
+  <div class="seccion-tag">Administrador · 10 minutos · casos A-01 a A-04</div>
+  <h2>Administrador: usuarios y accesos</h2>
+  <div class="cols">
+    <div>
+      <ul>
+        <li><span class="ui">Administración → Usuarios</span>: perfil y establecimientos de cada persona.</li>
+        <li>Desmarcar <b>Activo</b> impide ingresar y recibir enlaces de recuperación.</li>
+        <li><span class="ui">Registro de accesos</span>: ingresos, fallos, bloqueos, salidas y cambios de contraseña, con fecha, IP y navegador. <b>No se puede modificar ni eliminar.</b></li>
+      </ul>
+    </div>
+    <div>
+      <h3>Práctica</h3>
+      <ul class="practica">
+        <li>Cree un usuario Técnico Interno.<span class="caso">A-01</span></li>
+        <li>Asígnelo como Responsable interno del Equipo C.<span class="caso">A-02</span></li>
+        <li>Desactívelo e intente ingresar.<span class="caso">A-03</span></li>
+        <li>Encuentre el intento en Registro de accesos.<span class="caso">A-04</span></li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notas">Ingresar con qa.admin. En A-04 deben aparecer el bloqueo de S-03 y la recuperación de S-04 de la cuenta de seguridad.</aside>
+</section>
+
+<!-- 25 -->
+<section class="slide" data-titulo="Reglas del sistema">
+  <h2>Reglas que aplica el sistema</h2>
+  <table>
+    <tr><th style="width:330px">Regla</th><th>En la práctica</th></tr>
+    <tr><td>Realizado con fecha</td><td>Fecha real obligatoria y no posterior a hoy.</td></tr>
+    <tr><td>Reprogramar exige la causa</td><td>Observaciones obligatorias; n° de documento opcional.</td></tr>
+    <tr><td>Plazo de 30 días</td><td>Crítico reprogramado sin realizar → alerta <b>Críticos a retirar de uso</b>.</td></tr>
+    <tr><td>Mínimo 2 al año en críticos</td><td>Salvo garantía vigente.</td></tr>
+    <tr><td>Tipo de la norma ⇒ crítico</td><td>Los tipos de la Res. Ex. 1341/2017 exigen criticidad Crítico.</td></tr>
+    <tr><td>El plan se genera solo</td><td>La frecuencia programa los meses.</td></tr>
+    <tr><td>Cada uno en su recinto</td><td>Solo se ven y registran los establecimientos asignados.</td></tr>
+    <tr><td>Catálogos protegidos</td><td>Un valor en uso no se elimina; se desactiva.</td></tr>
+  </table>
+  <aside class="notas">Resumen para cerrar la parte de capacitación. Todas están en la sección 13 de la Guía de usuario.</aside>
+</section>
+
+<!-- 26 -->
+<section class="slide" data-titulo="Resultados de la prueba">
+  <h2>Prueba de aceptación: cómo se registra</h2>
+  <div class="cols">
+    <div>
+      <h3>Resultado de cada caso</h3>
+      <table>
+        <tr><td><b>C</b></td><td>Conforme: hace lo esperado.</td></tr>
+        <tr><td><b>NC</b></td><td>No conforme: se anota una observación.</td></tr>
+        <tr><td><b>NA</b></td><td>No aplica, por causa ajena al sistema.</td></tr>
+      </table>
+      <h3 style="margin-top:22px">Tipo de observación</h3>
+      <table>
+        <tr><td><b>Bloqueante</b></td><td>Impide el trabajo o produce datos incorrectos.</td></tr>
+        <tr><td><b>No bloqueante</b></td><td>Tiene una alternativa; fecha comprometida.</td></tr>
+        <tr><td><b>Mejora</b></td><td>Cambio deseable; requerimiento nuevo.</td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>Resultado de la sesión</h3>
+      <div class="caja" style="border-left-color:var(--verde)"><b>Aceptado</b>: todos C o NA, sin bloqueantes.</div>
+      <div class="caja alerta" style="margin-top:12px"><b>Aceptado con observaciones</b>: solo no bloqueantes o mejoras, con responsable y fecha.</div>
+      <div class="caja clave" style="margin-top:12px"><b>No aceptado</b>: alguna observación bloqueante. Se corrige y se repiten los casos afectados.</div>
+    </div>
+  </div>
+  <aside class="notas">Revisar en conjunto el registro de observaciones antes de completar el acta.</aside>
+</section>
+
+<!-- 27 -->
+<section class="slide" data-titulo="Próximos pasos">
+  <h2>Próximos pasos</h2>
+  <div class="cols">
+    <div>
+      <ul>
+        <li><b>Acta de aceptación</b> firmada por el requirente.</li>
+        <li><b>Correcciones</b> de las observaciones, si las hay.</li>
+        <li><b>Carga de datos reales</b>: usuarios y planilla de cada establecimiento.</li>
+        <li><b>Paso a producción</b> y <b>marcha blanca</b>: desde ese momento, lo registrado es definitivo.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="caja"><b>Definiciones pendientes del requirente</b><br>
+        · Usuarios: nombre, correo, perfil y establecimiento.<br>
+        · Equipos de laboratorio sin meses programados.<br>
+        · Equipos con meses distintos a su frecuencia.<br>
+        · Monitores de diálisis: ¿críticos?<br>
+        · Ubicación de los equipos.<br>
+        · Quién registra los correctivos.
+      </div>
+    </div>
+  </div>
+  <aside class="notas">Si alguna definición ya quedó resuelta en la reunión con el requirente, actualizar esta lámina antes de la sesión.</aside>
+</section>
+
+<!-- 28 -->
+<section class="slide portada" data-titulo="Cierre">
+  <h1>Gracias</h1>
+  <div class="linea-roja"></div>
+  <p>Consultas y dudas: <b style="color:#fff">Guía de usuario</b>, disponible en el menú del sistema.</p>
+  <p style="font-size:20px">Sistema de Bitácora de Mantenimiento de Equipos · Servicio de Salud Aysén</p>
+  <aside class="notas">Agradecer, completar el acta y acordar la fecha de la segunda sesión si quedaron casos pendientes.</aside>
+</section>
+
+</div>
+
+<div id="panel-notas"><h4>Notas del presentador</h4><div id="texto-notas"></div></div>
+<div id="indice"><h3>Índice (Esc para cerrar)</h3><ol id="lista-indice"></ol></div>
+<div id="ayuda">← → navegar · N notas · F pantalla completa · O índice</div>
+
+<script>
+(() => {
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const progreso = document.getElementById('progreso');
+  const panelNotas = document.getElementById('panel-notas');
+  const textoNotas = document.getElementById('texto-notas');
+  const indice = document.getElementById('indice');
+  const listaIndice = document.getElementById('lista-indice');
+  let actual = 0;
+
+  slides.forEach((slide, i) => {
+    const pie = document.createElement('div');
+    pie.className = 'pie';
+    pie.innerHTML = '<span>Bitácora de Mantenimiento de Equipos · Capacitación</span><span>' + (i + 1) + ' / ' + slides.length + '</span>';
+    slide.appendChild(pie);
+
+    const item = document.createElement('li');
+    item.textContent = slide.dataset.titulo || ('Lámina ' + (i + 1));
+    item.addEventListener('click', () => { mostrar(i); indice.classList.remove('visible'); });
+    listaIndice.appendChild(item);
+  });
+
+  function escalar() {
+    const escala = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    slides.forEach(s => { s.style.transform = 'scale(' + escala + ')'; });
+  }
+
+  function mostrar(i) {
+    actual = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((s, j) => s.classList.toggle('activa', j === actual));
+    progreso.style.width = ((actual + 1) / slides.length * 100) + '%';
+    const notas = slides[actual].querySelector('aside.notas');
+    textoNotas.textContent = notas ? notas.textContent : '';
+    history.replaceState(null, '', '#' + (actual + 1));
+  }
+
+  document.addEventListener('keydown', e => {
+    if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); mostrar(actual + 1); }
+    else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); mostrar(actual - 1); }
+    else if (e.key === 'Home') mostrar(0);
+    else if (e.key === 'End') mostrar(slides.length - 1);
+    else if (e.key.toLowerCase() === 'n') panelNotas.classList.toggle('visible');
+    else if (e.key.toLowerCase() === 'o') indice.classList.toggle('visible');
+    else if (e.key === 'Escape') indice.classList.remove('visible');
+    else if (e.key.toLowerCase() === 'f') {
+      if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen();
+    }
+  });
+
+  document.getElementById('escenario').addEventListener('click', e => {
+    if (e.target.closest('a')) return;
+    mostrar(e.clientX > window.innerWidth / 3 ? actual + 1 : actual - 1);
+  });
+
+  setTimeout(() => document.getElementById('ayuda').classList.add('oculta'), 6000);
+  window.addEventListener('resize', escalar);
+  escalar();
+  mostrar(parseInt(location.hash.slice(1), 10) - 1 || 0);
+})();
+</script>
+</body>
+</html>
