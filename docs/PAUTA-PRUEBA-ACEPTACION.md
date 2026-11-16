@@ -113,18 +113,18 @@ planilla (7 sin meses y 5 con meses distintos a su frecuencia). No es un error d
 
 ## 4. Desarrollo de la sesión
 
-Duración estimada: **2 horas**.
+Duración estimada: **60 minutos**.
 
 | Tiempo | Bloque | Contenido |
 |---|---|---|
-| 10 min | Presentación | Objetivo de la sesión, organización de la pantalla y cómo abrir la Guía de usuario. |
-| 10 min | Ingreso y seguridad | Casos S-01 a S-05. |
-| 30 min | Encargado de Mantención | Demostración y casos EM-01 a EM-12. |
-| 20 min | Técnico Interno | Demostración y casos TI-01 a TI-05. |
-| 15 min | Encargado de Convenios | Demostración y casos EC-01 a EC-05. |
-| 10 min | Jefatura | Casos J-01 a J-04. |
-| 10 min | Administrador | Casos A-01 a A-04. |
-| 15 min | Cierre | Revisión de observaciones, resultado y acta. |
+| 5 min | Presentación | Objetivo de la sesión, organización de la pantalla y cómo abrir la Guía de usuario. |
+| 5 min | Ingreso y seguridad | Casos S-01 a S-05. |
+| 15 min | Encargado de Mantención | Demostración y casos EM-01 a EM-12. |
+| 10 min | Técnico Interno | Demostración y casos TI-01 a TI-05. |
+| 8 min | Encargado de Convenios | Demostración y casos EC-01 a EC-05. |
+| 5 min | Jefatura | Casos J-01 a J-04. |
+| 5 min | Administrador | Casos A-01 a A-04. |
+| 7 min | Cierre | Revisión de observaciones, resultado y acta. |
 
 En cada bloque, el desarrollador muestra primero el flujo (capacitación) y luego el participante
 ejecuta los casos en su propia sesión. Si el tiempo no alcanza, los casos pendientes se completan
