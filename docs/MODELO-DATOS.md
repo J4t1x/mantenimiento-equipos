@@ -3,12 +3,13 @@ documento: Modelo de Datos
 proyecto: Sistema de Bitácora de Mantenimiento de Equipos
 servicio: Servicio de Salud Aysén
 establecimiento_base: Hospital Regional Coyhaique
-version: 1.0
-estado: borrador técnico — preparación de Etapa 2, sujeto a validación de preguntas abiertas del BRIEF
+version: 1.1
+estado: vigente — refleja el sistema construido; en preparación del ambiente de pruebas (QA) y la prueba de aceptación
 marco: v3.4
 autor: Javier Mansilla
 para: Cristian Santander Marchant
 fecha: 2026-08-31
+actualizado: 2026-11-17
 ---
 
 # Modelo de Datos — Sistema de Bitácora de Mantenimiento de Equipos
@@ -17,6 +18,8 @@ fecha: 2026-08-31
 > 16+, con convenciones de nombrado Laravel/Eloquent (tablas en plural, snake_case, migraciones).
 > Donde el modelo depende de una pregunta abierta sin resolver, se declara la decisión por defecto
 > adoptada y se marca como sujeta a cambio — no se bloquea el diseño esperando cada respuesta.
+
+> **Estado al 17-11-2026:** el sistema está construido (SPEC-ME-001 a SPEC-ME-022) y este documento describe lo implementado. Las menciones a la "Etapa 2" y a preguntas abiertas se conservan como registro del análisis; las decisiones vigentes son las del `BRIEF.md` v1.1.
 
 ## §1 Convenciones
 

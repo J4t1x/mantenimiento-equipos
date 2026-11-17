@@ -3,12 +3,13 @@ documento: SAD
 proyecto: Sistema de Bitácora de Mantenimiento de Equipos
 servicio: Servicio de Salud Aysén
 establecimiento_base: Hospital Regional Coyhaique
-version: 1.0
-estado: borrador técnico — preparación de Etapa 2, sujeto a validación del BRIEF.md
+version: 1.1
+estado: vigente — refleja el sistema construido; en preparación del ambiente de pruebas (QA) y la prueba de aceptación
 marco: v3.4
 autor: Javier Mansilla
 para: Cristian Santander Marchant
 fecha: 2026-08-31
+actualizado: 2026-11-17
 ---
 
 # SAD — Arquitectura de la Solución
@@ -17,6 +18,8 @@ fecha: 2026-08-31
 > agrega la vista de contexto, componentes, datos, despliegue, seguridad y las decisiones de
 > arquitectura que en el BRIEF quedaban implícitas. No introduce infraestructura nueva ni
 > excepciones al TRA.
+
+> **Estado al 17-11-2026:** el sistema está construido (SPEC-ME-001 a SPEC-ME-022) y este documento describe lo implementado. Las menciones a la "Etapa 2" y a preguntas abiertas se conservan como registro del análisis; las decisiones vigentes son las del `BRIEF.md` v1.1.
 
 ## §1 Introducción
 

@@ -4,12 +4,13 @@ proyecto: Sistema de Bitácora de Mantenimiento de Equipos
 servicio: Servicio de Salud Aysén
 establecimiento_base: Hospital Regional Coyhaique
 perfil: estándar (expansión desde BRIEF §3, perfil lite)
-version: 1.1
-estado: borrador técnico — preparación de Etapa 2, no reemplaza la validación pendiente del BRIEF.md
+version: 1.2
+estado: vigente — refleja el sistema construido; en preparación del ambiente de pruebas (QA) y la prueba de aceptación
 marco: v3.4
 autor: Javier Mansilla
 para: Cristian Santander Marchant
 fecha: 2026-08-31
+actualizado: 2026-11-17
 ---
 
 # SRS — Especificación de Requisitos de Software
@@ -19,6 +20,8 @@ fecha: 2026-08-31
 > historias de usuario ya presentadas. Se elabora como preparación técnica para la Etapa 2, en
 > paralelo a la espera de validación del BRIEF por parte del requirente. Donde un requisito depende
 > de una pregunta abierta sin resolver, queda marcado explícitamente — no se asume una respuesta.
+
+> **Estado al 17-11-2026:** el sistema está construido (SPEC-ME-001 a SPEC-ME-022) y este documento describe lo implementado. Las menciones a la "Etapa 2" y a preguntas abiertas se conservan como registro del análisis; las decisiones vigentes son las del `BRIEF.md` v1.1.
 
 ## §1 Introducción
 

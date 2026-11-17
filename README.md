@@ -12,13 +12,15 @@ preventivo, el mantenimiento correctivo, los convenios con proveedores y sus ind
 |---|---|
 | Catálogos | Recintos (con su responsable de mantenimiento preventivo designado y su gasto programado anual), servicios clínicos (con la cantidad de equipos asociados), clases/subclases de equipo y proveedores. Un valor referenciado por un equipo no se puede eliminar, solo desactivar. |
 | Equipos (catastro) | Ficha completa de cada equipo, con vida útil residual, garantía, criticidad y estado, y registro del retiro de uso y reingreso con su evidencia. Alerta de equipos críticos sin plan del año. El listado muestra la frecuencia de MP del año, con filtros, búsqueda global y exportación a Excel. |
-| Planificación MP | Plan anual por equipo: al definir la frecuencia, el sistema genera automáticamente los meses programados (RN-01), que el formulario muestra como vista previa antes de guardar. Los equipos críticos exigen al menos 2 mantenciones al año, salvo con garantía vigente, en que se puede usar la periodicidad del fabricante (Res. Ex. 1341/2017). |
+| Planificación MP | Plan anual por equipo: al definir la frecuencia, el sistema genera automáticamente los meses programados (RN-01), que el formulario muestra como vista previa antes de guardar. Cada plan tiene siempre sus 12 meses, y el Escritorio avisa de los planes con meses inconsistentes. Los equipos críticos exigen al menos 2 mantenciones al año, salvo con garantía vigente, en que se puede usar la periodicidad del fabricante (Res. Ex. 1341/2017). |
 | Bitácora | Grilla de 12 meses por plan y vista anual consolidada, con todos los equipos y sus 12 meses en una sola tabla, como la planilla, desde la que se registra cada mes. Un mes solo se marca "Realizado" o "Reprogramado" si estaba programado (RN-02); reprogramar exige indicar la causa (y admite el n° del documento de justificación), y los equipos críticos con una reprogramación sin realizar tras 30 días aparecen como alerta en el Escritorio. El técnico interno solo registra sus equipos asignados. |
 | Mantenimiento correctivo | Registro de fallas y su costo, que suma automáticamente al gasto del período (RN-04). |
 | Convenios y gasto | Convenios con su ejecución mensual por orden de compra y su vigencia (vigente, por vencer o vencido); alerta sin bloquear cuando se supera el monto anual (RN-05). |
 | Escritorio | Alertas por rol (entre ellas, los equipos con MP atrasada), cumplimiento de MP en 4 cortes (total, EQC, EQR, IM≥12, RN-03) % de gasto MP y MC ejecutado frente al programado, todo con selector de año y período (año, semestre, trimestre o mes), gráficos mensuales de cumplimiento y gasto, composición del catastro. |
 | Reportes | Catastro + plan anual, indicador de cumplimiento y detalle de gasto, en Excel con el formato de la planilla vigente, filtrables por año, recinto y servicio clínico. El cumplimiento y el gasto también se pueden acotar a un semestre o trimestre. Incluye el informe de cumplimiento de equipos críticos de la Res. Ex. 1341/2017 del MINSAL (indicador por equipos, detalle por equipo y reprogramaciones con su causa), en Excel y en versión imprimible para guardar como PDF y firmar. El gasto programado sale del presupuesto anual de cada recinto. También incluye convenios y su ejecución, con el detalle mensual por orden de compra. |
 | Usuarios y permisos | Roles, permisos por pantalla, recintos asignados por usuario, notificaciones y auditoría de cambios. |
+| Seguridad del inicio de sesión | Bloqueo tras intentos fallidos, por cuenta (5 en 15 minutos) y por dirección IP (20 en 15 minutos), durante 15 minutos y sin revelar qué cuentas existen. Recuperación de contraseña por correo con enlace de un solo uso (vence en 60 minutos) y contraseña de al menos 12 caracteres. Registro de accesos de solo inserción (ingresos, fallos, bloqueos, cierres de sesión y cambios de contraseña, con IP y navegador), que consulta el administrador en Administración → Registro de accesos (RF-87 a RF-89). |
+| Guía de usuario | Guía dentro del sistema (menú "Guía de usuario"), con la ruta de capacitación de cada perfil y qué hacer ante los mensajes más frecuentes. También está en [PDF](docs/MANUAL-USUARIO.pdf). |
 
 ### Roles
 
@@ -28,7 +30,7 @@ preventivo, el mantenimiento correctivo, los convenios con proveedores y sus ind
 | Técnico Interno | Registro de la bitácora y correctivos de sus equipos asignados. |
 | Encargado de Convenios | Convenios, su ejecución mensual, proveedores y reportes. |
 | Jefatura | Lectura de todo el sistema y reportes. |
-| `super_admin` | Administración completa, incluidos usuarios y roles. |
+| `super_admin` | Administración completa, incluidos usuarios, roles y el registro de accesos. |
 
 Además del rol, cada usuario puede tener recintos asignados. Sin recintos (personal del
 subdepartamento del SSA) ve todos los establecimientos. Con recintos asignados solo ve y registra
@@ -59,11 +61,33 @@ El seeder crea los roles con sus permisos y, **solo con `APP_ENV=local`**, dos u
 cualquier otro entorno no crea usuarios: el primer administrador se crea con
 `php artisan app:crear-usuario --rol=super_admin`.
 
-Para instalar en producción, ver [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md).
+En desarrollo, `.env.example` deja el correo en `MAIL_MAILER=log`: el enlace de recuperación de
+contraseña no se envía, se escribe en `storage/logs/laravel.log`.
+
+Para instalar en producción, ver [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md). Para el ambiente de
+pruebas (QA), ver [`docs/INSTALACION-QA.md`](docs/INSTALACION-QA.md).
 
 Después de actualizar dependencias, ejecutar `./vendor/bin/sail artisan filament:upgrade`. Los assets
 de Filament en `public/` no se versionan y, si quedan desfasados, el inicio de sesión deja de
 funcionar en el navegador.
+
+### Comandos del sistema
+
+| Comando | Uso |
+|---|---|
+| `app:crear-usuario` | Crea un usuario con su rol y recintos (`--nombre`, `--email`, `--rol`, `--recinto`, repetible). Sin `--password` genera una contraseña segura y la muestra una sola vez. |
+| `app:importar-catastro-coyhaique` | Carga el catastro y el plan de MP desde la planilla (ver abajo). |
+| `app:clasificar-tipos-criticos` | Sugiere el tipo de equipo crítico de la Res. Ex. 1341/2017 (ver abajo). |
+| `app:completar-meses-planes` | Completa los planes hasta sus 12 meses (RN-01) e informa los planes con meses inconsistentes. Sin `--aplicar` solo muestra lo que haría. |
+| `app:preparar-qa` | Prepara el ambiente de pruebas: cuentas `qa.*` por perfil, recinto y proveedor de prueba, y equipos de referencia para los casos de la pauta. Idempotente y rechazado con `APP_ENV=production`. Ver [`docs/INSTALACION-QA.md`](docs/INSTALACION-QA.md). |
+
+### Configuración de seguridad
+
+Los umbrales del bloqueo y el largo mínimo de contraseña están en `config/seguridad.php` y se
+ajustan por `.env` (`SEGURIDAD_BLOQUEO_CUENTA_INTENTOS`, `SEGURIDAD_BLOQUEO_CUENTA_VENTANA`,
+`SEGURIDAD_BLOQUEO_CUENTA_MINUTOS`, sus equivalentes `SEGURIDAD_BLOQUEO_IP_*` y
+`SEGURIDAD_CONTRASENA_LARGO_MINIMO`). Los valores por defecto son los de la tabla de
+funcionalidades.
 
 ### Carga de datos reales
 
@@ -89,8 +113,10 @@ críticos, y lista sin modificarlos a los que la norma exige críticos pero tien
 ```
 
 La suite cubre las reglas de negocio (RN-01 a RN-05 y la frecuencia mínima de críticos), el
-alcance del técnico interno y por recinto, el acceso por rol a cada pantalla, la protección de catálogos, el Escritorio, los reportes y la importación de la
-planilla.
+alcance del técnico interno (bitácora y correctivos de sus equipos asignados) y por recinto, el
+acceso por rol a cada pantalla, la protección de catálogos, las validaciones de rango, el
+Escritorio, los reportes, la importación de la planilla, la seguridad del inicio de sesión
+(bloqueo, recuperación y registro de accesos) y la preparación del ambiente de QA.
 
 ## Documentación
 
@@ -108,6 +134,14 @@ planilla.
 | [`docs/PAUTA-PRUEBA-ACEPTACION.md`](docs/PAUTA-PRUEBA-ACEPTACION.md) ([PDF para el requirente](docs/PAUTA-PRUEBA-ACEPTACION.pdf)) | Pauta de la capacitación y la prueba de aceptación con el requirente: casos por perfil, criterio de aceptación y acta. El PDF omite la preparación técnica del ambiente. |
 | [`docs/MOCKUP-SISTEMA.html`](docs/MOCKUP-SISTEMA.html) | Mockup de pantallas (referencia visual, no diseño final). |
 | [`docs/normativa/NORMA-MP-EQUIPAMIENTO-CRITICO.md`](docs/normativa/NORMA-MP-EQUIPAMIENTO-CRITICO.md) ([PDF](docs/normativa/Resolucion-Exenta-1341-2017-MINSAL-Norma-MP-Equipamiento-Medico-Critico.pdf)) | Síntesis de la Res. Ex. 1341/2017 del MINSAL (MP de equipamiento médico crítico) y su aplicación al sistema. |
+
+## Estado
+
+Desarrollo completo. Siguen la instalación en el ambiente de pruebas con el Sysadmin, la revisión
+conjunta y la sesión de capacitación y prueba de aceptación con el requirente
+([pauta](docs/PAUTA-PRUEBA-ACEPTACION.md)). Para producción quedan por definir con el Sysadmin el
+servidor y dominio, los respaldos, el correo saliente para la recuperación de contraseña y la
+retención del registro de accesos ([`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md)).
 
 ## Pendientes
 
