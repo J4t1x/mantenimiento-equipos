@@ -205,9 +205,12 @@ otro enlace. Si sigue sin llegar, avise al administrador del sistema.
   *Convenios y Gasto*, *Equipos* y *Administración*. La opción en uso se marca con una franja roja.
   Cada usuario ve solo las secciones de su perfil.
 - **Barra superior**:
+  - el **nombre del sistema** junto al logo, que lleva al Escritorio;
   - el **buscador**, que encuentra equipos por nombre, n° de inventario o n° de serie, y convenios
-    por nombre;
+    por nombre. Cada equipo aparece con su **n° de inventario**, **servicio**, **recinto** y
+    **marca**, para distinguir los que tienen el mismo nombre; al hacer clic se abre su ficha;
   - la **campana** de notificaciones, por ejemplo cuando un convenio se sobregira;
+  - el **perfil** con el que ingresó (por ejemplo, "Encargado de Mantención");
   - el **menú de usuario** (círculo con sus iniciales), con la **Guía de usuario** y **Salir**.
 - **Listados**: cada sección muestra sus registros en una tabla con:
   - **Buscar**: filtra por texto en las columnas principales.
@@ -254,13 +257,18 @@ indica qué período se está viendo. Las alertas operativas se calculan siempre
 
 El botón **Guía de usuario**, arriba a la derecha, abre este manual.
 
-El Escritorio se organiza en secciones. Cada usuario ve las de su perfil:
+El Escritorio se organiza en **pestañas**. Cada usuario ve solo las de su perfil, y la pestaña
+elegida queda en la dirección de la página, así que al volver atrás se abre la misma:
 
 - **Mi trabajo del mes** (Técnico Interno): sus mantenciones **Pendientes**, **Realizadas** y
   **Reprogramadas** del mes, y sus equipos con **MP atrasada**.
 - **Requiere atención**: solo aparecen las alertas con casos pendientes, primero las más urgentes
   (en rojo). Si no hay ninguna, se muestra **Todo al día**. **Al hacer clic en una alerta se abre
   el listado con esos casos.**
+- **Calendario** (Encargado de Mantención, Técnico Interno y Jefatura): el mismo calendario de
+  mantenciones de la Planificación MP (sección 6), con el año del Escritorio y los meses del
+  período elegido. Al hacer clic en un mes se ve por días. **Abrir calendario completo** lleva a
+  la vista de Planificación MP.
 - **Mantenimiento preventivo**: el cumplimiento del período en cuatro cortes (total, equipos
   críticos, relevantes e IM ≥ 12), el gasto preventivo y correctivo frente a lo programado, y los
   gráficos mes a mes.
@@ -366,6 +374,31 @@ reprogramados se conservan**; solo se recalculan los demás.
 
 > Los equipos **críticos** deben tener al menos **2 mantenciones al año**. La excepción son los
 > equipos con garantía vigente, que pueden seguir la periodicidad del fabricante.
+
+### Calendario de mantenciones
+
+Desde el listado, **Ver calendario** muestra las mantenciones del año en dos vistas. Con **Ver
+listado** se vuelve a la tabla.
+
+- **Vista anual**: una tarjeta por mes con el total de mantenciones, la barra de avance y cuántas
+  están **realizadas**, **programadas**, **atrasadas** y **reprogramadas**. El mes en curso va
+  destacado. Las flechas cambian de año.
+- **Vista del mes**: al hacer clic en una tarjeta. Las mantenciones **realizadas** aparecen en
+  verde en el día de su **fecha real de ejecución**. Las **pendientes** del mes van en la lista de
+  la derecha, porque el plan programa por mes y no por día. Las realizadas sin fecha real van en
+  una lista aparte.
+- Lo **programado** se dibuja con **borde punteado** (azul si está en plazo, rojo si está atrasado
+  y ámbar si fue reprogramado) y lo **ejecutado** con **relleno verde** y ✓.
+- Los filtros acotan por **servicio clínico**, **criticidad** y **tipo** (interno o externo). Cada
+  mantención abre su plan, desde donde se registra la bitácora.
+- Con permiso para crear planes, el botón **Crear plan de mantenimiento** también está en el
+  calendario.
+
+![Calendario de mantenciones: vista anual](manual/img/06-calendario-anual.png)
+
+![Calendario de mantenciones: vista del mes](manual/img/06-calendario-mes.png)
+
+> El calendario también está en el **Escritorio**, en la pestaña **Calendario** (sección 4).
 
 ---
 
