@@ -102,6 +102,8 @@ class AdminPanelProvider extends PanelProvider
             // Barra superior institucional: nombre del sistema junto al logo y perfil de la sesión.
             ->renderHook(PanelsRenderHook::TOPBAR_LOGO_AFTER, fn (): View => view('filament.barra-superior.marca'))
             ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn (): View => view('filament.barra-superior.perfil'))
+            // Safari no enfoca los enlaces al hacer clic y la búsqueda global se cerraba sin navegar.
+            ->renderHook(PanelsRenderHook::BODY_END, fn (): View => view('filament.barra-superior.busqueda-safari'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([

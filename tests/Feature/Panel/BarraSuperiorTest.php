@@ -36,6 +36,19 @@ class BarraSuperiorTest extends TestCase
             ->assertSeeInOrder(['bm-perfil', 'Administrador'], false);
     }
 
+    /**
+     * Safari no enfoca los enlaces al hacer clic: sin esta corrección, los resultados de la
+     * búsqueda global se cerraban antes del clic y no navegaban.
+     */
+    public function test_el_panel_incluye_la_correccion_de_la_busqueda_para_safari(): void
+    {
+        $this->actuarComo('Jefatura');
+
+        $this->get('/admin')
+            ->assertOk()
+            ->assertSee("evento.target.closest('.fi-global-search-results-ctn a')", false);
+    }
+
     public function test_los_resultados_de_busqueda_de_equipos_con_el_mismo_nombre_se_distinguen(): void
     {
         $this->actuarComo('Encargado de Mantención');
