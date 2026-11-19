@@ -91,4 +91,20 @@ class MantenimientoCorrectivoResource extends Resource
     {
         return "Correctivo de {$record->equipo->nombre} ({$record->fecha->format('d-m-Y')})";
     }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return array_filter([
+            'Inventario' => $record->equipo->n_inventario,
+            'Servicio' => $record->equipo->servicioClinico?->nombre,
+        ]);
+    }
+
+    public static function getGlobalSearchEloquentQuery(): Builder
+    {
+        return parent::getGlobalSearchEloquentQuery()->with(['equipo.servicioClinico']);
+    }
 }

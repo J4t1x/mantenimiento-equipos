@@ -99,6 +99,9 @@ class AdminPanelProvider extends PanelProvider
             // SPEC-ME-010: menú lateral con los colores institucionales del mockup (CSS inyectado,
             // sin tema compilado).
             ->renderHook(PanelsRenderHook::HEAD_END, fn (): View => view('filament.estilos-panel'))
+            // Barra superior institucional: nombre del sistema junto al logo y perfil de la sesión.
+            ->renderHook(PanelsRenderHook::TOPBAR_LOGO_AFTER, fn (): View => view('filament.barra-superior.marca'))
+            ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn (): View => view('filament.barra-superior.perfil'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([

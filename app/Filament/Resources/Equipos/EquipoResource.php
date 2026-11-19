@@ -20,6 +20,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class EquipoResource extends Resource
@@ -90,5 +91,31 @@ class EquipoResource extends Resource
     public static function getGloballySearchableAttributes(): array
     {
         return ['nombre', 'n_inventario', 'serie'];
+    }
+
+    /**
+     * El inventario va en el título porque muchos equipos comparten nombre ("Monitor
+     * Desfibrilador"): sin él, los resultados no se distinguen entre sí.
+     */
+    public static function getGlobalSearchResultTitle(Model $record): string
+    {
+        return "{$record->n_inventario} · {$record->nombre}";
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return array_filter([
+            'Servicio' => $record->servicioClinico?->nombre,
+            'Recinto' => $record->recinto?->nombre,
+            'Marca' => trim("{$record->marca} {$record->modelo}") ?: null,
+        ]);
+    }
+
+    public static function getGlobalSearchEloquentQuery(): Builder
+    {
+        return parent::getGlobalSearchEloquentQuery()->with(['servicioClinico', 'recinto']);
     }
 }

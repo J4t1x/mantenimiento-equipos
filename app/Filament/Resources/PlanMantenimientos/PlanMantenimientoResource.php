@@ -96,4 +96,20 @@ class PlanMantenimientoResource extends Resource
     {
         return "Plan de {$record->equipo->nombre} ({$record->anio})";
     }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return array_filter([
+            'Inventario' => $record->equipo->n_inventario,
+            'Servicio' => $record->equipo->servicioClinico?->nombre,
+        ]);
+    }
+
+    public static function getGlobalSearchEloquentQuery(): Builder
+    {
+        return parent::getGlobalSearchEloquentQuery()->with(['equipo.servicioClinico']);
+    }
 }
