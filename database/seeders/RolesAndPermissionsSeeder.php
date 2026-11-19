@@ -37,6 +37,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'view.reportes', 'view.cumplimiento_mp_widget', 'view.indicadores_generales_widget',
             'view.alertas_convenios_widget', 'view.catastro_alertas_widget',
             'view.gasto_mensual_widget', 'view.distribucion_catastro_widget', 'view.bitacora_anual',
+            'view.calendario_mantenciones_widget',
         ]);
 
         $this->rol('Técnico Interno', [
@@ -44,6 +45,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'view_any.ejecucion_mensual', 'view.ejecucion_mensual', 'create.ejecucion_mensual', 'update.ejecucion_mensual',
             'view_any.mantenimiento_correctivo', 'view.mantenimiento_correctivo', 'create.mantenimiento_correctivo', 'update.mantenimiento_correctivo',
             'view.cumplimiento_mp_widget', 'view.mis_planes_del_mes_widget', 'view.bitacora_anual',
+            'view.calendario_mantenciones_widget',
         ]);
 
         $this->rol('Encargado de Convenios', [
@@ -57,7 +59,7 @@ class RolesAndPermissionsSeeder extends Seeder
             ...$this->lectura(['equipo', 'plan_mantenimiento', 'ejecucion_mensual', 'mantenimiento_correctivo', 'convenio', 'convenio_ejecucion_mensual', ...self::CATALOGOS]),
             'view.reportes', 'view.cumplimiento_mp_widget', 'view.indicadores_generales_widget',
             'view.catastro_alertas_widget', 'view.gasto_mensual_widget', 'view.distribucion_catastro_widget',
-            'view.bitacora_anual',
+            'view.bitacora_anual', 'view.calendario_mantenciones_widget',
         ]);
 
         // No hace falta crear ni asignarle permisos a `super_admin` a mano: con

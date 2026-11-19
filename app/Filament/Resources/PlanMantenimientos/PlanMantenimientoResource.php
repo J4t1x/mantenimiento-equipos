@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\PlanMantenimientos;
 
+use App\Filament\Resources\PlanMantenimientos\Pages\CalendarioPlanes;
 use App\Filament\Resources\PlanMantenimientos\Pages\CreatePlanMantenimiento;
 use App\Filament\Resources\PlanMantenimientos\Pages\EditPlanMantenimiento;
 use App\Filament\Resources\PlanMantenimientos\Pages\ListPlanMantenimientos;
@@ -64,6 +65,7 @@ class PlanMantenimientoResource extends Resource
         return [
             'index' => ListPlanMantenimientos::route('/'),
             'create' => CreatePlanMantenimiento::route('/create'),
+            'calendario' => CalendarioPlanes::route('/calendario'),
             'view' => ViewPlanMantenimiento::route('/{record}'),
             'edit' => EditPlanMantenimiento::route('/{record}/edit'),
         ];

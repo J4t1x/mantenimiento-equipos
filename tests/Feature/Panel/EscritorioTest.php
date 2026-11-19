@@ -8,6 +8,7 @@ use App\Enums\EstadoEquipo;
 use App\Enums\FrecuenciaAnual;
 use App\Filament\Pages\Escritorio;
 use App\Filament\Widgets\AlertasConveniosWidget;
+use App\Filament\Widgets\CalendarioMantencionesWidget;
 use App\Filament\Widgets\CatastroAlertasWidget;
 use App\Filament\Widgets\ConveniosEncargadoWidget;
 use App\Filament\Widgets\CumplimientoMpMensualWidget;
@@ -58,21 +59,21 @@ class EscritorioTest extends TestCase
     {
         return [
             'Encargado de Mantención' => ['Encargado de Mantención', [
-                CatastroAlertasWidget::class, AlertasConveniosWidget::class,
+                CatastroAlertasWidget::class, AlertasConveniosWidget::class, CalendarioMantencionesWidget::class,
                 CumplimientoMpWidget::class, GastoMpWidget::class, CumplimientoMpMensualWidget::class, GastoMensualWidget::class,
                 IndicadoresGeneralesWidget::class, DistribucionCatastroWidget::class, DistribucionCatastroCriticidadWidget::class,
-            ], ['Requiere atención', 'Mantenimiento preventivo', 'Catastro de equipos']],
+            ], ['Requiere atención', 'Calendario', 'Mantenimiento preventivo', 'Catastro de equipos']],
             'Técnico Interno' => ['Técnico Interno', [
-                MisPlanesDelMesWidget::class, CumplimientoMpWidget::class, CumplimientoMpMensualWidget::class,
-            ], ['Mi trabajo del mes', 'Mantenimiento preventivo']],
+                MisPlanesDelMesWidget::class, CalendarioMantencionesWidget::class, CumplimientoMpWidget::class, CumplimientoMpMensualWidget::class,
+            ], ['Mi trabajo del mes', 'Calendario', 'Mantenimiento preventivo']],
             'Encargado de Convenios' => ['Encargado de Convenios', [
                 AlertasConveniosWidget::class, GastoMpWidget::class, GastoMensualWidget::class, ConveniosEncargadoWidget::class,
             ], ['Requiere atención', 'Mantenimiento preventivo', 'Convenios']],
             'Jefatura' => ['Jefatura', [
-                CatastroAlertasWidget::class,
+                CatastroAlertasWidget::class, CalendarioMantencionesWidget::class,
                 CumplimientoMpWidget::class, GastoMpWidget::class, CumplimientoMpMensualWidget::class, GastoMensualWidget::class,
                 IndicadoresGeneralesWidget::class, DistribucionCatastroWidget::class, DistribucionCatastroCriticidadWidget::class,
-            ], ['Requiere atención', 'Mantenimiento preventivo', 'Catastro de equipos']],
+            ], ['Requiere atención', 'Calendario', 'Mantenimiento preventivo', 'Catastro de equipos']],
         ];
     }
 

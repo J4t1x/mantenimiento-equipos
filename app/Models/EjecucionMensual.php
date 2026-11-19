@@ -96,19 +96,28 @@ class EjecucionMensual extends Model implements AcotadoPorRecinto, AuditableCont
     #[Scope]
     protected function atrasadas(Builder $query, int $anio, ?CarbonInterface $hoy = null): void
     {
+        $query
+            ->where($this->qualifyColumn('estado'), EstadoEjecucion::Programado)
+            ->where($this->qualifyColumn('mes'), '<', self::primerMesEnPlazo($anio, $hoy))
+            ->whereHas('planMantenimiento', fn (Builder $plan) => $plan
+                ->where('anio', $anio)
+                ->whereHas('equipo', fn (Builder $equipo) => $equipo->where('activo', true)));
+    }
+
+    /**
+     * Primer mes del año que todavía está en plazo: un mes "Programado" anterior a este está
+     * atrasado ({@see atrasadas()}). En el año en curso es el mes actual, en un año pasado 13 (todos
+     * atrasados) y en uno futuro 1 (ninguno).
+     */
+    public static function primerMesEnPlazo(int $anio, ?CarbonInterface $hoy = null): int
+    {
         $hoy ??= now();
-        $hastaMes = match (true) {
+
+        return match (true) {
             $anio < $hoy->year => 13,
             $anio === $hoy->year => $hoy->month,
             default => 1,
         };
-
-        $query
-            ->where($this->qualifyColumn('estado'), EstadoEjecucion::Programado)
-            ->where($this->qualifyColumn('mes'), '<', $hastaMes)
-            ->whereHas('planMantenimiento', fn (Builder $plan) => $plan
-                ->where('anio', $anio)
-                ->whereHas('equipo', fn (Builder $equipo) => $equipo->where('activo', true)));
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Enums\Periodo;
 use App\Filament\Widgets\AlertasConveniosWidget;
+use App\Filament\Widgets\CalendarioMantencionesWidget;
 use App\Filament\Widgets\CatastroAlertasWidget;
 use App\Filament\Widgets\ConveniosEncargadoWidget;
 use App\Filament\Widgets\CumplimientoMpMensualWidget;
@@ -20,7 +21,9 @@ use Filament\Forms\Components\TextInput;
 use Filament\Pages\Dashboard;
 use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\Widget;
@@ -45,6 +48,10 @@ use Filament\Widgets\Widget;
  * una sola grilla de widgets ordenados por `$sort`. Cada grupo es una sección sin tarjeta, con
  * título, que solo aparece si el usuario ve alguno de sus widgets. Cada fila del grupo es una grilla
  * propia. El período queda en una barra compacta, y el subtítulo indica qué período se muestra.
+ *
+ * SPEC-ME-023: cada grupo es una pestaña, y solo aparecen las pestañas con algún widget visible
+ * para el perfil. La pestaña elegida queda en la URL (`?pestana=`). Se agrega el grupo
+ * "Calendario" con {@see CalendarioMantencionesWidget}.
  */
 class Escritorio extends Dashboard
 {
@@ -62,6 +69,7 @@ class Escritorio extends Dashboard
         AlertasConveniosWidget::class,
         ConveniosEncargadoWidget::class,
         IndicadoresGeneralesWidget::class,
+        CalendarioMantencionesWidget::class,
     ];
 
     /**
@@ -82,6 +90,12 @@ class Escritorio extends Dashboard
             'descripcion' => 'Solo se muestran las alertas con casos pendientes.',
             'icono' => Heroicon::OutlinedBellAlert,
             'filas' => [['columnas' => 1, 'widgets' => [CatastroAlertasWidget::class, AlertasConveniosWidget::class]]],
+        ],
+        'calendario' => [
+            'titulo' => 'Calendario',
+            'descripcion' => 'Mantenciones preventivas por mes. Haz clic en un mes para verlo por días.',
+            'icono' => Heroicon::OutlinedCalendarDays,
+            'filas' => [['columnas' => 1, 'widgets' => [CalendarioMantencionesWidget::class]]],
         ],
         'preventivo' => [
             'titulo' => 'Mantenimiento preventivo',
@@ -163,10 +177,13 @@ class Escritorio extends Dashboard
             ->components([
                 EmbeddedSchema::make('form')
                     ->visible(fn (): bool => collect(self::WIDGETS_CON_PERIODO)->contains(fn (string $widget): bool => $widget::canView())),
-                ...collect(self::GRUPOS)
-                    ->map(fn (array $grupo, string $clave): Section => $this->seccionDeGrupo($clave, $grupo))
-                    ->values()
-                    ->all(),
+                Tabs::make('Escritorio')
+                    ->key('pestanas-escritorio')
+                    ->persistTabInQueryString('pestana')
+                    ->tabs(collect(self::GRUPOS)
+                        ->map(fn (array $grupo, string $clave): Tab => $this->pestanaDeGrupo($clave, $grupo))
+                        ->values()
+                        ->all()),
             ]);
     }
 
@@ -195,19 +212,21 @@ class Escritorio extends Dashboard
     /**
      * @param  array{titulo: string, descripcion: string, icono: Heroicon, filas: array<int, array{columnas: int, widgets: array<int, class-string<Widget>>}>}  $grupo
      */
-    private function seccionDeGrupo(string $clave, array $grupo): Section
+    private function pestanaDeGrupo(string $clave, array $grupo): Tab
     {
         $widgets = collect($grupo['filas'])->flatMap(fn (array $fila): array => $fila['widgets']);
 
-        return Section::make($grupo['titulo'])
+        return Tab::make($grupo['titulo'])
+            ->id($clave)
             ->key("grupo-{$clave}")
-            ->description($grupo['descripcion'])
             ->icon($grupo['icono'])
-            ->contained(false)
-            ->schema(collect($grupo['filas'])
-                ->map(fn (array $fila): Grid => Grid::make(['default' => 1, 'lg' => $fila['columnas']])
-                    ->schema(fn (): array => $this->getWidgetsSchemaComponents($fila['widgets'])))
-                ->all())
+            ->schema([
+                Text::make($grupo['descripcion'])->color('gray'),
+                ...collect($grupo['filas'])
+                    ->map(fn (array $fila): Grid => Grid::make(['default' => 1, 'lg' => $fila['columnas']])
+                        ->schema(fn (): array => $this->getWidgetsSchemaComponents($fila['widgets'])))
+                    ->all(),
+            ])
             ->visible(fn (): bool => $widgets->contains(fn (string $widget): bool => $widget::canView()));
     }
 
